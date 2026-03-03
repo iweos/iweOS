@@ -163,3 +163,4 @@ node --test src/lib/server/payments/allocation.test.mjs
 - Migration SQL: `prisma/migrations/20260302113000_school_settings_fields/migration.sql`
 - Migration SQL: `prisma/migrations/20260302142000_assessment_types/migration.sql`
 - Migration SQL: `prisma/migrations/20260302190000_payments_module/migration.sql`
+# iweOS
