@@ -1,0 +1,96 @@
+import { assignTeacherToClassAction, removeTeacherClassAssignmentAction } from "@/lib/server/admin-actions";
+import { requireRole } from "@/lib/server/auth";
+import { prisma } from "@/lib/server/prisma";
+import { ProfileRole } from "@prisma/client";
+
+export default async function AssignmentTeacherClassesPage() {
+  const profile = await requireRole("admin");
+
+  const [teachers, classes, assignments] = await Promise.all([
+    prisma.profile.findMany({
+      where: { schoolId: profile.schoolId, role: ProfileRole.TEACHER, isActive: true },
+      orderBy: { fullName: "asc" },
+    }),
+    prisma.class.findMany({
+      where: { schoolId: profile.schoolId },
+      orderBy: { name: "asc" },
+    }),
+    prisma.teacherClassAssignment.findMany({
+      where: { schoolId: profile.schoolId },
+      include: { teacherProfile: true, class: true },
+      orderBy: { class: { name: "asc" } },
+    }),
+  ]);
+
+  return (
+    <>
+      <section className="section-panel space-y-3">
+        <h1 className="section-title">Assignments / Teacher-Class</h1>
+        <form action={assignTeacherToClassAction} className="grid gap-2 md:grid-cols-3">
+          <label className="space-y-1">
+            <span className="field-label">Teacher</span>
+            <select name="teacherProfileId" className="select" required>
+              <option value="">Select teacher</option>
+              {teachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.fullName}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1">
+            <span className="field-label">Class</span>
+            <select name="classId" className="select" required>
+              <option value="">Select class</option>
+              {classes.map((klass) => (
+                <option key={klass.id} value={klass.id}>
+                  {klass.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="self-end">
+            <button className="btn btn-primary" type="submit">
+              Assign
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="section-panel table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Teacher</th>
+              <th>Class</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {assignments.map((assignment) => (
+              <tr key={assignment.id}>
+                <td>{assignment.teacherProfile.fullName}</td>
+                <td>{assignment.class.name}</td>
+                <td>
+                  <form action={removeTeacherClassAssignmentAction}>
+                    <input type="hidden" name="assignmentId" value={assignment.id} />
+                    <button className="btn btn-danger" type="submit">
+                      Remove
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+            {assignments.length === 0 && (
+              <tr>
+                <td colSpan={3}>No teacher-class assignments.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+    </>
+  );
+}

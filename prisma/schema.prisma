@@ -1,0 +1,528 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProfileRole {
+  ADMIN   @map("admin")
+  TEACHER @map("teacher")
+}
+
+enum FeeItemType {
+  COMPULSORY @map("compulsory")
+  OTHER      @map("other")
+}
+
+enum InvoiceStatus {
+  DRAFT      @map("draft")
+  PENDING    @map("pending")
+  PAID       @map("paid")
+  PART_PAID  @map("part_paid")
+  CANCELLED  @map("cancelled")
+  FAILED     @map("failed")
+}
+
+enum PaymentStatus {
+  INITIATED @map("initiated")
+  PENDING   @map("pending")
+  SUCCESS   @map("success")
+  FAILED    @map("failed")
+  REFUNDED  @map("refunded")
+}
+
+enum PaymentMethod {
+  CARD     @map("card")
+  TRANSFER @map("transfer")
+  BANK     @map("bank")
+  OTHER    @map("other")
+}
+
+enum LedgerEntryType {
+  CHARGE     @map("charge")
+  PAYMENT    @map("payment")
+  ADJUSTMENT @map("adjustment")
+}
+
+model School {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                    String
+  code                    String
+  country                 String?
+  logoUrl                 String?   @map("logo_url")
+  addressLine1            String?   @map("address_line_1")
+  addressLine2            String?   @map("address_line_2")
+  city                    String?
+  state                   String?
+  postalCode              String?   @map("postal_code")
+  phone                   String?
+  website                 String?
+  processingFeePercent    Int       @default(5) @map("processing_fee_percent")
+  currency                String    @default("NGN")
+  settlementBankName      String?   @map("settlement_bank_name")
+  settlementAccountName   String?   @map("settlement_account_name")
+  settlementAccountNumber String?   @map("settlement_account_number")
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profiles                Profile[]
+  classes                 Class[]
+  terms                   Term[]
+  students                Student[]
+  subjects                Subject[]
+  classSubjects           ClassSubject[]
+  enrollments             Enrollment[]
+  teacherClassAssignments TeacherClassAssignment[]
+  gradingSettings         GradingSetting?
+  assessmentTypes         AssessmentType[]
+  gradeScale              GradeScale[]
+  scores                  Score[]
+  scoreAssessmentValues   ScoreAssessmentValue[]
+  feeItemCatalogs         FeeItemCatalog[]
+  feeSchedules            FeeSchedule[]
+  feeScheduleItems        FeeScheduleItem[]
+  invoices                Invoice[]
+  invoiceLineItems        InvoiceLineItem[]
+  payments                Payment[]
+  ledgerEntries           LedgerEntry[]
+  auditLogs               AuditLog[]
+
+  @@unique([code])
+  @@map("schools")
+}
+
+model Profile {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerkUserId String?     @unique @map("clerk_user_id")
+  schoolId    String      @map("school_id") @db.Uuid
+  role        ProfileRole
+  fullName    String      @map("full_name")
+  email       String
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school                   School                    @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  teacherClassAssignments  TeacherClassAssignment[]
+  scores                   Score[]
+
+  @@index([schoolId])
+  @@index([schoolId, email])
+  @@index([schoolId, role])
+  @@map("profiles")
+}
+
+model Class {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String    @map("school_id") @db.Uuid
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school                   School                    @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  classSubjects            ClassSubject[]
+  enrollments              Enrollment[]
+  teacherClassAssignments  TeacherClassAssignment[]
+  scores                   Score[]
+
+  @@index([schoolId])
+  @@index([schoolId, name])
+  @@map("classes")
+}
+
+model Term {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId     String    @map("school_id") @db.Uuid
+  sessionLabel String    @map("session_label")
+  termLabel    String    @map("term_label")
+  isActive     Boolean   @default(false) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school       School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  enrollments  Enrollment[]
+  scores       Score[]
+
+  @@index([schoolId])
+  @@index([schoolId, isActive])
+  @@map("terms")
+}
+
+model Student {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String    @map("school_id") @db.Uuid
+  studentCode      String    @map("student_code")
+  studentPaymentId String    @map("student_payment_id")
+  firstName        String?   @map("first_name")
+  lastName         String?   @map("last_name")
+  fullName         String    @map("full_name")
+  className        String?   @map("class_name")
+  address          String?
+  guardianName     String?   @map("guardian_name")
+  guardianPhone    String?   @map("guardian_phone")
+  guardianEmail    String?   @map("guardian_email")
+  status           String    @default("active")
+  gender           String?
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school           School             @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  enrollments      Enrollment[]
+  scores           Score[]
+  invoiceLineItems InvoiceLineItem[]
+  ledgerEntries    LedgerEntry[]
+
+  @@unique([schoolId, studentCode])
+  @@unique([schoolId, studentPaymentId])
+  @@index([schoolId])
+  @@index([schoolId, className])
+  @@index([schoolId, studentPaymentId])
+  @@map("students")
+}
+
+model Subject {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String    @map("school_id") @db.Uuid
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school        School         @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  classSubjects ClassSubject[]
+  scores        Score[]
+
+  @@index([schoolId])
+  @@index([schoolId, name])
+  @@map("subjects")
+}
+
+model ClassSubject {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String    @map("school_id") @db.Uuid
+  classId   String    @map("class_id") @db.Uuid
+  subjectId String    @map("subject_id") @db.Uuid
+
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Restrict)
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@unique([classId, subjectId])
+  @@index([schoolId])
+  @@index([classId])
+  @@map("class_subjects")
+}
+
+model Enrollment {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String    @map("school_id") @db.Uuid
+  studentId String    @map("student_id") @db.Uuid
+  classId   String    @map("class_id") @db.Uuid
+  termId    String    @map("term_id") @db.Uuid
+
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Restrict)
+  term      Term      @relation(fields: [termId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, classId, termId])
+  @@index([schoolId])
+  @@index([termId])
+  @@index([classId])
+  @@map("enrollments")
+}
+
+model TeacherClassAssignment {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String   @map("school_id") @db.Uuid
+  teacherProfileId String   @map("teacher_profile_id") @db.Uuid
+  classId          String   @map("class_id") @db.Uuid
+
+  school           School   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  teacherProfile   Profile  @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  class            Class    @relation(fields: [classId], references: [id], onDelete: Restrict)
+
+  @@unique([teacherProfileId, classId])
+  @@index([schoolId])
+  @@index([classId])
+  @@index([teacherProfileId])
+  @@map("teacher_class_assignments")
+}
+
+model GradingSetting {
+  schoolId   String @id @map("school_id") @db.Uuid
+  ca1Weight  Int    @default(20) @map("ca1_weight")
+  ca2Weight  Int    @default(20) @map("ca2_weight")
+  examWeight Int    @default(60) @map("exam_weight")
+
+  school     School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+
+  @@map("grading_settings")
+}
+
+model AssessmentType {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId   String   @map("school_id") @db.Uuid
+  name       String
+  weight     Int
+  orderIndex Int      @default(1) @map("order_index")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school     School                @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  scoreValues ScoreAssessmentValue[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+  @@index([schoolId, orderIndex])
+  @@map("assessment_types")
+}
+
+model GradeScale {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId    String  @map("school_id") @db.Uuid
+  gradeLetter String  @map("grade_letter")
+  minScore    Int     @map("min_score")
+  maxScore    Int     @map("max_score")
+  orderIndex  Int     @map("order_index")
+
+  school      School  @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+
+  @@unique([schoolId, gradeLetter])
+  @@index([schoolId])
+  @@index([schoolId, minScore, maxScore])
+  @@map("grade_scale")
+}
+
+model Score {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String    @map("school_id") @db.Uuid
+  termId           String    @map("term_id") @db.Uuid
+  classId          String    @map("class_id") @db.Uuid
+  studentId        String    @map("student_id") @db.Uuid
+  subjectId        String    @map("subject_id") @db.Uuid
+  teacherProfileId String    @map("teacher_profile_id") @db.Uuid
+  ca1              Decimal   @default(0) @db.Decimal(10, 2)
+  ca2              Decimal   @default(0) @db.Decimal(10, 2)
+  exam             Decimal   @default(0) @db.Decimal(10, 2)
+  total            Decimal   @default(0) @db.Decimal(10, 2)
+  grade            String?
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school           School    @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  term             Term      @relation(fields: [termId], references: [id], onDelete: Restrict)
+  class            Class     @relation(fields: [classId], references: [id], onDelete: Restrict)
+  student          Student   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  subject          Subject   @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  teacherProfile   Profile   @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  assessmentValues ScoreAssessmentValue[]
+
+  @@unique([studentId, subjectId, termId])
+  @@index([schoolId])
+  @@index([termId])
+  @@index([classId])
+  @@index([teacherProfileId])
+  @@map("scores")
+}
+
+model ScoreAssessmentValue {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String   @map("school_id") @db.Uuid
+  scoreId          String   @map("score_id") @db.Uuid
+  assessmentTypeId String   @map("assessment_type_id") @db.Uuid
+  value            Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school           School         @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  score            Score          @relation(fields: [scoreId], references: [id], onDelete: Cascade)
+  assessmentType   AssessmentType @relation(fields: [assessmentTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([scoreId, assessmentTypeId])
+  @@index([schoolId])
+  @@index([assessmentTypeId])
+  @@map("score_assessment_values")
+}
+
+model FeeItemCatalog {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId      String      @map("school_id") @db.Uuid
+  type          FeeItemType
+  name          String
+  category      String?
+  amount        Decimal     @db.Decimal(12, 2)
+  allowQuantity Boolean     @default(false) @map("allow_quantity")
+  active        Boolean     @default(true)
+  priority      Int         @default(100)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school            School            @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  feeScheduleItems  FeeScheduleItem[]
+  invoiceLineItems  InvoiceLineItem[]
+
+  @@unique([schoolId, type, name])
+  @@index([schoolId])
+  @@index([schoolId, type])
+  @@index([schoolId, priority])
+  @@map("fee_item_catalog")
+}
+
+model FeeSchedule {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId     String    @map("school_id") @db.Uuid
+  className    String    @map("class_name")
+  sessionLabel String    @map("session_label")
+  termLabel    String    @map("term_label")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school       School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  items        FeeScheduleItem[]
+
+  @@unique([schoolId, className, sessionLabel, termLabel])
+  @@index([schoolId])
+  @@index([schoolId, className, isActive])
+  @@map("fee_schedule")
+}
+
+model FeeScheduleItem {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String    @map("school_id") @db.Uuid
+  feeScheduleId    String    @map("fee_schedule_id") @db.Uuid
+  feeItemCatalogId String    @map("fee_item_catalog_id") @db.Uuid
+  amount           Decimal   @db.Decimal(12, 2)
+  isCompulsory     Boolean   @default(true) @map("is_compulsory")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school           School         @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  feeSchedule      FeeSchedule    @relation(fields: [feeScheduleId], references: [id], onDelete: Cascade)
+  feeItemCatalog   FeeItemCatalog @relation(fields: [feeItemCatalogId], references: [id], onDelete: Restrict)
+
+  @@unique([feeScheduleId, feeItemCatalogId])
+  @@index([schoolId])
+  @@index([feeScheduleId])
+  @@index([feeItemCatalogId])
+  @@map("fee_schedule_items")
+}
+
+model Invoice {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId      String        @map("school_id") @db.Uuid
+  invoiceNo     String        @map("invoice_no")
+  status        InvoiceStatus @default(PENDING)
+  currency      String
+  subtotal      Decimal       @db.Decimal(12, 2)
+  processingFee Decimal       @map("processing_fee") @db.Decimal(12, 2)
+  total         Decimal       @db.Decimal(12, 2)
+  payerEmail    String?       @map("payer_email")
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school        School            @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  lineItems     InvoiceLineItem[]
+  payments      Payment[]
+  ledgerEntries LedgerEntry[]
+
+  @@unique([schoolId, invoiceNo])
+  @@index([schoolId])
+  @@index([schoolId, status])
+  @@index([createdAt])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String      @map("school_id") @db.Uuid
+  invoiceId        String      @map("invoice_id") @db.Uuid
+  studentId        String      @map("student_id") @db.Uuid
+  feeItemCatalogId String?     @map("fee_item_catalog_id") @db.Uuid
+  feeType          FeeItemType @map("fee_type")
+  name             String
+  category         String?
+  unitAmount       Decimal     @map("unit_amount") @db.Decimal(12, 2)
+  qty              Int         @default(1)
+  lineTotal        Decimal     @map("line_total") @db.Decimal(12, 2)
+  mustPayFull      Boolean     @default(false) @map("must_pay_full")
+  paidAmount       Decimal     @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  remainingAmount  Decimal     @default(0) @map("remaining_amount") @db.Decimal(12, 2)
+  allocationOrder  Int         @default(999) @map("allocation_order")
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school           School          @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  invoice          Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  feeItemCatalog   FeeItemCatalog? @relation(fields: [feeItemCatalogId], references: [id], onDelete: SetNull)
+  ledgerEntries    LedgerEntry[]
+
+  @@index([schoolId])
+  @@index([invoiceId])
+  @@index([studentId])
+  @@index([feeItemCatalogId])
+  @@index([allocationOrder])
+  @@map("invoice_line_items")
+}
+
+model Payment {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId    String        @map("school_id") @db.Uuid
+  invoiceId   String        @map("invoice_id") @db.Uuid
+  provider    String
+  providerRef String        @map("provider_ref")
+  status      PaymentStatus @default(INITIATED)
+  amount      Decimal       @db.Decimal(12, 2)
+  method      PaymentMethod @default(OTHER)
+  payloadJson Json?         @map("payload_json")
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school      School        @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  ledgerEntries LedgerEntry[]
+
+  @@unique([schoolId, providerRef])
+  @@index([schoolId])
+  @@index([invoiceId])
+  @@index([schoolId, status])
+  @@map("payments")
+}
+
+model LedgerEntry {
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId   String          @map("school_id") @db.Uuid
+  studentId  String          @map("student_id") @db.Uuid
+  invoiceId  String?         @map("invoice_id") @db.Uuid
+  lineItemId String?         @map("line_item_id") @db.Uuid
+  paymentId  String?         @map("payment_id") @db.Uuid
+  type       LedgerEntryType
+  amount     Decimal         @db.Decimal(12, 2)
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school     School          @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  student    Student         @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  invoice    Invoice?        @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  lineItem   InvoiceLineItem? @relation(fields: [lineItemId], references: [id], onDelete: SetNull)
+  payment    Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@index([invoiceId])
+  @@index([lineItemId])
+  @@index([paymentId])
+  @@map("ledger_entries")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId   String   @map("school_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id") @db.Uuid
+  metaJson   Json?    @map("meta_json")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+
+  @@index([schoolId])
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}

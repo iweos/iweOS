@@ -1,0 +1,62 @@
+<svg width="960" height="720" viewBox="0 0 960 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="40" x2="900" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF6E7"/>
+      <stop offset="1" stop-color="#F3E0C5"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFF9F1"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="960" height="720" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="720" rx="44" fill="url(#bg)"/>
+  <circle cx="130" cy="110" r="44" fill="#E6F0E8"/>
+  <circle cx="178" cy="110" r="22" fill="#8E5A2B"/>
+  <circle cx="222" cy="110" r="15" fill="#2F6B3F"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="165" width="390" height="230" rx="24" fill="url(#card)" stroke="#E3D4BE"/>
+    <text x="102" y="212" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#7A4F28">Academics</text>
+    <rect x="102" y="230" width="326" height="12" rx="6" fill="#E9F3EB"/>
+    <rect x="102" y="252" width="278" height="12" rx="6" fill="#E8DED1"/>
+    <rect x="102" y="274" width="300" height="12" rx="6" fill="#E9F3EB"/>
+    <rect x="102" y="308" width="102" height="60" rx="12" fill="#2F6B3F"/>
+    <text x="123" y="343" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Grades</text>
+    <rect x="214" y="308" width="102" height="60" rx="12" fill="#8E5A2B"/>
+    <text x="236" y="343" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Terms</text>
+    <rect x="326" y="308" width="102" height="60" rx="12" fill="#3E8250"/>
+    <text x="345" y="343" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Classes</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="500" y="130" width="390" height="260" rx="24" fill="url(#card)" stroke="#E3D4BE"/>
+    <text x="532" y="177" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#7A4F28">Payments</text>
+    <rect x="532" y="198" width="326" height="72" rx="14" fill="#EAF3EC"/>
+    <text x="554" y="228" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#2F6B3F">Collection Rate</text>
+    <text x="554" y="252" font-family="Inter, sans-serif" font-size="28" font-weight="700" fill="#111827">84.2%</text>
+    <rect x="532" y="286" width="156" height="72" rx="14" fill="#F7EEE2"/>
+    <text x="552" y="316" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#7A4F28">Invoices</text>
+    <text x="552" y="340" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#111827">1,248</text>
+    <rect x="702" y="286" width="156" height="72" rx="14" fill="#EAF3EC"/>
+    <text x="722" y="316" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#2F6B3F">Outstanding</text>
+    <text x="722" y="340" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#111827">N2.6m</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="140" y="435" width="680" height="190" rx="24" fill="url(#card)" stroke="#E3D4BE"/>
+    <text x="174" y="478" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#7A4F28">Security and Roles</text>
+    <circle cx="186" cy="515" r="8" fill="#2F6B3F"/>
+    <text x="204" y="520" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#374151">school_id isolation on every query</text>
+    <circle cx="186" cy="548" r="8" fill="#8E5A2B"/>
+    <text x="204" y="553" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#374151">admin and teacher role guards</text>
+    <circle cx="186" cy="581" r="8" fill="#2F6B3F"/>
+    <text x="204" y="586" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#374151">server-side grade and payment validation</text>
+    <rect x="620" y="500" width="170" height="80" rx="14" fill="#2F6B3F"/>
+    <text x="643" y="533" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">iweOS</text>
+    <text x="643" y="555" font-family="Inter, sans-serif" font-size="12" font-weight="500" fill="#E9F3EB">Academics + Payments</text>
+  </g>
+</svg>
