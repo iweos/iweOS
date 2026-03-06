@@ -1,0 +1,623 @@
+:root {
+  --iwe-primary: #2f6b3f;
+  --iwe-primary-strong: #245332;
+  --iwe-secondary: #7a4f28;
+}
+
+html.kai-admin,
+html.kai-admin body {
+  background: #f5f7fd !important;
+  color: #1f2638 !important;
+}
+
+html.kai-admin body {
+  font-family: "Public Sans", sans-serif !important;
+}
+
+html.kai-admin .wrapper {
+  min-height: 100vh;
+  background: #f5f7fd !important;
+}
+
+/* Override global container/card rules that were built for non-admin pages */
+html.kai-admin .wrapper .container {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.kai-admin .main-panel > .container {
+  max-width: 1600px !important;
+  margin-top: 86px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 1rem !important;
+  min-height: calc(100% - 123px) !important;
+}
+
+html.kai-admin .page-inner {
+  padding: 1.35rem 0 1rem !important;
+}
+
+html.kai-admin .card {
+  padding: 0 !important;
+  border: 1px solid #e6ebf0 !important;
+  border-radius: 0.85rem !important;
+  background: #fff !important;
+  box-shadow: 0 1px 2px rgba(24, 39, 75, 0.06) !important;
+}
+
+html.kai-admin .card > form,
+html.kai-admin .section-panel > form {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+html.kai-admin .card-body {
+  padding: 1rem 1.1rem !important;
+}
+
+/* Logo / header */
+html.kai-admin .logo-header .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+html.kai-admin .logo-header .logo .navbar-brand {
+  width: auto !important;
+  max-width: 26px !important;
+  height: 24px !important;
+  max-height: 24px !important;
+  object-fit: contain;
+}
+
+html.kai-admin .logo-header .logo .logo-icon {
+  width: 24px !important;
+  max-width: none !important;
+  height: 24px !important;
+  max-height: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #fff;
+}
+
+html.kai-admin .logo-title {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+html.kai-admin .main-header .logo-title {
+  color: #fff;
+}
+
+html.kai-admin .admin-profile-avatar i {
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--iwe-primary) !important;
+}
+
+html.kai-admin .admin-profile-avatar-lg i {
+  font-size: 1.35rem;
+}
+
+html.kai-admin .admin-profile-avatar {
+  background: #fff !important;
+  color: var(--iwe-primary) !important;
+  border: 1px solid #d8dee6;
+}
+
+/* Sidebar */
+html.kai-admin .sidebar[data-background-color="dark"],
+html.kai-admin .logo-header[data-background-color="dark"] {
+  background: #1d2621 !important;
+}
+
+html.kai-admin .sidebar .user .info a > span,
+html.kai-admin .sidebar .nav > .nav-item a p,
+html.kai-admin .sidebar .nav-collapse li a .sub-item,
+html.kai-admin .sidebar .nav-section .text-section {
+  color: #eff5ef;
+}
+
+html.kai-admin .sidebar .user .info .user-level {
+  color: #b6c5b8 !important;
+}
+
+html.kai-admin .sidebar .nav > .nav-item.active > a,
+html.kai-admin .sidebar .nav > .nav-item a:hover,
+html.kai-admin .sidebar .nav > .nav-item a:focus,
+html.kai-admin .sidebar .nav > .nav-item a[data-toggle="collapse"][aria-expanded="true"] {
+  background: rgba(47, 107, 63, 0.16) !important;
+}
+
+html.kai-admin .sidebar .nav.nav-secondary > .nav-item.active > a:before,
+html.kai-admin .sidebar .nav.nav-secondary > .nav-item > a[data-toggle="collapse"][aria-expanded="true"]:before {
+  background: var(--iwe-primary) !important;
+}
+
+html.kai-admin .sidebar .nav.nav-secondary > .nav-item.active > a i,
+html.kai-admin .sidebar .nav.nav-secondary > .nav-item > a[data-toggle="collapse"][aria-expanded="true"] i,
+html.kai-admin .sidebar .nav.nav-secondary > .nav-item > a:hover i,
+html.kai-admin .sidebar .nav-collapse li.active > a {
+  color: var(--iwe-primary) !important;
+}
+
+html.kai-admin .sidebar .nav > .nav-item > .nav-collapse {
+  display: none;
+}
+
+html.kai-admin .sidebar .nav > .nav-item.submenu > .nav-collapse {
+  display: block !important;
+}
+
+/* Buttons */
+html.kai-admin .btn-primary {
+  background: var(--iwe-primary) !important;
+  border-color: var(--iwe-primary) !important;
+}
+
+html.kai-admin .btn-primary:hover,
+html.kai-admin .btn-primary:focus {
+  background: var(--iwe-primary-strong) !important;
+  border-color: var(--iwe-primary-strong) !important;
+}
+
+html.kai-admin .btn-secondary,
+html.kai-admin .btn-muted,
+html.kai-admin .btn-outline-secondary {
+  background: #fff !important;
+  border-color: #dfe3e8 !important;
+  color: #1f2638 !important;
+}
+
+html.kai-admin .btn-danger {
+  background: #fff !important;
+  border-color: #f2cbcb !important;
+  color: #cb3e3e !important;
+}
+
+html.kai-admin .btn-brown {
+  background: #f6eee5 !important;
+  border-color: #dbc4ad !important;
+  color: var(--iwe-secondary) !important;
+}
+
+html.kai-admin .btn-icon-square {
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Cards / stats */
+html.kai-admin .card-round {
+  border-radius: 1rem;
+}
+
+html.kai-admin .card .card-title {
+  margin-bottom: 0;
+}
+
+html.kai-admin .card-stats .card-body {
+  padding: 15px !important;
+}
+
+html.kai-admin .card-stats .icon-big {
+  width: 100%;
+  height: 100%;
+  min-height: 64px;
+  font-size: 2.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.kai-admin .card-stats .icon-big i.fa,
+html.kai-admin .card-stats .icon-big i.fab,
+html.kai-admin .card-stats .icon-big i.fal,
+html.kai-admin .card-stats .icon-big i.far,
+html.kai-admin .card-stats .icon-big i.fas {
+  font-size: 0.8em;
+}
+
+html.kai-admin .card-stats .card-category {
+  margin-top: 0;
+  margin-bottom: 0.12rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+html.kai-admin .card-stats .card-title {
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+html.kai-admin .card-stats .col-stats {
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+}
+
+html.kai-admin .card-stats .card-delta {
+  margin-top: 0.32rem;
+  font-size: 0.76rem;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+html.kai-admin .card-stats .stat-icon-sm {
+  font-size: 0.62em !important;
+}
+
+html.kai-admin .card-stats .stat-icon-md {
+  font-size: 0.8em !important;
+}
+
+html.kai-admin .card-stats .stat-icon-lg {
+  font-size: 0.95em !important;
+}
+
+html.kai-admin .card.card-stats.card-primary {
+  background: var(--iwe-primary) !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-secondary {
+  background: var(--iwe-secondary) !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-info {
+  background: #2f8ed8 !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-success {
+  background: #2f9f51 !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-warning {
+  background: #d18d2f !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-danger {
+  background: #c24a57 !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-black {
+  background: #1f2638 !important;
+  border-color: transparent !important;
+}
+
+html.kai-admin .card.card-stats.card-primary .card-category,
+html.kai-admin .card.card-stats.card-secondary .card-category,
+html.kai-admin .card.card-stats.card-info .card-category,
+html.kai-admin .card.card-stats.card-success .card-category,
+html.kai-admin .card.card-stats.card-warning .card-category,
+html.kai-admin .card.card-stats.card-danger .card-category,
+html.kai-admin .card.card-stats.card-black .card-category,
+html.kai-admin .card.card-stats.card-primary .card-title,
+html.kai-admin .card.card-stats.card-secondary .card-title,
+html.kai-admin .card.card-stats.card-info .card-title,
+html.kai-admin .card.card-stats.card-success .card-title,
+html.kai-admin .card.card-stats.card-warning .card-title,
+html.kai-admin .card.card-stats.card-danger .card-title,
+html.kai-admin .card.card-stats.card-black .card-title,
+html.kai-admin .card.card-stats.card-primary .icon-big > i,
+html.kai-admin .card.card-stats.card-secondary .icon-big > i,
+html.kai-admin .card.card-stats.card-info .icon-big > i,
+html.kai-admin .card.card-stats.card-success .icon-big > i,
+html.kai-admin .card.card-stats.card-warning .icon-big > i,
+html.kai-admin .card.card-stats.card-danger .icon-big > i,
+html.kai-admin .card.card-stats.card-black .icon-big > i {
+  color: #fff !important;
+}
+
+/* Utility text styles used in pages */
+html.kai-admin .section-kicker {
+  margin: 0;
+  color: var(--iwe-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+html.kai-admin .section-title {
+  margin: 0.1rem 0 0;
+  color: #151a2d;
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+html.kai-admin .section-subtle {
+  margin: 0.35rem 0 0;
+  color: #707b90;
+}
+
+html.kai-admin .section-heading {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1f2638;
+}
+
+html.kai-admin .assessment-total-pulse {
+  display: inline-block;
+  color: var(--iwe-primary);
+  animation: assessmentPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes assessmentPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.kai-admin .assessment-total-pulse {
+    animation: none;
+  }
+}
+
+/* Form controls */
+html.kai-admin .form-control,
+html.kai-admin .form-select,
+html.kai-admin .input,
+html.kai-admin .select,
+html.kai-admin textarea {
+  border-radius: 0.45rem !important;
+  border: 1px solid #d8dee6 !important;
+  background: #fff !important;
+}
+
+html.kai-admin .form-control:focus,
+html.kai-admin .form-select:focus,
+html.kai-admin .input:focus,
+html.kai-admin .select:focus,
+html.kai-admin textarea:focus {
+  border-color: var(--iwe-primary) !important;
+  box-shadow: 0 0 0 0.15rem rgba(47, 107, 63, 0.15) !important;
+}
+
+html.kai-admin .field-label {
+  color: #6d7a8f;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Tables */
+html.kai-admin .table-responsive {
+  overflow-x: auto;
+}
+
+html.kai-admin .table,
+html.kai-admin table {
+  width: 100%;
+}
+
+html.kai-admin .table > :not(caption) > * > th,
+html.kai-admin table th {
+  color: #6c798f;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #f8fafc;
+  border-color: #edf1f4;
+}
+
+html.kai-admin #student-directory-datatables > :not(caption) > * > th {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: #495057 !important;
+}
+
+html.kai-admin .table > :not(caption) > * > td,
+html.kai-admin table td {
+  color: #1f2638;
+  border-color: #edf1f4;
+  vertical-align: middle;
+}
+
+html.kai-admin #student-directory-datatables_wrapper .dataTables_length label,
+html.kai-admin #student-directory-datatables_wrapper .dataTables_filter label {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: #5f6f87 !important;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+html.kai-admin #student-directory-datatables_wrapper .dataTables_length select {
+  width: auto !important;
+  min-width: 72px;
+  margin: 0 0.4rem;
+}
+
+html.kai-admin #student-directory-datatables_wrapper .dataTables_filter input {
+  width: 220px !important;
+  max-width: 100%;
+  margin-left: 0.5rem;
+}
+
+html.kai-admin #student-directory-datatables_wrapper .dataTables_info {
+  color: #5f6f87;
+  font-size: 0.86rem;
+}
+
+html.kai-admin #student-directory-datatables_wrapper {
+  background: #fff;
+  border: 1px solid #e6ebf0;
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 20px rgba(24, 39, 75, 0.08);
+  padding: 1rem 1rem 0.85rem;
+}
+
+html.kai-admin #student-directory-datatables_wrapper .table-responsive {
+  border: 1px solid #edf1f4;
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+html.kai-admin #student-directory-datatables_wrapper .table {
+  margin-bottom: 0 !important;
+}
+
+html.kai-admin .d-flex.flex-wrap.gap-3 > .card.card-stats {
+  min-width: 180px;
+  flex: 1 1 180px;
+}
+
+/* Inline edit widths used in grading tables */
+html.kai-admin .assessment-input.assessment-name {
+  width: 11rem;
+}
+
+html.kai-admin .assessment-input.assessment-short {
+  width: 6.75rem;
+}
+
+/* Student modal (SweetAlert style) */
+html.kai-admin .student-swal-overlay,
+.student-swal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+html.kai-admin .swal-modal.student-swal-modal,
+.swal-modal.student-swal-modal {
+  width: 100%;
+  max-width: 760px;
+  background: #fff !important;
+  border: 1px solid #e6ebf0;
+  border-radius: 0.85rem;
+  box-shadow: 0 14px 44px rgba(15, 23, 42, 0.28);
+  text-align: left;
+  pointer-events: auto;
+  opacity: 1;
+  margin: 0;
+  overflow: hidden;
+}
+
+html.kai-admin .student-swal-head,
+.student-swal-head {
+  padding: 1.15rem 1.25rem 0.75rem;
+  text-align: center;
+}
+
+html.kai-admin .student-swal-icon.swal-icon,
+.student-swal-icon.swal-icon {
+  width: 74px;
+  height: 74px;
+  margin: 0 auto 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--iwe-primary), var(--iwe-secondary));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.65rem;
+}
+
+html.kai-admin .student-swal-modal .swal-title,
+.student-swal-modal .swal-title {
+  margin: 0;
+  padding: 0;
+  font-size: 1.35rem;
+  color: #1f2638;
+  font-weight: 700;
+  text-align: center;
+}
+
+html.kai-admin .student-swal-modal .swal-text,
+.student-swal-modal .swal-text {
+  display: block;
+  margin: 0.35rem auto 0;
+  padding: 0;
+  color: #6d7a8f;
+  text-align: center;
+  max-width: 100%;
+}
+
+html.kai-admin .student-swal-modal .swal-content,
+.student-swal-modal .swal-content {
+  margin: 0;
+  padding: 0 1.25rem 1.15rem;
+  background: #fff;
+}
+
+html.kai-admin .student-swal-details p,
+.student-swal-details p {
+  margin-bottom: 0.35rem;
+}
+
+html.kai-admin .student-swal-details .field-label,
+.student-swal-details .field-label {
+  margin-bottom: 0.12rem;
+}
+
+html.kai-admin .student-swal-modal .swal-footer,
+.student-swal-modal .swal-footer {
+  margin-top: 1rem;
+  margin-bottom: 0 !important;
+  padding: 0.95rem 0 0;
+  border-top: 1px solid #edf1f4;
+  text-align: right !important;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+html.kai-admin .student-rows-input {
+  min-height: 10rem;
+}
+
+@media screen and (max-width: 991.5px) {
+  html.kai-admin .main-panel > .container {
+    margin-top: 84px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  html.kai-admin .logo-title {
+    font-size: 0.86rem;
+  }
+}

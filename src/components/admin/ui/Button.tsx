@@ -19,11 +19,25 @@ export default function Button({
   children,
   ...props
 }: ButtonProps) {
+  const variantClass =
+    variant === "primary"
+      ? "btn-primary"
+      : variant === "secondary"
+        ? "btn-secondary"
+        : variant === "outline"
+          ? "btn-outline-secondary"
+          : variant === "danger"
+            ? "btn-danger"
+            : variant === "ghost"
+              ? "btn-light"
+              : "btn-brown";
+  const sizeClass = size === "sm" ? "btn-sm" : size === "lg" ? "btn-lg" : "";
+
   return (
-    <button className={`admin-ui-btn admin-ui-btn-${variant} admin-ui-btn-${size} ${className}`} {...props}>
-      {leftIcon ? <span className="admin-ui-btn-icon">{leftIcon}</span> : null}
+    <button className={`btn ${variantClass} ${sizeClass} ${className}`.trim()} {...props}>
+      {leftIcon ? <span className="me-1">{leftIcon}</span> : null}
       <span>{children}</span>
-      {rightIcon ? <span className="admin-ui-btn-icon">{rightIcon}</span> : null}
+      {rightIcon ? <span className="ms-1">{rightIcon}</span> : null}
     </button>
   );
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Pricing options for iweOS school grading and payment workflows.",
+  description: "Pricing options for ìwéOS school grading and payment workflows.",
 };
 
 export default function PricingPage() {

@@ -23,12 +23,12 @@ export default async function AssignmentClassSubjectsPage() {
 
   return (
     <>
-      <section className="section-panel space-y-3">
+      <section className="card card-body d-grid gap-3">
         <h1 className="section-title">Assignments / Class-Subject</h1>
         <form action={assignSubjectToClassAction} className="grid gap-2 md:grid-cols-3">
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Class</span>
-            <select name="classId" className="select" required>
+            <select name="classId" className="form-select" required>
               <option value="">Select class</option>
               {classes.map((klass) => (
                 <option key={klass.id} value={klass.id}>
@@ -38,9 +38,9 @@ export default async function AssignmentClassSubjectsPage() {
             </select>
           </label>
 
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Subject</span>
-            <select name="subjectId" className="select" required>
+            <select name="subjectId" className="form-select" required>
               <option value="">Select subject</option>
               {subjects.map((subject) => (
                 <option key={subject.id} value={subject.id}>
@@ -50,7 +50,7 @@ export default async function AssignmentClassSubjectsPage() {
             </select>
           </label>
 
-          <div className="self-end">
+          <div className="align-self-end">
             <button className="btn btn-primary" type="submit">
               Assign
             </button>
@@ -58,7 +58,7 @@ export default async function AssignmentClassSubjectsPage() {
         </form>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <table>
           <thead>
             <tr>

@@ -48,7 +48,7 @@ export type FooterGroup = {
   links: Array<{ label: string; href: string }>;
 };
 
-export const siteName = "iweOS";
+export const siteName = "ìwéOS";
 
 export const navItems: NavItem[] = [
   { label: "Product", href: "#product" },
@@ -64,7 +64,7 @@ export const heroContent = {
     "Grading, results, and school fees in one simple system for admins, teachers, and parents.",
   trustLine:
     "Built for real school workflows: terms, classes, scores, invoices, receipts.",
-  primaryCta: { label: "Request demo", href: "/demo" },
+  primaryCta: { label: "Create school", href: "/demo" },
   secondaryCta: { label: "View product", href: "#product" },
   tertiaryCta: { label: "Pay fees", href: "/pay" },
 };
@@ -272,7 +272,7 @@ export const footerGroups: FooterGroup[] = [
   {
     title: "Company",
     links: [
-      { label: "Request demo", href: "/demo" },
+      { label: "Create school", href: "/demo" },
       { label: "Get started", href: "/sign-up" },
       { label: "Sign in", href: "/sign-in" },
     ],
@@ -290,7 +290,7 @@ export const footerGroups: FooterGroup[] = [
     links: [
       { label: "Privacy", href: "#" },
       { label: "Terms", href: "#" },
-      { label: "Support", href: "mailto:support@iweos" },
+      { label: "Support", href: "mailto:support@iweos.io" },
     ],
   },
 ];

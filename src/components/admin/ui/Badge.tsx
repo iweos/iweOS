@@ -9,5 +9,18 @@ type BadgeProps = {
 };
 
 export default function Badge({ tone = "neutral", className = "", children }: BadgeProps) {
-  return <span className={`admin-ui-badge admin-ui-badge-${tone} ${className}`}>{children}</span>;
+  const toneClass =
+    tone === "success"
+      ? "badge-success"
+      : tone === "warning"
+        ? "badge-warning"
+        : tone === "danger"
+          ? "badge-danger"
+          : tone === "primary"
+            ? "badge-primary"
+            : tone === "brown"
+              ? "badge-brown"
+              : "badge-light text-dark";
+
+  return <span className={`badge ${toneClass} ${className}`.trim()}>{children}</span>;
 }

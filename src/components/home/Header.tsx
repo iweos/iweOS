@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { navItems, siteName } from "@/lib/content";
+import { navItems } from "@/lib/content";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#f8f4ee]/95 backdrop-blur">
       <div className="container flex min-h-16 items-center justify-between gap-3 py-3">
-        <Link
+        <BrandLogo
           href="/"
-          className="text-xl font-bold tracking-tight text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
-        >
-          {siteName}
-        </Link>
+          variant="dark"
+          className="text-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
+          textClassName="font-bold"
+          iconClassName="text-[0.95em]"
+        />
 
         <nav className="hidden items-center gap-7 text-sm font-medium text-slate-700 md:flex" aria-label="Primary">
           {navItems.map((item) => (

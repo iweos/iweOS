@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Button from "@/components/admin/ui/Button";
+import Input from "@/components/admin/ui/Input";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { deleteGradeScaleAction, upsertGradeScaleAction } from "@/lib/server/admin-actions";
 
 type GradeRow = {
@@ -17,106 +20,141 @@ type GradeScaleTableProps = {
 
 export default function GradeScaleTable({ rows }: GradeScaleTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  function runAction(task: () => Promise<void>) {
+    startTransition(() => {
+      setErrorMessage(null);
+      void task().catch((error: unknown) => {
+        setErrorMessage(error instanceof Error ? error.message : "Request failed. Please try again.");
+      });
+    });
+  }
+
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Grade</th>
-            <th>Min</th>
-            <th>Max</th>
-            <th>Order</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const isEditing = editingId === row.id;
-            return (
-              <tr key={row.id}>
-                {isEditing ? (
-                  <>
-                    <td colSpan={4}>
-                      <form
-                        action={(formData) => {
-                          startTransition(async () => {
-                            await upsertGradeScaleAction(formData);
-                            setEditingId(null);
-                          });
-                        }}
-                        className="flex flex-wrap gap-1"
-                      >
-                        <input type="hidden" name="id" value={row.id} />
-                        <input name="gradeLetter" className="input w-16" defaultValue={row.gradeLetter} required />
-                        <input name="minScore" className="input w-20" type="number" defaultValue={row.minScore} required />
-                        <input name="maxScore" className="input w-20" type="number" defaultValue={row.maxScore} required />
-                        <input name="orderIndex" className="input w-16" type="number" defaultValue={row.orderIndex} required />
-                        <button className="btn btn-primary" type="submit" disabled={isPending}>
-                          {isPending ? "Saving..." : "Save"}
-                        </button>
-                        <button
-                          className="btn btn-muted"
-                          type="button"
-                          onClick={() => setEditingId(null)}
-                          disabled={isPending}
-                        >
-                          Cancel
-                        </button>
-                      </form>
-                    </td>
-                    <td>
-                      <form
-                        action={(formData) => {
-                          startTransition(async () => {
-                            await deleteGradeScaleAction(formData);
-                            setEditingId(null);
-                          });
-                        }}
-                      >
-                        <input type="hidden" name="id" value={row.id} />
-                        <button className="btn btn-danger" type="submit" disabled={isPending}>
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{row.gradeLetter}</td>
-                    <td>{row.minScore}</td>
-                    <td>{row.maxScore}</td>
-                    <td>{row.orderIndex}</td>
-                    <td className="flex flex-wrap gap-1">
-                      <button className="btn btn-muted" type="button" onClick={() => setEditingId(row.id)}>
-                        Edit
-                      </button>
-                      <form
-                        action={(formData) => {
-                          startTransition(async () => {
-                            await deleteGradeScaleAction(formData);
-                          });
-                        }}
-                      >
-                        <input type="hidden" name="id" value={row.id} />
-                        <button className="btn btn-danger" type="submit" disabled={isPending}>
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </>
-                )}
-              </tr>
-            );
-          })}
-          {rows.length === 0 && (
+    <>
+      {errorMessage ? <p className="small text-danger">{errorMessage}</p> : null}
+      <TableWrap>
+        <Table>
+          <thead>
             <tr>
-              <td colSpan={5}>No grade bands set.</td>
+              <Th>Grade</Th>
+              <Th>Min</Th>
+              <Th>Max</Th>
+              <Th>Order</Th>
+              <Th>Action</Th>
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const isEditing = editingId === row.id;
+              return (
+                <tr key={row.id}>
+                  {isEditing ? (
+                    <>
+                      <Td colSpan={4}>
+                        <form
+                          action={(formData) => {
+                            runAction(async () => {
+                              await upsertGradeScaleAction(formData);
+                              setEditingId(null);
+                            });
+                          }}
+                          className="d-flex flex-wrap gap-2 align-items-end"
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Input name="gradeLetter" className="assessment-input assessment-short" defaultValue={row.gradeLetter} required />
+                          <Input
+                            name="minScore"
+                            className="assessment-input assessment-short"
+                            type="number"
+                            defaultValue={row.minScore}
+                            required
+                          />
+                          <Input
+                            name="maxScore"
+                            className="assessment-input assessment-short"
+                            type="number"
+                            defaultValue={row.maxScore}
+                            required
+                          />
+                          <Input
+                            name="orderIndex"
+                            className="assessment-input assessment-short"
+                            type="number"
+                            defaultValue={row.orderIndex}
+                            required
+                          />
+                          <Button variant="primary" size="sm" type="submit" disabled={isPending}>
+                            {isPending ? "Saving..." : "Save"}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            disabled={isPending}
+                          >
+                            Cancel
+                          </Button>
+                        </form>
+                      </Td>
+                      <Td>
+                        <form
+                          action={(formData) => {
+                            runAction(async () => {
+                              await deleteGradeScaleAction(formData);
+                              setEditingId(null);
+                            });
+                          }}
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Button variant="danger" size="sm" type="submit" disabled={isPending}>
+                            Delete
+                          </Button>
+                        </form>
+                      </Td>
+                    </>
+                  ) : (
+                    <>
+                      <Td>{row.gradeLetter}</Td>
+                      <Td>{row.minScore}</Td>
+                      <Td>{row.maxScore}</Td>
+                      <Td>{row.orderIndex}</Td>
+                      <Td className="d-flex flex-wrap gap-2">
+                        <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(row.id)}>
+                          Edit
+                        </Button>
+                        <form
+                          action={(formData) => {
+                            runAction(async () => {
+                              await deleteGradeScaleAction(formData);
+                            });
+                          }}
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Button variant="danger" size="sm" type="submit" disabled={isPending}>
+                            Delete
+                          </Button>
+                        </form>
+                      </Td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+
+            {rows.length === 0 ? (
+              <tr>
+                <Td colSpan={5} className="text-muted">
+                  No grade bands set.
+                </Td>
+              </tr>
+            ) : null}
+          </tbody>
+        </Table>
+      </TableWrap>
+    </>
   );
 }

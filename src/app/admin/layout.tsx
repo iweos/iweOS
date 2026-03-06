@@ -7,8 +7,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const profile = userId ? await getCurrentProfile(userId) : null;
 
   return (
-    <AdminShell profileName={profile?.fullName} profileEmail={profile?.email}>
-      {children}
-    </AdminShell>
+    <>
+      <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/assets/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/assets/css/plugins.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/assets/css/kaiadmin.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/iweos-admin.css" />
+      <AdminShell profileName={profile?.fullName} profileEmail={profile?.email}>
+        {children}
+      </AdminShell>
+    </>
   );
 }

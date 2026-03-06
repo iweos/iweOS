@@ -1,9 +1,19 @@
 import { InvoiceStatus } from "@prisma/client";
+import Badge from "@/components/admin/ui/Badge";
+import Card from "@/components/admin/Card";
+import PageHeader from "@/components/admin/PageHeader";
+import Section from "@/components/admin/ui/Section";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
+import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 
 function toNumber(value: unknown) {
   return Number(value ?? 0);
+}
+
+function formatMoney(value: number) {
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export default async function PaymentsReconciliationPage() {
@@ -15,14 +25,17 @@ export default async function PaymentsReconciliationPage() {
 
   if (!paymentClient.invoiceLineItem || !paymentClient.invoice) {
     return (
-      <section className="section-panel space-y-2">
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">Setup Required</h1>
-        <p className="section-subtle">
-          Payments tables are not available yet. Run <code>npm run prisma:generate && npm run prisma:migrate</code>,
-          then restart <code>npm run dev</code>.
-        </p>
-      </section>
+      <Section>
+        <PageHeader
+          title="Payments Setup Required"
+          subtitle="Payments tables are not available in the current Prisma client."
+        />
+        <Card>
+          <p className="small text-muted">
+            Run <code>npm run prisma:generate && npm run prisma:migrate</code>, then restart <code>npm run dev</code>.
+          </p>
+        </Card>
+      </Section>
     );
   }
 
@@ -65,94 +78,118 @@ export default async function PaymentsReconciliationPage() {
     }),
   ]);
 
-  const students = await prisma.student.findMany({
-    where: {
-      schoolId: profile.schoolId,
-      id: { in: outstandingByStudent.map((row) => row.studentId) },
-    },
-    select: {
-      id: true,
-      fullName: true,
-      studentPaymentId: true,
-      className: true,
-    },
-  });
+  let students: Array<{ id: string; fullName: string; studentPaymentId: string; className: string | null }> = [];
+
+  try {
+    students = await prisma.student.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        id: { in: outstandingByStudent.map((row) => row.studentId) },
+      },
+      select: {
+        id: true,
+        fullName: true,
+        studentPaymentId: true,
+        className: true,
+      },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return (
+        <Section>
+          <PageHeader title="Reconciliation Setup Required" subtitle="Student schema is out of sync for this environment." />
+          <Card>
+            <p className="small text-muted">{schemaSyncMessage("Student")}</p>
+          </Card>
+        </Section>
+      );
+    }
+    throw error;
+  }
 
   const studentMap = new Map(students.map((student) => [student.id, student]));
 
   return (
-    <>
-      <section className="section-panel table-wrap space-y-3">
-        <div>
-          <p className="section-kicker">Payments</p>
-          <h1 className="section-title">Reconciliation</h1>
-          <p className="section-subtle">Track remaining balances and open invoice items by student.</p>
-        </div>
+    <Section>
+      <PageHeader
+        title="Reconciliation"
+        subtitle="Track remaining balances and open invoice items by student."
+      />
 
-        <table>
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Payment ID</th>
-              <th>Class</th>
-              <th>Outstanding</th>
-            </tr>
-          </thead>
-          <tbody>
-            {outstandingByStudent.map((row) => {
-              const student = studentMap.get(row.studentId);
-              return (
-                <tr key={row.studentId}>
-                  <td>{student?.fullName ?? "Unknown"}</td>
-                  <td>{student?.studentPaymentId ?? "-"}</td>
-                  <td>{student?.className ?? "-"}</td>
-                  <td>{toNumber(row._sum.remainingAmount).toFixed(2)}</td>
+      <Card title="Outstanding by Student">
+        <TableWrap>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Student</Th>
+                <Th>Payment ID</Th>
+                <Th>Class</Th>
+                <Th>Outstanding</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {outstandingByStudent.map((row) => {
+                const student = studentMap.get(row.studentId);
+                return (
+                  <tr key={row.studentId}>
+                    <Td>{student?.fullName ?? "Unknown"}</Td>
+                    <Td>{student?.studentPaymentId ?? "-"}</Td>
+                    <Td>{student?.className ?? "-"}</Td>
+                    <Td>{formatMoney(toNumber(row._sum.remainingAmount))}</Td>
+                  </tr>
+                );
+              })}
+              {outstandingByStudent.length === 0 ? (
+                <tr>
+                  <Td colSpan={4} className="text-muted">
+                    No outstanding balances.
+                  </Td>
                 </tr>
-              );
-            })}
-            {outstandingByStudent.length === 0 && (
-              <tr>
-                <td colSpan={4}>No outstanding balances.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
+              ) : null}
+            </tbody>
+          </Table>
+        </TableWrap>
+      </Card>
 
-      <section className="section-panel table-wrap space-y-2">
-        <h2 className="section-heading">Open Invoices</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Invoice</th>
-              <th>Status</th>
-              <th>Unpaid Items</th>
-            </tr>
-          </thead>
-          <tbody>
-            {openInvoices.map((invoice) => (
-              <tr key={invoice.id}>
-                <td>{invoice.invoiceNo}</td>
-                <td>{invoice.status}</td>
-                <td>
-                  <ul className="space-y-1 text-sm">
-                    {invoice.lineItems.map((line) => (
-                      <li key={line.id}>
-                        {line.student.studentPaymentId} - {line.name}: {toNumber(line.remainingAmount).toFixed(2)}
-                      </li>
-                    ))}
-                  </ul>
-                </td>
-              </tr>
-            ))}
-            {openInvoices.length === 0 && (
+      <Card title="Open Invoices">
+        <TableWrap>
+          <Table>
+            <thead>
               <tr>
-                <td colSpan={3}>No open invoices.</td>
+                <Th>Invoice</Th>
+                <Th>Status</Th>
+                <Th>Unpaid Items</Th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-    </>
+            </thead>
+            <tbody>
+              {openInvoices.map((invoice) => (
+                <tr key={invoice.id}>
+                  <Td>{invoice.invoiceNo}</Td>
+                  <Td>
+                    <Badge tone={invoice.status === "PART_PAID" ? "warning" : "neutral"}>{invoice.status}</Badge>
+                  </Td>
+                  <Td>
+                    <ul className="d-grid gap-1 small">
+                      {invoice.lineItems.map((line) => (
+                        <li key={line.id}>
+                          {line.student.studentPaymentId} - {line.name}: {formatMoney(toNumber(line.remainingAmount))}
+                        </li>
+                      ))}
+                    </ul>
+                  </Td>
+                </tr>
+              ))}
+              {openInvoices.length === 0 ? (
+                <tr>
+                  <Td colSpan={3} className="text-muted">
+                    No open invoices.
+                  </Td>
+                </tr>
+              ) : null}
+            </tbody>
+          </Table>
+        </TableWrap>
+      </Card>
+    </Section>
   );
 }

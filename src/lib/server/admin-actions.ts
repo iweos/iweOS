@@ -4,6 +4,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, ProfileRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/server/auth";
+import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 import {
   assessmentTypeSchema,
@@ -88,9 +89,11 @@ function isLegacyStudentSchemaError(error: unknown) {
 }
 
 function studentSchemaSyncError() {
-  return new Error(
-    "Student fields are not available in the current Prisma client. Run npm run prisma:generate && npm run prisma:migrate, then restart npm run dev.",
-  );
+  return new Error(schemaSyncMessage("Student"));
+}
+
+function assessmentSchemaSyncError() {
+  return new Error(schemaSyncMessage("Assessment type"));
 }
 
 function schoolNameToken(schoolName: string) {
@@ -430,7 +433,7 @@ export async function createStudentAction(formData: FormData) {
       },
     });
   } catch (error) {
-    if (isLegacyStudentSchemaError(error)) {
+    if (isLegacyStudentSchemaError(error) || isPrismaSchemaMismatchError(error)) {
       throw studentSchemaSyncError();
     }
     throw error;
@@ -528,15 +531,23 @@ export async function createStudentsBulkAction(formData: FormData) {
   const token = schoolNameToken(school.name);
   const prefix = `${token}-${parsed.data.enrollmentYear}-`;
 
-  const existing = await prisma.student.findMany({
-    where: {
-      schoolId: profile.schoolId,
-      studentCode: {
-        startsWith: prefix,
+  let existing: Array<{ studentCode: string }> = [];
+  try {
+    existing = await prisma.student.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        studentCode: {
+          startsWith: prefix,
+        },
       },
-    },
-    select: { studentCode: true },
-  });
+      select: { studentCode: true },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+    throw error;
+  }
 
   let serial = existing.reduce((max, row) => {
     const match = row.studentCode.match(new RegExp(`^${prefix}(\\d{4})$`));
@@ -578,6 +589,9 @@ export async function createStudentsBulkAction(formData: FormData) {
           if (isLegacyStudentSchemaError(error)) {
             throw studentSchemaSyncError();
           }
+          if (isPrismaSchemaMismatchError(error)) {
+            throw studentSchemaSyncError();
+          }
           if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
             continue;
           }
@@ -594,12 +608,19 @@ export async function deleteStudentAction(formData: FormData) {
   const profile = await requireRole("admin");
   const studentId = formValue(formData, "studentId");
 
-  await prisma.student.deleteMany({
-    where: {
-      id: studentId,
-      schoolId: profile.schoolId,
-    },
-  });
+  try {
+    await prisma.student.deleteMany({
+      where: {
+        id: studentId,
+        schoolId: profile.schoolId,
+      },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+    throw error;
+  }
 
   revalidateAdminPages();
 }
@@ -647,6 +668,9 @@ export async function updateStudentAction(formData: FormData) {
     });
   } catch (error) {
     if (isLegacyStudentSchemaError(error)) {
+      throw studentSchemaSyncError();
+    }
+    if (isPrismaSchemaMismatchError(error)) {
       throw studentSchemaSyncError();
     }
     throw error;
@@ -969,11 +993,22 @@ export async function enrollStudentAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid enrollment payload.");
   }
 
-  const [student, klass, term] = await Promise.all([
-    prisma.student.findFirst({ where: { id: parsed.data.studentId, schoolId: profile.schoolId } }),
-    prisma.class.findFirst({ where: { id: parsed.data.classId, schoolId: profile.schoolId } }),
-    prisma.term.findFirst({ where: { id: parsed.data.termId, schoolId: profile.schoolId } }),
-  ]);
+  let student: Awaited<ReturnType<typeof prisma.student.findFirst>> = null;
+  let klass: Awaited<ReturnType<typeof prisma.class.findFirst>> = null;
+  let term: Awaited<ReturnType<typeof prisma.term.findFirst>> = null;
+
+  try {
+    [student, klass, term] = await Promise.all([
+      prisma.student.findFirst({ where: { id: parsed.data.studentId, schoolId: profile.schoolId } }),
+      prisma.class.findFirst({ where: { id: parsed.data.classId, schoolId: profile.schoolId } }),
+      prisma.term.findFirst({ where: { id: parsed.data.termId, schoolId: profile.schoolId } }),
+    ]);
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+    throw error;
+  }
 
   if (!student || !klass || !term) {
     throw new Error("Student, class, or term not found in this school.");
@@ -1028,9 +1063,17 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid assessment type payload.");
   }
 
-  const existing = await prisma.assessmentType.findMany({
-    where: { schoolId: profile.schoolId },
-  });
+  let existing: Array<{ id: string; weight: number }> = [];
+  try {
+    existing = await prisma.assessmentType.findMany({
+      where: { schoolId: profile.schoolId },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw assessmentSchemaSyncError();
+    }
+    throw error;
+  }
 
   const currentTotal = existing
     .filter((item) => item.id !== parsed.data.id)
@@ -1041,28 +1084,42 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
   }
 
   if (parsed.data.id) {
-    await prisma.assessmentType.updateMany({
-      where: {
-        id: parsed.data.id,
-        schoolId: profile.schoolId,
-      },
-      data: {
-        name: parsed.data.name,
-        weight: parsed.data.weight,
-        orderIndex: parsed.data.orderIndex,
-        isActive: parsed.data.isActive,
-      },
-    });
+    try {
+      await prisma.assessmentType.updateMany({
+        where: {
+          id: parsed.data.id,
+          schoolId: profile.schoolId,
+        },
+        data: {
+          name: parsed.data.name,
+          weight: parsed.data.weight,
+          orderIndex: parsed.data.orderIndex,
+          isActive: parsed.data.isActive,
+        },
+      });
+    } catch (error) {
+      if (isPrismaSchemaMismatchError(error)) {
+        throw assessmentSchemaSyncError();
+      }
+      throw error;
+    }
   } else {
-    await prisma.assessmentType.create({
-      data: {
-        schoolId: profile.schoolId,
-        name: parsed.data.name,
-        weight: parsed.data.weight,
-        orderIndex: parsed.data.orderIndex,
-        isActive: parsed.data.isActive,
-      },
-    });
+    try {
+      await prisma.assessmentType.create({
+        data: {
+          schoolId: profile.schoolId,
+          name: parsed.data.name,
+          weight: parsed.data.weight,
+          orderIndex: parsed.data.orderIndex,
+          isActive: parsed.data.isActive,
+        },
+      });
+    } catch (error) {
+      if (isPrismaSchemaMismatchError(error)) {
+        throw assessmentSchemaSyncError();
+      }
+      throw error;
+    }
   }
 
   revalidateAdminPages();
@@ -1072,12 +1129,19 @@ export async function deleteAssessmentTypeAction(formData: FormData) {
   const profile = await requireRole("admin");
   const id = formValue(formData, "id");
 
-  await prisma.assessmentType.deleteMany({
-    where: {
-      id,
-      schoolId: profile.schoolId,
-    },
-  });
+  try {
+    await prisma.assessmentType.deleteMany({
+      where: {
+        id,
+        schoolId: profile.schoolId,
+      },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw assessmentSchemaSyncError();
+    }
+    throw error;
+  }
 
   revalidateAdminPages();
 }

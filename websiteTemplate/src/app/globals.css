@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --shadow-mentor-shadow: 0px 4px 20px rgba(110, 127, 185, 0.1);
+
+  --inset-54\%: 54%;
+
+  --color-primary: #611f69;
+  --color-cream: #fcf5ef;
+  --color-success: #6b9f36;
+  --color-orange: #f9cd92;
+
+  --background-image-banner-image: var(--banner-url);
+  --background-image-newsletter: var(--newsletter-url);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  section {
+    @apply py-14
+  }
+
+  h1 {
+    @apply text-black md:text-7xl sm:text-6xl text-5xl
+  }
+
+  h2 {
+    @apply text-black sm:text-5xl text-4xl
+  }
+}
+
+@layer utilities {
+  .container {
+    @apply max-w-7xl mx-auto w-full px-4;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}

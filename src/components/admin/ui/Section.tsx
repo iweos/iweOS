@@ -6,5 +6,5 @@ type SectionProps = {
 };
 
 export default function Section({ className = "", children }: SectionProps) {
-  return <section className={`admin-ui-section ${className}`}>{children}</section>;
+  return <section className={`d-grid gap-3 ${className}`.trim()}>{children}</section>;
 }

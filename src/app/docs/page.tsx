@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Docs",
-  description: "Documentation for iweOS admins, teachers, and payment workflows.",
+  description: "Documentation for ìwéOS admins, teachers, and payment workflows.",
 };
 
 export default function DocsPage() {

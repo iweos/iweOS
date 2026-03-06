@@ -1,7 +1,14 @@
-import { upsertAssessmentTypeAction } from "@/lib/server/admin-actions";
-import { requireRole } from "@/lib/server/auth";
-import { prisma } from "@/lib/server/prisma";
+import Button from "@/components/admin/ui/Button";
+import Card from "@/components/admin/Card";
+import Input from "@/components/admin/ui/Input";
+import PageHeader from "@/components/admin/PageHeader";
+import Section from "@/components/admin/ui/Section";
+import Select from "@/components/admin/ui/Select";
 import AssessmentTypeTable from "@/components/grading/AssessmentTypeTable";
+import { requireRole } from "@/lib/server/auth";
+import { upsertAssessmentTypeAction } from "@/lib/server/admin-actions";
+import { prisma } from "@/lib/server/prisma";
+import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 
 export default async function GradingAssessmentTypesPage() {
   const profile = await requireRole("admin");
@@ -9,62 +16,97 @@ export default async function GradingAssessmentTypesPage() {
 
   if (!gradingClient.assessmentType) {
     return (
-      <section className="section-panel space-y-2">
-        <p className="section-kicker">Grading</p>
-        <h1 className="section-title">Setup Required</h1>
-        <p className="section-subtle">
-          Assessment types are not available in the current Prisma client. Run{" "}
-          <code>npm run prisma:generate && npm run prisma:migrate</code>, then restart <code>npm run dev</code>.
-        </p>
-      </section>
+      <Section>
+        <PageHeader
+          title="Assessment Types Setup Required"
+          subtitle="Assessment tables are not available in the current Prisma client."
+        />
+        <Card>
+          <p className="small text-muted">{schemaSyncMessage("Assessment type")}</p>
+        </Card>
+      </Section>
     );
   }
 
-  const assessmentTypes = await gradingClient.assessmentType.findMany({
-    where: { schoolId: profile.schoolId },
-    orderBy: { orderIndex: "asc" },
-  });
+  let assessmentTypes: Array<{
+    id: string;
+    name: string;
+    weight: number;
+    orderIndex: number;
+    isActive: boolean;
+  }> = [];
+
+  try {
+    assessmentTypes = await gradingClient.assessmentType.findMany({
+      where: { schoolId: profile.schoolId },
+      orderBy: { orderIndex: "asc" },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return (
+        <Section>
+          <PageHeader
+            title="Assessment Types Setup Required"
+            subtitle="Assessment schema is out of sync for this environment."
+          />
+          <Card>
+            <p className="small text-muted">{schemaSyncMessage("Assessment type")}</p>
+          </Card>
+        </Section>
+      );
+    }
+    throw error;
+  }
 
   const totalWeight = assessmentTypes.filter((item) => item.isActive).reduce((sum, item) => sum + item.weight, 0);
 
   return (
-    <>
-      <section className="section-panel space-y-3">
-        <h1 className="section-title">Grading / Assessment Types</h1>
-        <p className="section-subtle">Create and manage assessment name + weight. Active weights should sum to 100%.</p>
-        <p className="text-sm text-[var(--muted)]">Current active total: {totalWeight}%</p>
+    <Section>
+      <PageHeader
+        title="Assessment Types"
+        subtitle="Create and manage assessment names and their weights."
+        rightActions={
+          <div className="text-md-end">
+            <p className="small text-muted mb-1">Current Active Total</p>
+            <h3 className="h3 fw-bold mb-0">
+              <span className="assessment-total-pulse">{totalWeight}%</span>
+            </h3>
+          </div>
+        }
+      />
 
-        <form action={upsertAssessmentTypeAction} className="grid gap-2 md:grid-cols-5">
-          <label className="space-y-1">
+      <Card title="Add Assessment Type">
+        <form action={upsertAssessmentTypeAction} className="grid gap-3 md:grid-cols-5">
+          <label className="d-grid gap-1">
             <span className="field-label">Name</span>
-            <input name="name" className="input" placeholder="CA1" required />
+            <Input name="name" placeholder="CA 1" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Weight</span>
-            <input name="weight" type="number" min={0} max={100} className="input" placeholder="20" required />
+            <Input name="weight" type="number" min={0} max={100} placeholder="20" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Order</span>
-            <input name="orderIndex" type="number" min={1} max={99} className="input" placeholder="1" required />
+            <Input name="orderIndex" type="number" min={1} max={99} placeholder="1" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Active</span>
-            <select name="isActive" className="select" defaultValue="on">
+            <Select name="isActive" defaultValue="on">
               <option value="on">Yes</option>
               <option value="off">No</option>
-            </select>
+            </Select>
           </label>
-          <div className="self-end">
-            <button className="btn btn-primary" type="submit">
+          <div className="align-self-end">
+            <Button variant="primary" type="submit">
               Add Assessment
-            </button>
+            </Button>
           </div>
         </form>
-      </section>
+      </Card>
 
-      <section className="section-panel">
+      <Card title="Assessment Type Directory">
         <AssessmentTypeTable rows={assessmentTypes} />
-      </section>
-    </>
+      </Card>
+    </Section>
   );
 }

@@ -5,8 +5,15 @@ export default async function AdminAreaLayout({ children }: { children: React.Re
   const profile = await requireRole("admin");
 
   return (
-    <AdminShell profileName={profile.fullName} profileEmail={profile.email}>
-      {children}
-    </AdminShell>
+    <>
+      <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/assets/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/assets/css/plugins.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/assets/css/kaiadmin.min.css" />
+      <link rel="stylesheet" href="/kaiadmin/iweos-admin.css" />
+      <AdminShell profileName={profile.fullName} profileEmail={profile.email}>
+        {children}
+      </AdminShell>
+    </>
   );
 }

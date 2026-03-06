@@ -4,7 +4,7 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
 
 export default function Select({ className = "", children, ...props }: SelectProps) {
   return (
-    <select className={`admin-ui-select ${className}`} {...props}>
+    <select className={`form-select ${className}`.trim()} {...props}>
       {children}
     </select>
   );

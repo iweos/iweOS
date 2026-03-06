@@ -8,10 +8,10 @@ type EmptyStateProps = {
 
 export default function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="admin-ui-empty">
-      <p className="admin-ui-empty-title">{title}</p>
-      {description ? <p className="admin-ui-empty-description">{description}</p> : null}
-      {action ? <div className="admin-ui-empty-action">{action}</div> : null}
+    <div className="text-center py-4">
+      <p className="fw-semibold mb-1">{title}</p>
+      {description ? <p className="text-muted mb-3">{description}</p> : null}
+      {action ? <div>{action}</div> : null}
     </div>
   );
 }

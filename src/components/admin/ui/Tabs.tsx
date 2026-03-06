@@ -14,7 +14,7 @@ type TabsProps<T extends string> = {
 
 export default function Tabs<T extends string>({ value, options, onChange, className = "" }: TabsProps<T>) {
   return (
-    <div className={`admin-ui-tabs ${className}`}>
+    <div className={`btn-group ${className}`.trim()} role="group" aria-label="Tabs">
       {options.map((option) => {
         const active = value === option.value;
         return (
@@ -22,7 +22,7 @@ export default function Tabs<T extends string>({ value, options, onChange, class
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`admin-ui-tab ${active ? "admin-ui-tab-active" : ""}`}
+            className={`btn ${active ? "btn-primary" : "btn-secondary"}`}
           >
             {option.label}
           </button>

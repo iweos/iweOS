@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { InvoiceStatus, PaymentStatus } from "@prisma/client";
+import Card from "@/components/admin/Card";
+import PageHeader from "@/components/admin/PageHeader";
+import Section from "@/components/admin/ui/Section";
+import StatCard from "@/components/admin/ui/StatCard";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 
 function toNumber(value: unknown) {
   return Number(value ?? 0);
+}
+
+function formatMoney(value: number) {
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export default async function PaymentsReportsPage() {
@@ -16,14 +24,17 @@ export default async function PaymentsReportsPage() {
 
   if (!paymentClient.invoice || !paymentClient.payment) {
     return (
-      <section className="section-panel space-y-2">
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">Setup Required</h1>
-        <p className="section-subtle">
-          Payments tables are not available yet. Run <code>npm run prisma:generate && npm run prisma:migrate</code>,
-          then restart <code>npm run dev</code>.
-        </p>
-      </section>
+      <Section>
+        <PageHeader
+          title="Payments Setup Required"
+          subtitle="Payments tables are not available in the current Prisma client."
+        />
+        <Card>
+          <p className="small text-muted">
+            Run <code>npm run prisma:generate && npm run prisma:migrate</code>, then restart <code>npm run dev</code>.
+          </p>
+        </Card>
+      </Section>
     );
   }
 
@@ -51,40 +62,35 @@ export default async function PaymentsReportsPage() {
   ]);
 
   return (
-    <section className="section-panel space-y-4">
-      <div>
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">Reports</h1>
-        <p className="section-subtle">Quick exports for paid lists, debtors, and collections snapshots.</p>
+    <Section>
+      <PageHeader title="Payment Reports" subtitle="Quick exports for paid lists, debtors, and collections snapshots." />
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <StatCard label="Paid Invoices" value={paidCount} icon="fas fa-file-invoice" cardVariant="success" />
+        <StatCard label="Open Debtor Invoices" value={debtorCount} icon="fas fa-exclamation-circle" cardVariant="danger" />
+        <StatCard
+          label="Successful Collections"
+          value={formatMoney(toNumber(collections._sum.amount))}
+          icon="fas fa-wallet"
+          cardVariant="primary"
+          delta={`${collections._count.id} transactions`}
+          iconSize="sm"
+        />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <article className="metric-card">
-          <p className="metric-label">Paid Invoices</p>
-          <p className="metric-value">{paidCount}</p>
-        </article>
-        <article className="metric-card">
-          <p className="metric-label">Open Debtor Invoices</p>
-          <p className="metric-value">{debtorCount}</p>
-        </article>
-        <article className="metric-card">
-          <p className="metric-label">Successful Collections</p>
-          <p className="metric-value">{toNumber(collections._sum.amount).toFixed(2)}</p>
-          <p className="section-subtle">{collections._count.id} transactions</p>
-        </article>
-      </div>
-
-      <div className="grid gap-2 md:grid-cols-3">
-        <Link href="/api/payments/reports/paid" className="btn btn-muted">
-          Export Paid List (CSV)
-        </Link>
-        <Link href="/api/payments/reports/debtors" className="btn btn-muted">
-          Export Debtors (CSV)
-        </Link>
-        <Link href="/api/payments/reports/collections" className="btn btn-muted">
-          Export Collections (CSV)
-        </Link>
-      </div>
-    </section>
+      <Card title="Export Center" subtitle="Download CSV reports for accounting and reconciliation.">
+        <div className="grid gap-2 md:grid-cols-3">
+          <Link href="/api/payments/reports/paid" className="btn btn-secondary">
+            Export Paid List (CSV)
+          </Link>
+          <Link href="/api/payments/reports/debtors" className="btn btn-brown">
+            Export Debtors (CSV)
+          </Link>
+          <Link href="/api/payments/reports/collections" className="btn btn-primary">
+            Export Collections (CSV)
+          </Link>
+        </div>
+      </Card>
+    </Section>
   );
 }

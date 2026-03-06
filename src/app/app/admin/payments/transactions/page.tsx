@@ -1,8 +1,17 @@
+import Badge from "@/components/admin/ui/Badge";
+import Card from "@/components/admin/Card";
+import PageHeader from "@/components/admin/PageHeader";
+import Section from "@/components/admin/ui/Section";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 
 function toNumber(value: unknown) {
   return Number(value ?? 0);
+}
+
+function formatMoney(value: number) {
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export default async function PaymentsTransactionsPage() {
@@ -11,14 +20,17 @@ export default async function PaymentsTransactionsPage() {
 
   if (!paymentClient.payment) {
     return (
-      <section className="section-panel space-y-2">
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">Setup Required</h1>
-        <p className="section-subtle">
-          Payments tables are not available yet. Run <code>npm run prisma:generate && npm run prisma:migrate</code>,
-          then restart <code>npm run dev</code>.
-        </p>
-      </section>
+      <Section>
+        <PageHeader
+          title="Payments Setup Required"
+          subtitle="Payments tables are not available in the current Prisma client."
+        />
+        <Card>
+          <p className="small text-muted">
+            Run <code>npm run prisma:generate && npm run prisma:migrate</code>, then restart <code>npm run dev</code>.
+          </p>
+        </Card>
+      </Section>
     );
   }
 
@@ -38,45 +50,60 @@ export default async function PaymentsTransactionsPage() {
   });
 
   return (
-    <section className="section-panel table-wrap space-y-3">
-      <div>
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">Transactions</h1>
-        <p className="section-subtle">All payment attempts and statuses for reconciliation.</p>
-      </div>
+    <Section>
+      <PageHeader title="Transactions" subtitle="All payment attempts and statuses for reconciliation." />
 
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Invoice</th>
-            <th>Provider Ref</th>
-            <th>Method</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {payments.map((payment) => (
-            <tr key={payment.id}>
-              <td>{payment.createdAt.toLocaleString()}</td>
-              <td>
-                {payment.invoice.invoiceNo}
-                <div className="section-subtle text-xs">{payment.invoice.payerEmail ?? "-"}</div>
-              </td>
-              <td>{payment.providerRef}</td>
-              <td>{payment.method}</td>
-              <td>{toNumber(payment.amount).toFixed(2)}</td>
-              <td>{payment.status}</td>
-            </tr>
-          ))}
-          {payments.length === 0 && (
-            <tr>
-              <td colSpan={6}>No transactions yet.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </section>
+      <Card>
+        <TableWrap>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Time</Th>
+                <Th>Invoice</Th>
+                <Th>Provider Ref</Th>
+                <Th>Method</Th>
+                <Th>Amount</Th>
+                <Th>Status</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((payment) => {
+                const tone =
+                  payment.status === "SUCCESS"
+                    ? "success"
+                    : payment.status === "PENDING"
+                      ? "warning"
+                      : payment.status === "FAILED"
+                        ? "danger"
+                        : "neutral";
+
+                return (
+                  <tr key={payment.id}>
+                    <Td>{payment.createdAt.toLocaleString()}</Td>
+                    <Td>
+                      <p className="fw-semibold">{payment.invoice.invoiceNo}</p>
+                      <p className="small text-muted">{payment.invoice.payerEmail ?? "-"}</p>
+                    </Td>
+                    <Td>{payment.providerRef}</Td>
+                    <Td>{payment.method}</Td>
+                    <Td>{formatMoney(toNumber(payment.amount))}</Td>
+                    <Td>
+                      <Badge tone={tone}>{payment.status}</Badge>
+                    </Td>
+                  </tr>
+                );
+              })}
+              {payments.length === 0 ? (
+                <tr>
+                  <Td colSpan={6} className="text-muted">
+                    No transactions yet.
+                  </Td>
+                </tr>
+              ) : null}
+            </tbody>
+          </Table>
+        </TableWrap>
+      </Card>
+    </Section>
   );
 }

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Button from "@/components/admin/ui/Button";
+import Input from "@/components/admin/ui/Input";
+import Select from "@/components/admin/ui/Select";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { deleteAssessmentTypeAction, upsertAssessmentTypeAction } from "@/lib/server/admin-actions";
 
 type AssessmentTypeRow = {
@@ -17,109 +21,135 @@ type AssessmentTypeTableProps = {
 
 export default function AssessmentTypeTable({ rows }: AssessmentTypeTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  function runAction(task: () => Promise<void>) {
+    startTransition(() => {
+      setErrorMessage(null);
+      void task().catch((error: unknown) => {
+        setErrorMessage(error instanceof Error ? error.message : "Request failed. Please try again.");
+      });
+    });
+  }
+
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Weight</th>
-            <th>Order</th>
-            <th>Active</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const isEditing = editingId === row.id;
-            return (
-              <tr key={row.id}>
-                {isEditing ? (
-                  <>
-                    <td colSpan={4}>
-                      <form
-                        action={(formData) => {
-                          startTransition(async () => {
-                            await upsertAssessmentTypeAction(formData);
-                            setEditingId(null);
-                          });
-                        }}
-                        className="flex flex-wrap gap-1"
-                      >
-                        <input type="hidden" name="id" value={row.id} />
-                        <input name="name" className="input w-28" defaultValue={row.name} required />
-                        <input name="weight" type="number" className="input w-20" defaultValue={row.weight} required />
-                        <input name="orderIndex" type="number" className="input w-16" defaultValue={row.orderIndex} required />
-                        <select name="isActive" className="select w-20" defaultValue={row.isActive ? "on" : "off"}>
-                          <option value="on">Yes</option>
-                          <option value="off">No</option>
-                        </select>
-                        <button className="btn btn-primary" type="submit" disabled={isPending}>
-                          {isPending ? "Saving..." : "Save"}
-                        </button>
-                        <button
-                          className="btn btn-muted"
-                          type="button"
-                          onClick={() => setEditingId(null)}
-                          disabled={isPending}
-                        >
-                          Cancel
-                        </button>
-                      </form>
-                    </td>
-                    <td>
-                      <form
-                        action={(formData) => {
-                          startTransition(async () => {
-                            await deleteAssessmentTypeAction(formData);
-                            setEditingId(null);
-                          });
-                        }}
-                      >
-                        <input type="hidden" name="id" value={row.id} />
-                        <button className="btn btn-danger" type="submit" disabled={isPending}>
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{row.name}</td>
-                    <td>{row.weight}</td>
-                    <td>{row.orderIndex}</td>
-                    <td>{row.isActive ? "Yes" : "No"}</td>
-                    <td className="flex flex-wrap gap-1">
-                      <button className="btn btn-muted" type="button" onClick={() => setEditingId(row.id)}>
-                        Edit
-                      </button>
-                      <form
-                        action={(formData) => {
-                          startTransition(async () => {
-                            await deleteAssessmentTypeAction(formData);
-                          });
-                        }}
-                      >
-                        <input type="hidden" name="id" value={row.id} />
-                        <button className="btn btn-danger" type="submit" disabled={isPending}>
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </>
-                )}
-              </tr>
-            );
-          })}
-          {rows.length === 0 && (
+    <>
+      {errorMessage && <p className="small text-danger">{errorMessage}</p>}
+      <TableWrap>
+        <Table>
+          <thead>
             <tr>
-              <td colSpan={5}>No assessment types yet.</td>
+              <Th>Name</Th>
+              <Th>Weight</Th>
+              <Th>Order</Th>
+              <Th>Active</Th>
+              <Th>Action</Th>
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const isEditing = editingId === row.id;
+              return (
+                <tr key={row.id}>
+                  {isEditing ? (
+                    <>
+                      <Td colSpan={4}>
+                        <form
+                          action={(formData) => {
+                            runAction(async () => {
+                              await upsertAssessmentTypeAction(formData);
+                              setEditingId(null);
+                            });
+                          }}
+                          className="d-flex flex-wrap gap-2 align-items-end"
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Input name="name" className="assessment-input assessment-name" defaultValue={row.name} required />
+                          <Input
+                            name="weight"
+                            type="number"
+                            className="assessment-input assessment-short"
+                            defaultValue={row.weight}
+                            required
+                          />
+                          <Input
+                            name="orderIndex"
+                            type="number"
+                            className="assessment-input assessment-short"
+                            defaultValue={row.orderIndex}
+                            required
+                          />
+                          <Select
+                            name="isActive"
+                            className="assessment-input assessment-short"
+                            defaultValue={row.isActive ? "on" : "off"}
+                          >
+                            <option value="on">Yes</option>
+                            <option value="off">No</option>
+                          </Select>
+                          <Button variant="primary" size="sm" type="submit" disabled={isPending}>
+                            {isPending ? "Saving..." : "Save"}
+                          </Button>
+                          <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(null)} disabled={isPending}>
+                            Cancel
+                          </Button>
+                        </form>
+                      </Td>
+                      <Td>
+                        <form
+                          action={(formData) => {
+                            runAction(async () => {
+                              await deleteAssessmentTypeAction(formData);
+                              setEditingId(null);
+                            });
+                          }}
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Button variant="danger" size="sm" type="submit" disabled={isPending}>
+                            Delete
+                          </Button>
+                        </form>
+                      </Td>
+                    </>
+                  ) : (
+                    <>
+                      <Td>{row.name}</Td>
+                      <Td>{row.weight}</Td>
+                      <Td>{row.orderIndex}</Td>
+                      <Td>{row.isActive ? "Yes" : "No"}</Td>
+                      <Td className="d-flex flex-wrap gap-1">
+                        <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(row.id)}>
+                          Edit
+                        </Button>
+                        <form
+                          action={(formData) => {
+                            runAction(async () => {
+                              await deleteAssessmentTypeAction(formData);
+                            });
+                          }}
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Button variant="danger" size="sm" type="submit" disabled={isPending}>
+                            Delete
+                          </Button>
+                        </form>
+                      </Td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+            {rows.length === 0 && (
+              <tr>
+                <Td colSpan={5} className="text-muted">
+                  No assessment types yet.
+                </Td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </TableWrap>
+    </>
   );
 }

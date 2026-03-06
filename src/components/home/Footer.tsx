@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { footerGroups, siteName, socialLinks } from "@/lib/content";
+import { footerGroups, socialLinks } from "@/lib/content";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white/80 py-10">
       <div className="container grid gap-8 md:grid-cols-[1.2fr_1fr]">
         <div>
-          <p className="text-xl font-bold tracking-tight text-slate-900">{siteName}</p>
+          <BrandLogo href="/" variant="dark" className="text-xl" textClassName="font-bold" iconClassName="text-[0.95em]" />
           <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-600">
             School OS for grading operations and parent payments.
           </p>
           <p className="mt-4 text-sm text-slate-600">
-            Contact: <a href="mailto:support@iweos" className="font-semibold text-slate-800">support@iweos</a>
+            Contact: <a href="mailto:support@iweos.io" className="font-semibold text-slate-800">support@iweos.io</a>
           </p>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
             {socialLinks.map((social) => (

@@ -1,3 +1,9 @@
+import Link from "next/link";
+import Card from "@/components/admin/Card";
+import Button from "@/components/admin/ui/Button";
+import Input from "@/components/admin/ui/Input";
+import PageHeader from "@/components/admin/PageHeader";
+import Section from "@/components/admin/ui/Section";
 import {
   importCompulsoryFeesCsvAction,
   importOtherFeesCsvAction,
@@ -9,60 +15,67 @@ export default async function PaymentsImportsPage() {
   await requireRole("admin");
 
   return (
-    <section className="section-panel space-y-4">
-      <div>
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">CSV Imports</h1>
-        <p className="section-subtle">Upload bulk data and use downloadable templates to match expected columns.</p>
-      </div>
+    <Section>
+      <PageHeader title="CSV Imports" subtitle="Upload bulk data and use templates to match expected columns." />
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <a className="btn btn-muted" href="/api/payments/templates/students">
-          Download Students Template
-        </a>
-        <a className="btn btn-muted" href="/api/payments/templates/compulsory-fees">
-          Download Compulsory Fees Template
-        </a>
-        <a className="btn btn-muted" href="/api/payments/templates/other-fees">
-          Download Other Fees Template
-        </a>
-      </div>
-
-      <form action={importStudentsCsvAction} className="grid gap-2 md:grid-cols-[1fr_auto]">
-        <label className="space-y-1">
-          <span className="field-label">Students CSV</span>
-          <input className="input" type="file" name="file" accept=".csv" required />
-        </label>
-        <div className="self-end">
-          <button className="btn btn-primary" type="submit">
-            Import Students
-          </button>
+      <Card title="Templates">
+        <div className="grid gap-2 md:grid-cols-3">
+          <Link href="/api/payments/templates/students" className="btn btn-secondary">
+            Download Students Template
+          </Link>
+          <Link
+            href="/api/payments/templates/compulsory-fees"
+            className="btn btn-secondary"
+          >
+            Download Compulsory Fees Template
+          </Link>
+          <Link href="/api/payments/templates/other-fees" className="btn btn-brown">
+            Download Other Fees Template
+          </Link>
         </div>
-      </form>
+      </Card>
 
-      <form action={importCompulsoryFeesCsvAction} className="grid gap-2 md:grid-cols-[1fr_auto]">
-        <label className="space-y-1">
-          <span className="field-label">Compulsory Fees CSV</span>
-          <input className="input" type="file" name="file" accept=".csv" required />
-        </label>
-        <div className="self-end">
-          <button className="btn btn-primary" type="submit">
-            Import Compulsory Fees
-          </button>
-        </div>
-      </form>
+      <Card title="Import Students CSV">
+        <form action={importStudentsCsvAction} className="grid gap-3 md:grid-cols-[1fr_auto]">
+          <label className="d-grid gap-1">
+            <span className="field-label">Students CSV</span>
+            <Input type="file" name="file" accept=".csv" required />
+          </label>
+          <div className="align-self-end">
+            <Button variant="primary" type="submit">
+              Import Students
+            </Button>
+          </div>
+        </form>
+      </Card>
 
-      <form action={importOtherFeesCsvAction} className="grid gap-2 md:grid-cols-[1fr_auto]">
-        <label className="space-y-1">
-          <span className="field-label">Other Fees CSV</span>
-          <input className="input" type="file" name="file" accept=".csv" required />
-        </label>
-        <div className="self-end">
-          <button className="btn btn-primary" type="submit">
-            Import Other Fees
-          </button>
-        </div>
-      </form>
-    </section>
+      <Card title="Import Compulsory Fees CSV">
+        <form action={importCompulsoryFeesCsvAction} className="grid gap-3 md:grid-cols-[1fr_auto]">
+          <label className="d-grid gap-1">
+            <span className="field-label">Compulsory Fees CSV</span>
+            <Input type="file" name="file" accept=".csv" required />
+          </label>
+          <div className="align-self-end">
+            <Button variant="primary" type="submit">
+              Import Compulsory Fees
+            </Button>
+          </div>
+        </form>
+      </Card>
+
+      <Card title="Import Other Fees CSV">
+        <form action={importOtherFeesCsvAction} className="grid gap-3 md:grid-cols-[1fr_auto]">
+          <label className="d-grid gap-1">
+            <span className="field-label">Other Fees CSV</span>
+            <Input type="file" name="file" accept=".csv" required />
+          </label>
+          <div className="align-self-end">
+            <Button variant="primary" type="submit">
+              Import Other Fees
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </Section>
   );
 }

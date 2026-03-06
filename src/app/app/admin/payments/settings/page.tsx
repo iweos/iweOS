@@ -1,3 +1,10 @@
+import Button from "@/components/admin/ui/Button";
+import Card from "@/components/admin/Card";
+import Input from "@/components/admin/ui/Input";
+import PageHeader from "@/components/admin/PageHeader";
+import Section from "@/components/admin/ui/Section";
+import Select from "@/components/admin/ui/Select";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import {
   deleteFeeCatalogAction,
   deleteFeeScheduleItemAction,
@@ -21,14 +28,18 @@ export default async function PaymentsSettingsPage() {
 
   if (!paymentClient.feeItemCatalog || !paymentClient.feeScheduleItem) {
     return (
-      <section className="section-panel space-y-2">
-        <p className="section-kicker">Payments</p>
-        <h1 className="section-title">Setup Required</h1>
-        <p className="section-subtle">
-          Payments tables are not available yet. Run <code>npm run prisma:generate && npm run prisma:migrate</code>,
-          then restart <code>npm run dev</code>.
-        </p>
-      </section>
+      <Section>
+        <PageHeader
+          title="Payments Setup Required"
+          subtitle="Payments tables are not available yet in the current Prisma client."
+        />
+        <Card>
+          <p className="small text-muted">
+            Run <code>npm run prisma:generate && npm run prisma:migrate</code>, then restart{" "}
+            <code>npm run dev</code>.
+          </p>
+        </Card>
+      </Section>
     );
   }
 
@@ -73,240 +84,236 @@ export default async function PaymentsSettingsPage() {
   const activeTerm = terms.find((term) => term.isActive);
 
   return (
-    <>
-      <section className="section-panel space-y-3">
-        <div>
-          <p className="section-kicker">Payments</p>
-          <h1 className="section-title">Settings</h1>
-          <p className="section-subtle">Configure settlement details and payment defaults.</p>
-        </div>
+    <Section>
+      <PageHeader title="Payment Settings" subtitle="Configure settlement details, fee catalog, and compulsory schedule." />
 
-        <form action={updatePaymentSettingsAction} className="grid gap-2 md:grid-cols-4">
-          <label className="space-y-1">
+      <Card title="Settlement & Defaults">
+        <form action={updatePaymentSettingsAction} className="grid gap-3 md:grid-cols-4">
+          <label className="d-grid gap-1">
             <span className="field-label">Processing Fee (%)</span>
-            <input className="input" name="processingFeePercent" type="number" min={0} max={20} defaultValue={school.processingFeePercent} required />
+            <Input name="processingFeePercent" type="number" min={0} max={20} defaultValue={school.processingFeePercent} required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Currency</span>
-            <input className="input" name="currency" defaultValue={school.currency} required />
+            <Input name="currency" defaultValue={school.currency} required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Settlement Bank</span>
-            <input className="input" name="settlementBankName" defaultValue={school.settlementBankName ?? ""} />
+            <Input name="settlementBankName" defaultValue={school.settlementBankName ?? ""} />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Account Name</span>
-            <input className="input" name="settlementAccountName" defaultValue={school.settlementAccountName ?? ""} />
+            <Input name="settlementAccountName" defaultValue={school.settlementAccountName ?? ""} />
           </label>
-          <label className="space-y-1 md:col-span-2">
+          <label className="d-grid gap-1 md:col-span-2">
             <span className="field-label">Account Number</span>
-            <input className="input" name="settlementAccountNumber" defaultValue={school.settlementAccountNumber ?? ""} />
+            <Input name="settlementAccountNumber" defaultValue={school.settlementAccountNumber ?? ""} />
           </label>
-          <div className="self-end md:col-span-2">
-            <button className="btn btn-primary" type="submit">
+          <div className="align-self-end md:col-span-2">
+            <Button variant="primary" type="submit">
               Save Payment Settings
-            </button>
+            </Button>
           </div>
         </form>
-      </section>
+      </Card>
 
-      <section className="section-panel space-y-3">
-        <h2 className="section-heading">Fee Catalog</h2>
-        <form action={upsertFeeCatalogAction} className="grid gap-2 md:grid-cols-7">
-          <label className="space-y-1">
+      <Card title="Fee Catalog" subtitle="Maintain compulsory and optional fee items.">
+        <form action={upsertFeeCatalogAction} className="grid gap-3 xl:grid-cols-7">
+          <label className="d-grid gap-1">
             <span className="field-label">Type</span>
-            <select name="type" className="select" defaultValue="COMPULSORY">
+            <Select name="type" defaultValue="COMPULSORY">
               <option value="COMPULSORY">Compulsory</option>
               <option value="OTHER">Other</option>
-            </select>
+            </Select>
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Name</span>
-            <input name="name" className="input" required />
+            <Input name="name" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Category</span>
-            <input name="category" className="input" />
+            <Input name="category" />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Amount</span>
-            <input name="amount" className="input" type="number" min={0} step="0.01" required />
+            <Input name="amount" type="number" min={0} step="0.01" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Priority</span>
-            <input name="priority" className="input" type="number" min={1} max={999} defaultValue={100} required />
+            <Input name="priority" type="number" min={1} max={999} defaultValue={100} required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Allow Qty</span>
-            <select name="allowQuantity" className="select" defaultValue="off">
+            <Select name="allowQuantity" defaultValue="off">
               <option value="off">No</option>
               <option value="on">Yes</option>
-            </select>
+            </Select>
           </label>
-          <div className="self-end">
-            <button className="btn btn-primary" type="submit">
+          <div className="align-self-end">
+            <Button variant="primary" type="submit">
               Add Fee Item
-            </button>
+            </Button>
           </div>
         </form>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="table-wrap">
-            <h3 className="section-subtle">Compulsory Items</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Amount</th>
-                  <th>Priority</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {compulsoryItems.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{toNumber(item.amount).toFixed(2)}</td>
-                    <td>{item.priority}</td>
-                    <td>
-                      <form action={deleteFeeCatalogAction}>
-                        <input type="hidden" name="id" value={item.id} />
-                        <button className="btn btn-danger" type="submit">
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-                {compulsoryItems.length === 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card title="Compulsory Items">
+            <TableWrap>
+              <Table>
+                <thead>
                   <tr>
-                    <td colSpan={4}>No compulsory items yet.</td>
+                    <Th>Name</Th>
+                    <Th>Amount</Th>
+                    <Th>Priority</Th>
+                    <Th>Action</Th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {compulsoryItems.map((item) => (
+                    <tr key={item.id}>
+                      <Td>{item.name}</Td>
+                      <Td>{toNumber(item.amount).toFixed(2)}</Td>
+                      <Td>{item.priority}</Td>
+                      <Td>
+                        <form action={deleteFeeCatalogAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <Button variant="danger" size="sm" type="submit">
+                            Delete
+                          </Button>
+                        </form>
+                      </Td>
+                    </tr>
+                  ))}
+                  {compulsoryItems.length === 0 ? (
+                    <tr>
+                      <Td className="text-muted" colSpan={4}>
+                        No compulsory items yet.
+                      </Td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </Table>
+            </TableWrap>
+          </Card>
 
-          <div className="table-wrap">
-            <h3 className="section-subtle">Other Items</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Amount</th>
-                  <th>Qty?</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {otherItems.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{toNumber(item.amount).toFixed(2)}</td>
-                    <td>{item.allowQuantity ? "Yes" : "No"}</td>
-                    <td>
-                      <form action={deleteFeeCatalogAction}>
-                        <input type="hidden" name="id" value={item.id} />
-                        <button className="btn btn-danger" type="submit">
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-                {otherItems.length === 0 && (
+          <Card title="Other Items">
+            <TableWrap>
+              <Table>
+                <thead>
                   <tr>
-                    <td colSpan={4}>No optional items yet.</td>
+                    <Th>Name</Th>
+                    <Th>Amount</Th>
+                    <Th>Qty?</Th>
+                    <Th>Action</Th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {otherItems.map((item) => (
+                    <tr key={item.id}>
+                      <Td>{item.name}</Td>
+                      <Td>{toNumber(item.amount).toFixed(2)}</Td>
+                      <Td>{item.allowQuantity ? "Yes" : "No"}</Td>
+                      <Td>
+                        <form action={deleteFeeCatalogAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <Button variant="danger" size="sm" type="submit">
+                            Delete
+                          </Button>
+                        </form>
+                      </Td>
+                    </tr>
+                  ))}
+                  {otherItems.length === 0 ? (
+                    <tr>
+                      <Td className="text-muted" colSpan={4}>
+                        No optional items yet.
+                      </Td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </Table>
+            </TableWrap>
+          </Card>
         </div>
-      </section>
+      </Card>
 
-      <section className="section-panel space-y-3">
-        <h2 className="section-heading">Compulsory Fee Schedule</h2>
-        <form action={upsertFeeScheduleAction} className="grid gap-2 md:grid-cols-6">
-          <label className="space-y-1">
+      <Card title="Compulsory Fee Schedule" subtitle="Assign compulsory fee items to class/session/term combinations.">
+        <form action={upsertFeeScheduleAction} className="grid gap-3 xl:grid-cols-6">
+          <label className="d-grid gap-1">
             <span className="field-label">Class</span>
-            <input name="className" className="input" placeholder="JSS 1" required />
+            <Input name="className" placeholder="JSS 1" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Session</span>
-            <input
-              name="sessionLabel"
-              className="input"
-              placeholder="2025/2026"
-              defaultValue={activeTerm?.sessionLabel ?? ""}
-              required
-            />
+            <Input name="sessionLabel" placeholder="2025/2026" defaultValue={activeTerm?.sessionLabel ?? ""} required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Term</span>
-            <input name="termLabel" className="input" placeholder="1st Term" defaultValue={activeTerm?.termLabel ?? ""} required />
+            <Input name="termLabel" placeholder="1st Term" defaultValue={activeTerm?.termLabel ?? ""} required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Compulsory Item</span>
-            <select name="feeItemCatalogId" className="select" required>
+            <Select name="feeItemCatalogId" required>
               <option value="">Select fee item</option>
               {compulsoryItems.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Amount</span>
-            <input name="amount" className="input" type="number" min={0} step="0.01" required />
+            <Input name="amount" type="number" min={0} step="0.01" required />
           </label>
-          <div className="self-end">
-            <button className="btn btn-primary" type="submit">
+          <div className="align-self-end">
+            <Button variant="primary" type="submit">
               Add to Schedule
-            </button>
+            </Button>
           </div>
         </form>
 
-        <div className="table-wrap">
-          <table>
+        <TableWrap>
+          <Table>
             <thead>
               <tr>
-                <th>Class</th>
-                <th>Session</th>
-                <th>Term</th>
-                <th>Item</th>
-                <th>Amount</th>
-                <th />
+                <Th>Class</Th>
+                <Th>Session</Th>
+                <Th>Term</Th>
+                <Th>Item</Th>
+                <Th>Amount</Th>
+                <Th>Action</Th>
               </tr>
             </thead>
             <tbody>
               {scheduleItems.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.feeSchedule.className}</td>
-                  <td>{item.feeSchedule.sessionLabel}</td>
-                  <td>{item.feeSchedule.termLabel}</td>
-                  <td>{item.feeItemCatalog.name}</td>
-                  <td>{toNumber(item.amount).toFixed(2)}</td>
-                  <td>
+                  <Td>{item.feeSchedule.className}</Td>
+                  <Td>{item.feeSchedule.sessionLabel}</Td>
+                  <Td>{item.feeSchedule.termLabel}</Td>
+                  <Td>{item.feeItemCatalog.name}</Td>
+                  <Td>{toNumber(item.amount).toFixed(2)}</Td>
+                  <Td>
                     <form action={deleteFeeScheduleItemAction}>
                       <input type="hidden" name="id" value={item.id} />
-                      <button className="btn btn-danger" type="submit">
+                      <Button variant="danger" size="sm" type="submit">
                         Remove
-                      </button>
+                      </Button>
                     </form>
-                  </td>
+                  </Td>
                 </tr>
               ))}
-              {scheduleItems.length === 0 && (
+              {scheduleItems.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>No fee schedule rows yet.</td>
+                  <Td className="text-muted" colSpan={6}>
+                    No fee schedule rows yet.
+                  </Td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
-          </table>
-        </div>
-      </section>
-    </>
+          </Table>
+        </TableWrap>
+      </Card>
+    </Section>
   );
 }

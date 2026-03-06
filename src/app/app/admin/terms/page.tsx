@@ -2,6 +2,7 @@ import { createTermAction, deleteTermAction, setActiveTermAction } from "@/lib/s
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import Link from "next/link";
+import StatCard from "@/components/admin/ui/StatCard";
 
 export default async function AdminTermsPage() {
   const profile = await requireRole("admin");
@@ -15,36 +16,34 @@ export default async function AdminTermsPage() {
 
   return (
     <>
-      <section className="section-panel space-y-4">
-        <div className="management-header">
+      <section className="card card-body d-grid gap-3">
+        <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
           <div>
             <p className="section-kicker">Academic Setup</p>
             <h1 className="section-title">Terms</h1>
             <p className="section-subtle">Manage sessions/terms and keep one term active for grading and payments.</p>
           </div>
-          <div className="management-actions">
-            <Link className="btn btn-muted" href="/app/admin/dashboard">
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <Link className="btn btn-secondary" href="/app/admin/dashboard">
               Dashboard
             </Link>
-            <Link className="btn btn-muted" href="/app/admin/grading/assessment-types">
+            <Link className="btn btn-secondary" href="/app/admin/grading/assessment-types">
               Grading
             </Link>
           </div>
         </div>
-        <div className="management-stats">
-          <article className="metric-card">
-            <p className="metric-label">Total Terms</p>
-            <p className="metric-value">{terms.length}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Active Terms</p>
-            <p className="metric-value">{activeTerms}</p>
-          </article>
+        <div className="row g-3">
+          <div className="col-12 col-sm-6 col-lg-4">
+            <StatCard label="Total Terms" value={terms.length} icon="fas fa-calendar-alt" cardVariant="secondary" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4">
+            <StatCard label="Active Terms" value={activeTerms} icon="fas fa-check-circle" cardVariant="success" />
+          </div>
         </div>
         <form action={createTermAction} className="grid gap-3 md:grid-cols-4">
-          <input name="sessionLabel" className="input" placeholder="2025/2026" required />
-          <input name="termLabel" className="input" placeholder="First Term" required />
-          <label className="flex items-center gap-2 text-sm">
+          <input name="sessionLabel" className="form-control" placeholder="2025/2026" required />
+          <input name="termLabel" className="form-control" placeholder="First Term" required />
+          <label className="d-flex align-items-center gap-2 text-sm">
             <input name="isActive" type="checkbox" />
             Set active
           </label>
@@ -54,7 +53,7 @@ export default async function AdminTermsPage() {
         </form>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <h2 className="section-heading">Term Directory</h2>
         <table className="mt-2">
           <thead>
@@ -76,7 +75,7 @@ export default async function AdminTermsPage() {
                   {!term.isActive && (
                     <form action={setActiveTermAction}>
                       <input type="hidden" name="termId" value={term.id} />
-                      <button className="btn btn-muted" type="submit">
+                      <button className="btn btn-secondary" type="submit">
                         Make Active
                       </button>
                     </form>

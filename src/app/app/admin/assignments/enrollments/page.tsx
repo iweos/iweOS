@@ -1,38 +1,68 @@
 import { enrollStudentAction, removeEnrollmentAction } from "@/lib/server/admin-actions";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
+import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 
 export default async function AssignmentEnrollmentsPage() {
   const profile = await requireRole("admin");
 
-  const [students, classes, terms, enrollments] = await Promise.all([
-    prisma.student.findMany({
-      where: { schoolId: profile.schoolId },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.class.findMany({
-      where: { schoolId: profile.schoolId },
-      orderBy: { name: "asc" },
-    }),
-    prisma.term.findMany({
-      where: { schoolId: profile.schoolId },
-      orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
-    }),
-    prisma.enrollment.findMany({
-      where: { schoolId: profile.schoolId },
-      include: { student: true, class: true, term: true },
-      orderBy: [{ class: { name: "asc" } }, { student: { fullName: "asc" } }],
-    }),
-  ]);
+  let students: Array<{ id: string; studentCode: string; fullName: string }> = [];
+  let classes: Array<{ id: string; name: string }> = [];
+  let terms: Array<{ id: string; sessionLabel: string; termLabel: string; isActive: boolean }> = [];
+  let enrollments: Array<{
+    id: string;
+    student: { fullName: string };
+    class: { name: string };
+    term: { sessionLabel: string; termLabel: string };
+  }> = [];
+
+  try {
+    [students, classes, terms, enrollments] = await Promise.all([
+      prisma.student.findMany({
+        where: { schoolId: profile.schoolId },
+        orderBy: { fullName: "asc" },
+        select: { id: true, studentCode: true, fullName: true },
+      }),
+      prisma.class.findMany({
+        where: { schoolId: profile.schoolId },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
+      prisma.term.findMany({
+        where: { schoolId: profile.schoolId },
+        orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
+        select: { id: true, sessionLabel: true, termLabel: true, isActive: true },
+      }),
+      prisma.enrollment.findMany({
+        where: { schoolId: profile.schoolId },
+        include: {
+          student: { select: { fullName: true } },
+          class: { select: { name: true } },
+          term: { select: { sessionLabel: true, termLabel: true } },
+        },
+        orderBy: [{ class: { name: "asc" } }, { student: { fullName: "asc" } }],
+      }),
+    ]);
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return (
+        <section className="card card-body d-grid gap-2">
+          <h1 className="section-title">Enrollments Setup Required</h1>
+          <p className="section-subtle">{schemaSyncMessage("Student")}</p>
+        </section>
+      );
+    }
+    throw error;
+  }
 
   return (
     <>
-      <section className="section-panel space-y-3">
+      <section className="card card-body d-grid gap-3">
         <h1 className="section-title">Assignments / Enrollments</h1>
         <form action={enrollStudentAction} className="grid gap-2 md:grid-cols-4">
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Student</span>
-            <select name="studentId" className="select" required>
+            <select name="studentId" className="form-select" required>
               <option value="">Select student</option>
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -42,9 +72,9 @@ export default async function AssignmentEnrollmentsPage() {
             </select>
           </label>
 
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Class</span>
-            <select name="classId" className="select" required>
+            <select name="classId" className="form-select" required>
               <option value="">Select class</option>
               {classes.map((klass) => (
                 <option key={klass.id} value={klass.id}>
@@ -54,9 +84,9 @@ export default async function AssignmentEnrollmentsPage() {
             </select>
           </label>
 
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Term</span>
-            <select name="termId" className="select" required>
+            <select name="termId" className="form-select" required>
               <option value="">Select term</option>
               {terms.map((term) => (
                 <option key={term.id} value={term.id}>
@@ -66,7 +96,7 @@ export default async function AssignmentEnrollmentsPage() {
             </select>
           </label>
 
-          <div className="self-end">
+          <div className="align-self-end">
             <button className="btn btn-primary" type="submit">
               Enroll
             </button>
@@ -74,7 +104,7 @@ export default async function AssignmentEnrollmentsPage() {
         </form>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <table>
           <thead>
             <tr>

@@ -2,73 +2,68 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 
 type SidebarProps = {
   mobileOpen: boolean;
   onClose: () => void;
+  onMenuToggle: () => void;
+  onSidebarToggle: () => void;
+  sidebarMinimized: boolean;
+  profileName?: string;
+  profileEmail?: string;
 };
 
 type NavLink = {
   label: string;
   href: string;
+  icon: string;
 };
 
 type NavGroup = {
+  id: string;
   label: string;
+  icon: string;
   items: NavLink[];
 };
 
 const primaryLinks: NavLink[] = [
-  { label: "Dashboard", href: "/app/admin/dashboard" },
-  { label: "Teachers", href: "/app/admin/teachers" },
-  { label: "Settings", href: "/app/admin/settings" },
+  { label: "Dashboard", href: "/app/admin/dashboard", icon: "fas fa-home" },
+  { label: "Grading", href: "/app/admin/grading/assessment-types", icon: "fas fa-clipboard-check" },
+  { label: "Payment", href: "/app/admin/payments", icon: "fas fa-money-check-alt" },
+  { label: "Teachers", href: "/app/admin/teachers", icon: "fas fa-chalkboard-teacher" },
+  { label: "Students", href: "/app/admin/students/manage", icon: "fas fa-user-graduate" },
 ];
 
 const groupedLinks: NavGroup[] = [
   {
-    label: "Students",
-    items: [
-      { label: "Add Student", href: "/app/admin/students/add" },
-      { label: "Manage Students", href: "/app/admin/students/manage" },
-    ],
-  },
-  {
-    label: "Grading",
-    items: [
-      { label: "Assessment Types", href: "/app/admin/grading/assessment-types" },
-      { label: "Grade Scale", href: "/app/admin/grading/grades" },
-    ],
-  },
-  {
-    label: "Payments",
-    items: [
-      { label: "Overview", href: "/app/admin/payments" },
-      { label: "Invoices", href: "/app/admin/payments/invoices" },
-      { label: "Transactions", href: "/app/admin/payments/transactions" },
-      { label: "Reconciliation", href: "/app/admin/payments/reconciliation" },
-      { label: "Imports", href: "/app/admin/payments/imports" },
-      { label: "Reports", href: "/app/admin/payments/reports" },
-      { label: "Settings", href: "/app/admin/payments/settings" },
-    ],
-  },
-  {
+    id: "academic-setup",
     label: "Academic Setup",
+    icon: "fas fa-school",
     items: [
-      { label: "Classes", href: "/app/admin/classes" },
-      { label: "Subjects", href: "/app/admin/subjects" },
-      { label: "Terms", href: "/app/admin/terms" },
-      { label: "Teacher-Class", href: "/app/admin/assignments/teacher-classes" },
-      { label: "Class-Subject", href: "/app/admin/assignments/class-subjects" },
-      { label: "Enrollments", href: "/app/admin/assignments/enrollments" },
+      { label: "Classes", href: "/app/admin/classes", icon: "fas fa-th-large" },
+      { label: "Subjects", href: "/app/admin/subjects", icon: "fas fa-book-open" },
+      { label: "Terms", href: "/app/admin/terms", icon: "fas fa-calendar-alt" },
+    ],
+  },
+  {
+    id: "assignments",
+    label: "Assignments",
+    icon: "fas fa-random",
+    items: [
+      { label: "Teacher-Class", href: "/app/admin/assignments/teacher-classes", icon: "fas fa-user-check" },
+      { label: "Class-Subject", href: "/app/admin/assignments/class-subjects", icon: "fas fa-link" },
+      { label: "Enrollments", href: "/app/admin/assignments/enrollments", icon: "fas fa-id-card" },
     ],
   },
 ];
 
+const trailingLinks: NavLink[] = [{ label: "Settings", href: "/app/admin/settings", icon: "fas fa-cog" }];
+
 function isActive(pathname: string, href: string) {
   if (pathname === href) return true;
-  if (href === "/app/admin/payments") {
-    return pathname.startsWith("/app/admin/payments/");
-  }
+  if (href === "/app/admin/payments") return pathname.startsWith("/app/admin/payments/");
   return pathname.startsWith(`${href}/`);
 }
 
@@ -76,99 +71,148 @@ function isGroupActive(pathname: string, group: NavGroup) {
   return group.items.some((item) => isActive(pathname, item.href));
 }
 
-function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate: () => void }) {
-  return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center border-b border-[var(--line)] px-5">
-        <p className="text-lg font-semibold tracking-tight text-[var(--fg)]">iweOS Admin</p>
-      </div>
-
-      <nav className="flex-1 space-y-3 overflow-y-auto p-4">
-        <div className="space-y-1">
-          {primaryLinks.map((item) => {
-            const active = isActive(pathname, item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  active
-                    ? "bg-[var(--primary-soft)] text-[var(--primary)]"
-                    : "text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-[var(--fg)]"
-                }`}
-              >
-                <span className={`mr-3 h-2 w-2 rounded-full ${active ? "bg-[var(--primary)]" : "bg-[var(--line-strong)]"}`} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="space-y-2 border-t border-[var(--line)] pt-3">
-          {groupedLinks.map((group) => {
-            const groupActive = isGroupActive(pathname, group);
-            return (
-              <details key={group.label} className="group rounded-lg" open={groupActive}>
-                <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-soft)]">
-                  <span>{group.label}</span>
-                  <span className="text-xs text-[var(--muted)] transition group-open:rotate-90">›</span>
-                </summary>
-                <div className="mt-1 space-y-1 pl-2">
-                  {group.items.map((item) => {
-                    const active = isActive(pathname, item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={onNavigate}
-                        className={`block rounded-md px-3 py-1.5 text-sm transition ${
-                          active
-                            ? "bg-[var(--primary-soft)] font-medium text-[var(--primary)]"
-                            : "text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-[var(--fg)]"
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </details>
-            );
-          })}
-        </div>
-      </nav>
-
-      <div className="border-t border-[var(--line)] p-4 text-xs text-[var(--accent)]">iWeOS v1.0 Analytics Suite</div>
-    </div>
-  );
-}
-
-export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
+export default function Sidebar({
+  mobileOpen,
+  onClose,
+  onMenuToggle,
+  onSidebarToggle,
+  sidebarMinimized,
+  profileName,
+  profileEmail,
+}: SidebarProps) {
   const pathname = usePathname();
+  const [groupOpenMap, setGroupOpenMap] = useState<Record<string, boolean>>({});
+
+  function isGroupOpen(group: NavGroup) {
+    return groupOpenMap[group.id] ?? isGroupActive(pathname, group);
+  }
+
+  function toggleGroup(group: NavGroup) {
+    setGroupOpenMap((current) => ({
+      ...current,
+      [group.id]: !(current[group.id] ?? isGroupActive(pathname, group)),
+    }));
+  }
 
   return (
-    <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-[var(--line)] bg-[var(--surface)] lg:block">
-        <SidebarContent pathname={pathname} onNavigate={() => undefined} />
-      </aside>
-
-      <div className={`fixed inset-0 z-40 lg:hidden ${mobileOpen ? "" : "pointer-events-none"}`}>
-        <button
-          type="button"
-          aria-label="Close sidebar"
-          onClick={onClose}
-          className={`absolute inset-0 bg-black/35 transition ${mobileOpen ? "opacity-100" : "opacity-0"}`}
-        />
-
-        <aside
-          className={`absolute inset-y-0 left-0 w-64 border-r border-[var(--line)] bg-[var(--surface)] transition-transform duration-200 ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <SidebarContent pathname={pathname} onNavigate={onClose} />
-        </aside>
+    <div className="sidebar" data-background-color="dark">
+      <div className="sidebar-logo">
+        <div className="logo-header" data-background-color="dark">
+          <BrandLogo
+            href="/app/admin/dashboard"
+            variant="light"
+            className="logo"
+            iconClassName="navbar-brand logo-icon"
+            textClassName="logo-title"
+          />
+          <div className="nav-toggle">
+            <button type="button" className="btn btn-toggle toggle-sidebar" onClick={onSidebarToggle} aria-label="Toggle sidebar">
+              <i className={sidebarMinimized ? "gg-more-vertical-alt" : "gg-menu-right"} />
+            </button>
+            <button
+              type="button"
+              className={`btn btn-toggle sidenav-toggler ${mobileOpen ? "toggled" : ""}`}
+              onClick={onMenuToggle}
+              aria-label="Open menu"
+            >
+              <i className="gg-menu-left" />
+            </button>
+          </div>
+          <button type="button" className="topbar-toggler more" onClick={onMenuToggle} aria-label="Open menu">
+            <i className="gg-more-vertical-alt" />
+          </button>
+        </div>
       </div>
-    </>
+
+      <div className="sidebar-wrapper scrollbar scrollbar-inner">
+        <div className="sidebar-content">
+          <div className="user">
+            <div className="info">
+              <a href="#account">
+                <span>
+                  {profileName ?? "Admin User"}
+                  <span className="user-level">{profileEmail ?? "admin@iweos.app"}</span>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <ul className="nav nav-secondary">
+            {primaryLinks.map((item) => {
+              const active = isActive(pathname, item.href);
+              return (
+                <li key={item.href} className={`nav-item ${active ? "active" : ""}`}>
+                  <Link href={item.href} onClick={onClose}>
+                    <i className={item.icon} />
+                    <p>{item.label}</p>
+                  </Link>
+                </li>
+              );
+            })}
+
+            <li className="nav-section">
+              <span className="sidebar-mini-icon">
+                <i className="fa fa-ellipsis-h" />
+              </span>
+              <h4 className="text-section">Management</h4>
+            </li>
+
+            {groupedLinks.map((group) => {
+              const active = isGroupActive(pathname, group);
+              const open = isGroupOpen(group);
+
+              return (
+                <li key={group.id} className={`nav-item ${active ? "active " : ""}${open ? "submenu" : ""}`.trim()}>
+                  <a
+                    href={`#${group.id}`}
+                    data-bs-toggle="collapse"
+                    data-toggle="collapse"
+                    aria-expanded={open}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      toggleGroup(group);
+                    }}
+                  >
+                    <i className={group.icon} />
+                    <p>{group.label}</p>
+                    <span className="caret" />
+                  </a>
+                  <ul
+                    className="nav nav-collapse"
+                    id={group.id}
+                    style={{ display: open ? "block" : "none" }}
+                    aria-hidden={!open}
+                  >
+                    {group.items.map((item) => {
+                      const itemActive = isActive(pathname, item.href);
+                      return (
+                        <li key={item.href} className={itemActive ? "active" : ""}>
+                          <Link href={item.href} onClick={onClose}>
+                            <span className="sub-item">{item.label}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </li>
+              );
+            })}
+
+            {trailingLinks.map((item) => {
+              const active = isActive(pathname, item.href);
+              return (
+                <li key={item.href} className={`nav-item ${active ? "active" : ""}`}>
+                  <Link href={item.href} onClick={onClose}>
+                    <i className={item.icon} />
+                    <p>{item.label}</p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }

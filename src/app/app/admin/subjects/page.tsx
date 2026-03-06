@@ -2,6 +2,7 @@ import { addSubjectsToClassAction, deleteSubjectAction, removeClassSubjectAction
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import Link from "next/link";
+import StatCard from "@/components/admin/ui/StatCard";
 
 export default async function AdminSubjectsPage() {
   const profile = await requireRole("admin");
@@ -24,41 +25,38 @@ export default async function AdminSubjectsPage() {
 
   return (
     <>
-      <section className="section-panel space-y-4">
-        <div className="management-header">
+      <section className="card card-body d-grid gap-3">
+        <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
           <div>
             <p className="section-kicker">Academic Setup</p>
             <h1 className="section-title">Subjects by Class</h1>
             <p className="section-subtle">Select a class and add one or many subjects (comma or new-line separated).</p>
           </div>
-          <div className="management-actions">
-            <Link className="btn btn-muted" href="/app/admin/classes">
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <Link className="btn btn-secondary" href="/app/admin/classes">
               Classes
             </Link>
-            <Link className="btn btn-muted" href="/app/admin/assignments/class-subjects">
+            <Link className="btn btn-secondary" href="/app/admin/assignments/class-subjects">
               Assignments
             </Link>
           </div>
         </div>
-        <div className="management-stats">
-          <article className="metric-card">
-            <p className="metric-label">Classes</p>
-            <p className="metric-value">{classes.length}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Subject Catalog</p>
-            <p className="metric-value">{subjects.length}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Class Assignments</p>
-            <p className="metric-value">{classSubjects.length}</p>
-          </article>
+        <div className="row g-3">
+          <div className="col-12 col-sm-6 col-lg-4">
+            <StatCard label="Classes" value={classes.length} icon="fas fa-th-large" cardVariant="secondary" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4">
+            <StatCard label="Subject Catalog" value={subjects.length} icon="fas fa-book-open" cardVariant="info" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4">
+            <StatCard label="Class Assignments" value={classSubjects.length} icon="fas fa-link" cardVariant="success" />
+          </div>
         </div>
 
         <form action={addSubjectsToClassAction} className="grid gap-3 md:grid-cols-2">
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Class</span>
-            <select name="classId" className="select" required>
+            <select name="classId" className="form-select" required>
               <option value="">Select class</option>
               {classes.map((klass) => (
                 <option key={klass.id} value={klass.id}>
@@ -68,11 +66,11 @@ export default async function AdminSubjectsPage() {
             </select>
           </label>
 
-          <label className="space-y-1 md:col-span-2">
+          <label className="d-grid gap-1 md:col-span-2">
             <span className="field-label">Subjects</span>
             <textarea
               name="subjectList"
-              className="input"
+              className="form-control"
               rows={4}
               placeholder={"Mathematics\nEnglish\nBasic Science"}
               required
@@ -87,7 +85,7 @@ export default async function AdminSubjectsPage() {
         </form>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <h2 className="section-heading">Class Subject Assignments</h2>
         <table className="mt-2">
           <thead>
@@ -121,7 +119,7 @@ export default async function AdminSubjectsPage() {
         </table>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <h2 className="section-heading">Subject Catalog</h2>
         <table className="mt-2">
           <thead>

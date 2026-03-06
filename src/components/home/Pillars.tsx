@@ -22,7 +22,7 @@ export default function Pillars() {
           Two pillars, one operating system
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-          iweOS combines grading operations and school payments so academic and finance teams stay in sync.
+          ìwéOS combines grading operations and school payments so academic and finance teams stay in sync.
         </p>
       </header>
 

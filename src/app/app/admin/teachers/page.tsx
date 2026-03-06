@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import { ProfileRole } from "@prisma/client";
 import Link from "next/link";
+import StatCard from "@/components/admin/ui/StatCard";
 
 export default async function AdminTeachersPage() {
   const profile = await requireRole("admin");
@@ -32,54 +33,49 @@ export default async function AdminTeachersPage() {
 
   return (
     <>
-      <section className="section-panel space-y-4">
-        <div className="management-header">
+      <section className="card card-body d-grid gap-3">
+        <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
           <div>
             <p className="section-kicker">User Management</p>
             <h1 className="section-title">Teachers</h1>
             <p className="section-subtle">Add staff records before signup, then track activation and linked accounts.</p>
           </div>
-          <div className="management-actions">
-            <Link className="btn btn-muted" href="/app/admin/assignments/teacher-classes">
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <Link className="btn btn-secondary" href="/app/admin/assignments/teacher-classes">
               Teacher-Class
             </Link>
-            <Link className="btn btn-muted" href="/app/admin/dashboard">
+            <Link className="btn btn-secondary" href="/app/admin/dashboard">
               Dashboard
             </Link>
           </div>
         </div>
-        <div className="management-stats">
-          <article className="metric-card">
-            <p className="metric-label">Total Teachers</p>
-            <p className="metric-value">{totalTeachers}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Active Teachers</p>
-            <p className="metric-value">{activeTeachers}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Linked Accounts</p>
-            <p className="metric-value">{linkedAccounts}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Pending Link</p>
-            <p className="metric-value">{pendingAccounts}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Admins</p>
-            <p className="metric-value">{totalAdmins}</p>
-          </article>
+        <div className="row g-3">
+          <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <StatCard label="Total Teachers" value={totalTeachers} icon="fas fa-chalkboard-teacher" cardVariant="secondary" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <StatCard label="Active Teachers" value={activeTeachers} icon="fas fa-user-check" cardVariant="success" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <StatCard label="Linked Accounts" value={linkedAccounts} icon="fas fa-link" cardVariant="info" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <StatCard label="Pending Link" value={pendingAccounts} icon="fas fa-user-clock" cardVariant="warning" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <StatCard label="Admins" value={totalAdmins} icon="fas fa-user-shield" cardVariant="primary" />
+          </div>
         </div>
         <form action={addTeacherAction} className="grid gap-3 md:grid-cols-3">
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Full Name</span>
-            <input name="fullName" className="input" required />
+            <input name="fullName" className="form-control" required />
           </label>
-          <label className="space-y-1">
+          <label className="d-grid gap-1">
             <span className="field-label">Email</span>
-            <input name="email" type="email" className="input" required />
+            <input name="email" type="email" className="form-control" required />
           </label>
-          <div className="self-end">
+          <div className="align-self-end">
             <button className="btn btn-primary" type="submit">
               Add / Update Teacher
             </button>
@@ -90,7 +86,7 @@ export default async function AdminTeachersPage() {
         </p>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <h2 className="section-heading">Teacher Directory</h2>
         <table className="mt-2">
           <thead>
@@ -112,10 +108,10 @@ export default async function AdminTeachersPage() {
                 <td>{teacher.isActive ? "Active" : "Inactive"}</td>
                 <td>Teacher</td>
                 <td>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="d-flex flex-wrap gap-1">
                     <form action={toggleTeacherStatusAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
-                      <button className="btn btn-muted" type="submit">
+                      <button className="btn btn-secondary" type="submit">
                         {teacher.isActive ? "Deactivate" : "Activate"}
                       </button>
                     </form>
@@ -139,7 +135,7 @@ export default async function AdminTeachersPage() {
         </table>
       </section>
 
-      <section className="section-panel table-wrap">
+      <section className="card card-body table-responsive">
         <h2 className="section-heading">Admin Privileges</h2>
         <table className="mt-2">
           <thead>

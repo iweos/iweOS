@@ -18,12 +18,12 @@ const ui = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL("https://iweos.com"),
   title: {
-    default: "iweOS",
-    template: "%s | iweOS",
+    default: "ìwéOS",
+    template: "%s | ìwéOS",
   },
   description: "School operating system for grading workflows and parent payments.",
   openGraph: {
-    title: "iweOS",
+    title: "ìwéOS",
     description: "School operating system for grading workflows and parent payments.",
     type: "website",
     images: [
@@ -31,9 +31,18 @@ export const metadata: Metadata = {
         url: "/images/iweos-features-concept.svg",
         width: 1200,
         height: 630,
-        alt: "iweOS",
+        alt: "ìwéOS",
       },
     ],
+  },
+  icons: {
+    icon: [
+      { media: "(prefers-color-scheme: light)", url: "/favicon-dove.svg" },
+      { media: "(prefers-color-scheme: dark)", url: "/favicon-dove-white.svg" },
+      { url: "/favicon-dove.svg" },
+    ],
+    shortcut: "/favicon-dove.svg",
+    apple: "/favicon-dove.svg",
   },
 };
 
@@ -41,6 +50,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
+          <link rel="icon" href="/favicon-dove.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
+          <link rel="icon" href="/favicon-dove-white.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+          <link rel="shortcut icon" href="/favicon-dove.svg" />
+        </head>
         <body className={`${display.variable} ${ui.variable} ui`}>{children}</body>
       </html>
     </ClerkProvider>
