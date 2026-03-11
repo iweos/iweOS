@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
+import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -56,7 +57,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <link rel="icon" href="/favicon-dove-white.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
           <link rel="shortcut icon" href="/favicon-dove.svg" />
         </head>
-        <body className={`${display.variable} ${ui.variable} ui`}>{children}</body>
+        <body className={`${display.variable} ${ui.variable} ui`}>
+          <GlobalPendingIndicator />
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );

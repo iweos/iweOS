@@ -3,6 +3,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, ProfileRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
@@ -25,6 +26,14 @@ import {
 
 function formValue(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
+}
+
+function redirectSubjectsStatus(status: "success" | "error", message: string): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+  redirect(`/app/admin/subjects?${query.toString()}`);
 }
 
 function revalidateAdminPages() {
@@ -705,52 +714,78 @@ export async function addSubjectsToClassAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid subject assignment payload.");
+    redirectSubjectsStatus("error", parsed.error.issues[0]?.message ?? "Invalid subject assignment payload.");
   }
 
-  const klass = await prisma.class.findFirst({
-    where: {
-      id: parsed.data.classId,
-      schoolId: profile.schoolId,
-    },
-  });
+  let klass: Awaited<ReturnType<typeof prisma.class.findFirst>> = null;
+
+  try {
+    klass = await prisma.class.findFirst({
+      where: {
+        id: parsed.data.classId,
+        schoolId: profile.schoolId,
+      },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      redirectSubjectsStatus("error", schemaSyncMessage("Subject"));
+    }
+    redirectSubjectsStatus("error", "Unable to verify the selected class right now. Please try again.");
+  }
 
   if (!klass) {
-    throw new Error("Selected class does not belong to your school.");
+    redirectSubjectsStatus("error", "Selected class does not belong to your school.");
   }
 
   const subjectNames = Array.from(
-    new Set(
+    new Map(
       parsed.data.subjectList
         .split(/\n|,/g)
         .map((item) => item.trim())
-        .filter(Boolean),
-    ),
+        .filter(Boolean)
+        .map((name) => [name.toLowerCase(), name]),
+    ).values(),
   );
 
   if (subjectNames.length === 0) {
-    throw new Error("Enter at least one valid subject name.");
+    redirectSubjectsStatus("error", "Enter at least one valid subject name.");
   }
 
-  await prisma.$transaction(async (tx) => {
-    for (const name of subjectNames) {
-      const existing = await tx.subject.findFirst({
-        where: {
-          schoolId: profile.schoolId,
-          name: { equals: name, mode: "insensitive" },
-        },
-      });
+  try {
+    const existingSubjects =
+      subjectNames.length > 0
+        ? await prisma.subject.findMany({
+            where: {
+              schoolId: profile.schoolId,
+              OR: subjectNames.map((name) => ({
+                name: { equals: name, mode: "insensitive" },
+              })),
+            },
+            select: { id: true, name: true },
+          })
+        : [];
 
-      const subject =
-        existing ??
-        (await tx.subject.create({
+    const subjectsByName = new Map(
+      existingSubjects.map((subject) => [subject.name.toLowerCase(), subject]),
+    );
+
+    for (const name of subjectNames) {
+      const normalized = name.toLowerCase();
+      let subject = subjectsByName.get(normalized);
+
+      if (!subject) {
+        subject = await prisma.subject.create({
           data: {
             schoolId: profile.schoolId,
             name,
           },
-        }));
+          select: { id: true, name: true },
+        });
 
-      await tx.classSubject.upsert({
+        subjectsByName.set(normalized, subject);
+      }
+
+      await prisma.classSubject.upsert({
         where: {
           classId_subjectId: {
             classId: klass.id,
@@ -765,9 +800,18 @@ export async function addSubjectsToClassAction(formData: FormData) {
         },
       });
     }
-  });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      redirectSubjectsStatus("error", schemaSyncMessage("Subject"));
+    }
+    redirectSubjectsStatus("error", "Could not add subjects right now. Please retry.");
+  }
 
   revalidateAdminPages();
+  redirectSubjectsStatus(
+    "success",
+    `Added ${subjectNames.length} subject${subjectNames.length === 1 ? "" : "s"} to ${klass.name}.`,
+  );
 }
 
 export async function deleteSubjectAction(formData: FormData) {

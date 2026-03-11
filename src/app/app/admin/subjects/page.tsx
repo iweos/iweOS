@@ -4,8 +4,20 @@ import { prisma } from "@/lib/server/prisma";
 import Link from "next/link";
 import StatCard from "@/components/admin/ui/StatCard";
 
-export default async function AdminSubjectsPage() {
+type AdminSubjectsSearchParams = {
+  status?: string;
+  message?: string;
+};
+
+export default async function AdminSubjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<AdminSubjectsSearchParams>;
+}) {
   const profile = await requireRole("admin");
+  const params = await searchParams;
+  const status = params.status === "success" || params.status === "error" ? params.status : null;
+  const message = (params.message ?? "").trim();
 
   const [classes, subjects, classSubjects] = await Promise.all([
     prisma.class.findMany({
@@ -31,6 +43,9 @@ export default async function AdminSubjectsPage() {
             <p className="section-kicker">Academic Setup</p>
             <h1 className="section-title">Subjects by Class</h1>
             <p className="section-subtle">Select a class and add one or many subjects (comma or new-line separated).</p>
+            {status && message ? (
+              <p className={`small mb-0 ${status === "error" ? "text-danger" : "text-success"}`}>{message}</p>
+            ) : null}
           </div>
           <div className="d-flex flex-wrap gap-2 align-items-center">
             <Link className="btn btn-secondary" href="/app/admin/classes">
