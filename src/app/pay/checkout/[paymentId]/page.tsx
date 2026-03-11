@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { completeMockPaymentAction } from "@/lib/server/payment-actions";
 import { prisma } from "@/lib/server/prisma";
 
@@ -77,30 +78,30 @@ export default async function MockCheckoutPage({ params }: { params: Promise<{ p
           </article>
         </div>
 
-        <div className="table-wrap">
-          <table>
+        <TableWrap className="table-wrap">
+          <Table>
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Type</th>
-                <th>Line Total</th>
-                <th>Paid</th>
-                <th>Remaining</th>
+                <Th>Item</Th>
+                <Th>Type</Th>
+                <Th>Line Total</Th>
+                <Th>Paid</Th>
+                <Th>Remaining</Th>
               </tr>
             </thead>
             <tbody>
               {invoice.lineItems.map((line) => (
                 <tr key={line.id}>
-                  <td>{line.name}</td>
-                  <td>{line.feeType}</td>
-                  <td>{toNumber(line.lineTotal).toFixed(2)}</td>
-                  <td>{toNumber(line.paidAmount).toFixed(2)}</td>
-                  <td>{toNumber(line.remainingAmount).toFixed(2)}</td>
+                  <Td>{line.name}</Td>
+                  <Td>{line.feeType}</Td>
+                  <Td>{toNumber(line.lineTotal).toFixed(2)}</Td>
+                  <Td>{toNumber(line.paidAmount).toFixed(2)}</Td>
+                  <Td>{toNumber(line.remainingAmount).toFixed(2)}</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </TableWrap>
 
         {payment.status === PaymentStatus.SUCCESS ? (
           <Link className="btn btn-primary" href={`/pay/success?invoice=${invoice.id}`}>

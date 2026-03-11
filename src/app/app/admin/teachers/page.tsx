@@ -1,4 +1,5 @@
 import { addTeacherAction, setProfileRoleAction, toggleTeacherStatusAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import { ProfileRole } from "@prisma/client";
@@ -86,28 +87,29 @@ export default async function AdminTeachersPage() {
         </p>
       </section>
 
-      <section className="card card-body table-responsive">
+      <section className="card card-body">
         <h2 className="section-heading">Teacher Directory</h2>
-        <table className="mt-2">
+        <TableWrap className="mt-2">
+          <Table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Linked Account</th>
-              <th>Status</th>
-              <th>Role</th>
-              <th />
+              <Th>Name</Th>
+              <Th>Email</Th>
+              <Th>Linked Account</Th>
+              <Th>Status</Th>
+              <Th>Role</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {teachers.map((teacher) => (
               <tr key={teacher.id}>
-                <td>{teacher.fullName}</td>
-                <td>{teacher.email}</td>
-                <td>{teacher.clerkUserId ? "Linked" : "Pending signup"}</td>
-                <td>{teacher.isActive ? "Active" : "Inactive"}</td>
-                <td>Teacher</td>
-                <td>
+                <Td>{teacher.fullName}</Td>
+                <Td>{teacher.email}</Td>
+                <Td>{teacher.clerkUserId ? "Linked" : "Pending signup"}</Td>
+                <Td>{teacher.isActive ? "Active" : "Inactive"}</Td>
+                <Td>Teacher</Td>
+                <Td>
                   <div className="d-flex flex-wrap gap-1">
                     <form action={toggleTeacherStatusAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
@@ -123,40 +125,42 @@ export default async function AdminTeachersPage() {
                       </button>
                     </form>
                   </div>
-                </td>
+                </Td>
               </tr>
             ))}
             {teachers.length === 0 && (
               <tr>
-                <td colSpan={6}>No teachers yet.</td>
+                <Td colSpan={6}>No teachers yet.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
 
-      <section className="card card-body table-responsive">
+      <section className="card card-body">
         <h2 className="section-heading">Admin Privileges</h2>
-        <table className="mt-2">
+        <TableWrap className="mt-2">
+          <Table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Linked Account</th>
-              <th>Status</th>
-              <th>Role</th>
-              <th />
+              <Th>Name</Th>
+              <Th>Email</Th>
+              <Th>Linked Account</Th>
+              <Th>Status</Th>
+              <Th>Role</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {admins.map((admin) => (
               <tr key={admin.id}>
-                <td>{admin.fullName}</td>
-                <td>{admin.email}</td>
-                <td>{admin.clerkUserId ? "Linked" : "Pending signup"}</td>
-                <td>{admin.isActive ? "Active" : "Inactive"}</td>
-                <td>Admin</td>
-                <td>
+                <Td>{admin.fullName}</Td>
+                <Td>{admin.email}</Td>
+                <Td>{admin.clerkUserId ? "Linked" : "Pending signup"}</Td>
+                <Td>{admin.isActive ? "Active" : "Inactive"}</Td>
+                <Td>Admin</Td>
+                <Td>
                   {admin.id === profile.id ? (
                     <span className="section-subtle">Current account</span>
                   ) : (
@@ -168,16 +172,17 @@ export default async function AdminTeachersPage() {
                       </button>
                     </form>
                   )}
-                </td>
+                </Td>
               </tr>
             ))}
             {admins.length === 0 && (
               <tr>
-                <td colSpan={6}>No admins found.</td>
+                <Td colSpan={6}>No admins found.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

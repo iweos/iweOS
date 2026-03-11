@@ -1,4 +1,5 @@
 import { addSubjectsToClassAction, deleteSubjectAction, removeClassSubjectAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import Link from "next/link";
@@ -100,70 +101,74 @@ export default async function AdminSubjectsPage({
         </form>
       </section>
 
-      <section className="card card-body table-responsive">
+      <section className="card card-body">
         <h2 className="section-heading">Class Subject Assignments</h2>
-        <table className="mt-2">
+        <TableWrap className="mt-2">
+          <Table>
           <thead>
             <tr>
-              <th>Class</th>
-              <th>Subject</th>
-              <th />
+              <Th>Class</Th>
+              <Th>Subject</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {classSubjects.map((row) => (
               <tr key={row.id}>
-                <td>{row.class.name}</td>
-                <td>{row.subject.name}</td>
-                <td>
+                <Td>{row.class.name}</Td>
+                <Td>{row.subject.name}</Td>
+                <Td>
                   <form action={removeClassSubjectAction}>
                     <input type="hidden" name="classSubjectId" value={row.id} />
                     <button className="btn btn-danger" type="submit">
                       Remove
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {classSubjects.length === 0 && (
               <tr>
-                <td colSpan={3}>No class-subject assignments yet.</td>
+                <Td colSpan={3}>No class-subject assignments yet.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
 
-      <section className="card card-body table-responsive">
+      <section className="card card-body">
         <h2 className="section-heading">Subject Catalog</h2>
-        <table className="mt-2">
+        <TableWrap className="mt-2">
+          <Table>
           <thead>
             <tr>
-              <th>Subject</th>
-              <th />
+              <Th>Subject</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {subjects.map((subject) => (
               <tr key={subject.id}>
-                <td>{subject.name}</td>
-                <td>
+                <Td>{subject.name}</Td>
+                <Td>
                   <form action={deleteSubjectAction}>
                     <input type="hidden" name="subjectId" value={subject.id} />
                     <button className="btn btn-danger" type="submit">
                       Delete Subject
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {subjects.length === 0 && (
               <tr>
-                <td colSpan={2}>No subjects yet.</td>
+                <Td colSpan={2}>No subjects yet.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

@@ -1,4 +1,5 @@
 import { createTermAction, deleteTermAction, setActiveTermAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import Link from "next/link";
@@ -53,25 +54,26 @@ export default async function AdminTermsPage() {
         </form>
       </section>
 
-      <section className="card card-body table-responsive">
+      <section className="card card-body">
         <h2 className="section-heading">Term Directory</h2>
-        <table className="mt-2">
+        <TableWrap className="mt-2">
+          <Table>
           <thead>
             <tr>
-              <th>Session</th>
-              <th>Term</th>
-              <th>Active</th>
-              <th />
-              <th />
+              <Th>Session</Th>
+              <Th>Term</Th>
+              <Th>Active</Th>
+              <Th />
+              <Th />
             </tr>
           </thead>
           <tbody>
             {terms.map((term) => (
               <tr key={term.id}>
-                <td>{term.sessionLabel}</td>
-                <td>{term.termLabel}</td>
-                <td>{term.isActive ? "Yes" : "No"}</td>
-                <td>
+                <Td>{term.sessionLabel}</Td>
+                <Td>{term.termLabel}</Td>
+                <Td>{term.isActive ? "Yes" : "No"}</Td>
+                <Td>
                   {!term.isActive && (
                     <form action={setActiveTermAction}>
                       <input type="hidden" name="termId" value={term.id} />
@@ -80,24 +82,25 @@ export default async function AdminTermsPage() {
                       </button>
                     </form>
                   )}
-                </td>
-                <td>
+                </Td>
+                <Td>
                   <form action={deleteTermAction}>
                     <input type="hidden" name="termId" value={term.id} />
                     <button className="btn btn-danger" type="submit">
                       Delete
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {terms.length === 0 && (
               <tr>
-                <td colSpan={5}>No terms yet.</td>
+                <Td colSpan={5}>No terms yet.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

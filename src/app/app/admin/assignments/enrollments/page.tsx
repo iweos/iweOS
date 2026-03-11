@@ -1,4 +1,5 @@
 import { enrollStudentAction, removeEnrollmentAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
@@ -104,41 +105,43 @@ export default async function AssignmentEnrollmentsPage() {
         </form>
       </section>
 
-      <section className="card card-body table-responsive">
-        <table>
+      <section className="card card-body">
+        <TableWrap>
+          <Table>
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Class</th>
-              <th>Term</th>
-              <th />
+              <Th>Student</Th>
+              <Th>Class</Th>
+              <Th>Term</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {enrollments.map((row) => (
               <tr key={row.id}>
-                <td>{row.student.fullName}</td>
-                <td>{row.class.name}</td>
-                <td>
+                <Td>{row.student.fullName}</Td>
+                <Td>{row.class.name}</Td>
+                <Td>
                   {row.term.sessionLabel} {row.term.termLabel}
-                </td>
-                <td>
+                </Td>
+                <Td>
                   <form action={removeEnrollmentAction}>
                     <input type="hidden" name="enrollmentId" value={row.id} />
                     <button className="btn btn-danger" type="submit">
                       Remove
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {enrollments.length === 0 && (
               <tr>
-                <td colSpan={4}>No enrollments yet.</td>
+                <Td colSpan={4}>No enrollments yet.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

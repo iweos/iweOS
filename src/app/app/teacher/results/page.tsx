@@ -1,4 +1,5 @@
 import { requireTeacherPortalContext } from "@/lib/server/auth";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { ProfileRole } from "@prisma/client";
 import { prisma } from "@/lib/server/prisma";
 
@@ -78,45 +79,47 @@ export default async function TeacherResultsPage({
         )}
       </div>
 
-      <table>
+      <TableWrap>
+        <Table>
         <thead>
           <tr>
-            <th>Term</th>
-            <th>Class</th>
-            <th>Student</th>
-            <th>Subject</th>
-            <th>CA1</th>
-            <th>CA2</th>
-            <th>Exam</th>
-            <th>Total</th>
-            <th>Grade</th>
-            <th>By</th>
+            <Th>Term</Th>
+            <Th>Class</Th>
+            <Th>Student</Th>
+            <Th>Subject</Th>
+            <Th>CA1</Th>
+            <Th>CA2</Th>
+            <Th>Exam</Th>
+            <Th>Total</Th>
+            <Th>Grade</Th>
+            <Th>By</Th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
-              <td>
+              <Td>
                 {row.term.sessionLabel} {row.term.termLabel}
-              </td>
-              <td>{row.class.name}</td>
-              <td>{row.student.fullName}</td>
-              <td>{row.subject.name}</td>
-              <td>{row.ca1.toString()}</td>
-              <td>{row.ca2.toString()}</td>
-              <td>{row.exam.toString()}</td>
-              <td>{row.total.toString()}</td>
-              <td>{row.grade ?? "-"}</td>
-              <td>{row.teacherProfile.fullName}</td>
+              </Td>
+              <Td>{row.class.name}</Td>
+              <Td>{row.student.fullName}</Td>
+              <Td>{row.subject.name}</Td>
+              <Td>{row.ca1.toString()}</Td>
+              <Td>{row.ca2.toString()}</Td>
+              <Td>{row.exam.toString()}</Td>
+              <Td>{row.total.toString()}</Td>
+              <Td>{row.grade ?? "-"}</Td>
+              <Td>{row.teacherProfile.fullName}</Td>
             </tr>
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={10}>No score rows in this view.</td>
+              <Td colSpan={10}>No score rows in this view.</Td>
             </tr>
           )}
         </tbody>
-      </table>
+        </Table>
+      </TableWrap>
     </section>
   );
 }

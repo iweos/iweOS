@@ -1,4 +1,5 @@
 import { assignSubjectToClassAction, removeClassSubjectAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 
@@ -58,37 +59,39 @@ export default async function AssignmentClassSubjectsPage() {
         </form>
       </section>
 
-      <section className="card card-body table-responsive">
-        <table>
+      <section className="card card-body">
+        <TableWrap>
+          <Table>
           <thead>
             <tr>
-              <th>Class</th>
-              <th>Subject</th>
-              <th />
+              <Th>Class</Th>
+              <Th>Subject</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {classSubjects.map((item) => (
               <tr key={item.id}>
-                <td>{item.class.name}</td>
-                <td>{item.subject.name}</td>
-                <td>
+                <Td>{item.class.name}</Td>
+                <Td>{item.subject.name}</Td>
+                <Td>
                   <form action={removeClassSubjectAction}>
                     <input type="hidden" name="classSubjectId" value={item.id} />
                     <button className="btn btn-danger" type="submit">
                       Remove
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {classSubjects.length === 0 && (
               <tr>
-                <td colSpan={3}>No class-subject assignments.</td>
+                <Td colSpan={3}>No class-subject assignments.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

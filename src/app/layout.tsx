@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
+import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body className={`${display.variable} ${ui.variable} ui`}>
           <GlobalPendingIndicator />
+          <GlobalTableEnhancer />
           {children}
         </body>
       </html>

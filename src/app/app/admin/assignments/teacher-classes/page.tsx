@@ -1,4 +1,5 @@
 import { assignTeacherToClassAction, removeTeacherClassAssignmentAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import { ProfileRole } from "@prisma/client";
@@ -59,37 +60,39 @@ export default async function AssignmentTeacherClassesPage() {
         </form>
       </section>
 
-      <section className="card card-body table-responsive">
-        <table>
+      <section className="card card-body">
+        <TableWrap>
+          <Table>
           <thead>
             <tr>
-              <th>Teacher</th>
-              <th>Class</th>
-              <th />
+              <Th>Teacher</Th>
+              <Th>Class</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {assignments.map((assignment) => (
               <tr key={assignment.id}>
-                <td>{assignment.teacherProfile.fullName}</td>
-                <td>{assignment.class.name}</td>
-                <td>
+                <Td>{assignment.teacherProfile.fullName}</Td>
+                <Td>{assignment.class.name}</Td>
+                <Td>
                   <form action={removeTeacherClassAssignmentAction}>
                     <input type="hidden" name="assignmentId" value={assignment.id} />
                     <button className="btn btn-danger" type="submit">
                       Remove
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {assignments.length === 0 && (
               <tr>
-                <td colSpan={3}>No teacher-class assignments.</td>
+                <Td colSpan={3}>No teacher-class assignments.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

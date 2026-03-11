@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { prisma } from "@/lib/server/prisma";
 
 type SuccessSearchParams = {
@@ -88,28 +89,28 @@ export default async function PaymentSuccessPage({ searchParams }: { searchParam
           </article>
         </div>
 
-        <div className="table-wrap">
-          <table>
+        <TableWrap className="table-wrap">
+          <Table>
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Line Total</th>
-                <th>Paid</th>
-                <th>Remaining</th>
+                <Th>Item</Th>
+                <Th>Line Total</Th>
+                <Th>Paid</Th>
+                <Th>Remaining</Th>
               </tr>
             </thead>
             <tbody>
               {invoice.lineItems.map((line) => (
                 <tr key={line.id}>
-                  <td>{line.name}</td>
-                  <td>{toNumber(line.lineTotal).toFixed(2)}</td>
-                  <td>{toNumber(line.paidAmount).toFixed(2)}</td>
-                  <td>{toNumber(line.remainingAmount).toFixed(2)}</td>
+                  <Td>{line.name}</Td>
+                  <Td>{toNumber(line.lineTotal).toFixed(2)}</Td>
+                  <Td>{toNumber(line.paidAmount).toFixed(2)}</Td>
+                  <Td>{toNumber(line.remainingAmount).toFixed(2)}</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </TableWrap>
 
         <p className="section-subtle">Receipt email/PDF dispatch is stubbed for this build and can be connected to your preferred provider.</p>
 

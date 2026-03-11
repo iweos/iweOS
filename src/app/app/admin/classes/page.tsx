@@ -1,4 +1,5 @@
 import { createClassAction, deleteClassAction } from "@/lib/server/admin-actions";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import Link from "next/link";
@@ -51,38 +52,40 @@ export default async function AdminClassesPage() {
         </form>
       </section>
 
-      <section className="card card-body table-responsive">
+      <section className="card card-body">
         <h2 className="section-heading">Class Directory</h2>
-        <table className="mt-2">
+        <TableWrap className="mt-2">
+          <Table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Created</th>
-              <th />
+              <Th>Name</Th>
+              <Th>Created</Th>
+              <Th />
             </tr>
           </thead>
           <tbody>
             {classes.map((klass) => (
               <tr key={klass.id}>
-                <td>{klass.name}</td>
-                <td>{klass.createdAt.toLocaleDateString()}</td>
-                <td>
+                <Td>{klass.name}</Td>
+                <Td>{klass.createdAt.toLocaleDateString()}</Td>
+                <Td>
                   <form action={deleteClassAction}>
                     <input type="hidden" name="classId" value={klass.id} />
                     <button className="btn btn-danger" type="submit">
                       Delete
                     </button>
                   </form>
-                </td>
+                </Td>
               </tr>
             ))}
             {classes.length === 0 && (
               <tr>
-                <td colSpan={3}>No classes yet.</td>
+                <Td colSpan={3}>No classes yet.</Td>
               </tr>
             )}
           </tbody>
-        </table>
+          </Table>
+        </TableWrap>
       </section>
     </>
   );

@@ -429,7 +429,8 @@ html.kai-admin table th {
   border-color: #edf1f4;
 }
 
-html.kai-admin #student-directory-datatables > :not(caption) > * > th {
+html.kai-admin .dataTables_wrapper .table > :not(caption) > * > th,
+html.kai-admin .dataTables_wrapper table > :not(caption) > * > th {
   text-transform: none !important;
   letter-spacing: 0 !important;
   font-size: 0.9rem !important;
@@ -444,8 +445,8 @@ html.kai-admin table td {
   vertical-align: middle;
 }
 
-html.kai-admin #student-directory-datatables_wrapper .dataTables_length label,
-html.kai-admin #student-directory-datatables_wrapper .dataTables_filter label {
+html.kai-admin .dataTables_wrapper .dataTables_length label,
+html.kai-admin .dataTables_wrapper .dataTables_filter label {
   display: inline-flex !important;
   align-items: center;
   gap: 0.5rem;
@@ -456,24 +457,24 @@ html.kai-admin #student-directory-datatables_wrapper .dataTables_filter label {
   white-space: nowrap;
 }
 
-html.kai-admin #student-directory-datatables_wrapper .dataTables_length select {
+html.kai-admin .dataTables_wrapper .dataTables_length select {
   width: auto !important;
   min-width: 72px;
   margin: 0 0.4rem;
 }
 
-html.kai-admin #student-directory-datatables_wrapper .dataTables_filter input {
+html.kai-admin .dataTables_wrapper .dataTables_filter input {
   width: 220px !important;
   max-width: 100%;
   margin-left: 0.5rem;
 }
 
-html.kai-admin #student-directory-datatables_wrapper .dataTables_info {
+html.kai-admin .dataTables_wrapper .dataTables_info {
   color: #5f6f87;
   font-size: 0.86rem;
 }
 
-html.kai-admin #student-directory-datatables_wrapper {
+html.kai-admin .dataTables_wrapper {
   background: #fff;
   border: 1px solid #e6ebf0;
   border-radius: 0.85rem;
@@ -481,15 +482,33 @@ html.kai-admin #student-directory-datatables_wrapper {
   padding: 1rem 1rem 0.85rem;
 }
 
-html.kai-admin #student-directory-datatables_wrapper .table-responsive {
+html.kai-admin .dataTables_wrapper .table-responsive {
   border: 1px solid #edf1f4;
   border-radius: 0.8rem;
   background: #fff;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-html.kai-admin #student-directory-datatables_wrapper .table {
+html.kai-admin .dataTables_wrapper .table {
   margin-bottom: 0 !important;
+}
+
+html.kai-admin .dataTables_wrapper .pagination .page-link {
+  color: var(--iwe-primary);
+  border-color: #d5e2d8;
+}
+
+html.kai-admin .dataTables_wrapper .pagination .page-link:hover,
+html.kai-admin .dataTables_wrapper .pagination .page-link:focus {
+  color: var(--iwe-primary-700);
+  border-color: #bcd3c2;
+  background: #edf5ef;
+}
+
+html.kai-admin .dataTables_wrapper .pagination .page-item.active .page-link {
+  background: var(--iwe-primary);
+  border-color: var(--iwe-primary);
+  color: #fff;
 }
 
 html.kai-admin .d-flex.flex-wrap.gap-3 > .card.card-stats {

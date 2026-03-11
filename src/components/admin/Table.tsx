@@ -7,7 +7,7 @@ type ThProps = ComponentPropsWithoutRef<"th">;
 type TdProps = ComponentPropsWithoutRef<"td">;
 
 export function Table({ className = "", ...props }: TableElProps) {
-  return <table className={`table ${className}`} {...props} />;
+  return <table className={`table display table-striped table-hover ${className}`.trim()} {...props} />;
 }
 
 export default Table;

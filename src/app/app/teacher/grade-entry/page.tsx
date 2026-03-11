@@ -1,5 +1,6 @@
 import { ProfileRole } from "@prisma/client";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { saveScoresAction } from "@/lib/server/teacher-actions";
 import { prisma } from "@/lib/server/prisma";
 
@@ -208,20 +209,20 @@ export default async function TeacherGradeEntryPage({
             <input type="hidden" name="subjectId" value={selectedSubjectId} />
             <input type="hidden" name="teacherProfileId" value={params.teacherProfileId ?? ""} />
 
-            <div className="table-wrap">
-              <table>
+            <TableWrap className="table-wrap">
+              <Table>
                 <thead>
                   <tr>
-                    <th>Student</th>
+                    <Th>Student</Th>
                     {assessmentTypes.map((assessment) => (
-                      <th key={assessment.id}>
+                      <Th key={assessment.id}>
                         {assessment.name}
                         <br />
                         <span className="text-xs text-[var(--muted)]">{assessment.weight}%</span>
-                      </th>
+                      </Th>
                     ))}
-                    <th>Total</th>
-                    <th>Grade</th>
+                    <Th>Total</Th>
+                    <Th>Grade</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,11 +230,11 @@ export default async function TeacherGradeEntryPage({
                     const score = scoreMap.get(enrollment.studentId);
                     return (
                       <tr key={enrollment.id}>
-                        <td>
+                        <Td>
                           {enrollment.student.studentCode} - {enrollment.student.fullName}
-                        </td>
+                        </Td>
                         {assessmentTypes.map((assessment) => (
-                          <td key={`${enrollment.id}_${assessment.id}`}>
+                          <Td key={`${enrollment.id}_${assessment.id}`}>
                             <input
                               name={`score_${enrollment.studentId}_${assessment.id}`}
                               type="number"
@@ -243,21 +244,21 @@ export default async function TeacherGradeEntryPage({
                               className="input"
                               defaultValue={score?.values.get(assessment.id)?.toString() ?? "0"}
                             />
-                          </td>
+                          </Td>
                         ))}
-                        <td>{score?.total.toString() ?? "-"}</td>
-                        <td>{score?.grade ?? "-"}</td>
+                        <Td>{score?.total.toString() ?? "-"}</Td>
+                        <Td>{score?.grade ?? "-"}</Td>
                       </tr>
                     );
                   })}
                   {enrollments.length === 0 && (
                     <tr>
-                      <td colSpan={assessmentTypes.length + 3}>No enrolled students for this class/term.</td>
+                      <Td colSpan={assessmentTypes.length + 3}>No enrolled students for this class/term.</Td>
                     </tr>
                   )}
                 </tbody>
-              </table>
-            </div>
+              </Table>
+            </TableWrap>
             <button className="btn btn-primary" type="submit">
               Save Scores
             </button>
