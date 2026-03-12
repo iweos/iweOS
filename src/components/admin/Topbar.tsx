@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useClerk } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import BrandLogo from "@/components/BrandLogo";
 
 type TopbarProps = {
@@ -32,6 +32,7 @@ export default function Topbar({
   profileEmail,
 }: TopbarProps) {
   const { signOut } = useClerk();
+  const { sessionId } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -46,7 +47,10 @@ export default function Topbar({
     setIsSigningOut(true);
     setProfileOpen(false);
     setNotificationsOpen(false);
-    void signOut({ redirectUrl: "/sign-in" }).catch(() => {
+    const signOutPromise = sessionId
+      ? signOut({ sessionId, redirectUrl: "/sign-in" })
+      : signOut({ redirectUrl: "/sign-in" });
+    void signOutPromise.catch(() => {
       setIsSigningOut(false);
     });
   }
