@@ -157,30 +157,55 @@ export default async function AdminTeachersPage({
                   <div className="d-flex flex-wrap gap-1">
                     <form action={manualLinkTeacherAccountAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
-                      <button className="btn btn-secondary" type="submit">
-                        {teacher.clerkUserId ? "Re-Link" : "Link"}
+                      <button
+                        className="btn btn-secondary btn-icon-square"
+                        type="submit"
+                        aria-label={teacher.clerkUserId ? "Re-link account" : "Link account"}
+                        title={teacher.clerkUserId ? "Re-link account" : "Link account"}
+                      >
+                        <i className="fas fa-link" aria-hidden="true" />
                       </button>
                     </form>
                     <form action={toggleTeacherStatusAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
-                      <button className="btn btn-secondary" type="submit">
-                        {teacher.isActive ? "Deactivate" : "Activate"}
+                      <button
+                        className="btn btn-secondary btn-icon-square"
+                        type="submit"
+                        aria-label={teacher.isActive ? "Deactivate teacher" : "Activate teacher"}
+                        title={teacher.isActive ? "Deactivate teacher" : "Activate teacher"}
+                      >
+                        <i className={`fas ${teacher.isActive ? "fa-user-slash" : "fa-user-check"}`} aria-hidden="true" />
                       </button>
                     </form>
-                    <Link className="btn btn-secondary" href={`/app/admin/teachers?editTeacherId=${teacher.id}`}>
-                      Edit
+                    <Link
+                      className="btn btn-secondary btn-icon-square"
+                      href={`/app/admin/teachers?editTeacherId=${teacher.id}`}
+                      aria-label="Edit teacher"
+                      title="Edit teacher"
+                    >
+                      <i className="fas fa-pen" aria-hidden="true" />
                     </Link>
                     <form action={setProfileRoleAction}>
                       <input type="hidden" name="profileId" value={teacher.id} />
                       <input type="hidden" name="targetRole" value="admin" />
-                      <button className="btn btn-primary" type="submit">
-                        Make Admin
+                      <button
+                        className="btn btn-primary btn-icon-square"
+                        type="submit"
+                        aria-label="Make admin"
+                        title="Make admin"
+                      >
+                        <i className="fas fa-user-shield" aria-hidden="true" />
                       </button>
                     </form>
                     <form action={deleteTeacherAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
-                      <button className="btn btn-danger" type="submit">
-                        Delete
+                      <button
+                        className="btn btn-danger btn-icon-square"
+                        type="submit"
+                        aria-label="Delete teacher"
+                        title="Delete teacher"
+                      >
+                        <i className="fas fa-trash" aria-hidden="true" />
                       </button>
                     </form>
                   </div>
@@ -226,8 +251,13 @@ export default async function AdminTeachersPage({
                     <form action={setProfileRoleAction}>
                       <input type="hidden" name="profileId" value={admin.id} />
                       <input type="hidden" name="targetRole" value="teacher" />
-                      <button className="btn btn-danger" type="submit">
-                        Remove Admin
+                      <button
+                        className="btn btn-danger btn-icon-square"
+                        type="submit"
+                        aria-label="Remove admin"
+                        title="Remove admin"
+                      >
+                        <i className="fas fa-user-minus" aria-hidden="true" />
                       </button>
                     </form>
                   )}
