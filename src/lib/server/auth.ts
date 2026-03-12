@@ -253,6 +253,17 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
         }
         redirect("/onboarding");
       }
+
+      // If the currently linked profile is teacher but an active admin invite exists,
+      // prioritize the admin invite so login lands on admin access as expected.
+      if (recovered.role === ProfileRole.TEACHER) {
+        const pendingAdminProfile = pendingProfiles.find((profile) => profile.role === ProfileRole.ADMIN) ?? null;
+        if (pendingAdminProfile) {
+          const relinkedProfile = await reassignClerkUserLink(recovered.id, pendingAdminProfile, userId, fullName);
+          await syncMetadataIfPossible(relinkedProfile.clerkUserId, toAppRole(relinkedProfile.role), relinkedProfile.schoolId);
+          return relinkedProfile;
+        }
+      }
     }
 
     await syncMetadataIfPossible(

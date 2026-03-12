@@ -44,6 +44,11 @@ export default function Topbar({
       return;
     }
 
+    window.dispatchEvent(
+      new CustomEvent("iweos:pending-indicator", {
+        detail: { durationMs: 9000 },
+      }),
+    );
     setIsSigningOut(true);
     setProfileOpen(false);
     setNotificationsOpen(false);
