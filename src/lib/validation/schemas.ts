@@ -112,10 +112,21 @@ export const gradingSettingsSchema = z
 
 export const assessmentTypeSchema = z.object({
   id: z.string().uuid().optional(),
+  templateId: z.string().uuid(),
   name: z.string().trim().min(1).max(50),
   weight: z.coerce.number().int().min(0).max(100),
   orderIndex: z.coerce.number().int().min(1).max(99),
   isActive: z.boolean().optional().default(true),
+});
+
+export const assessmentTemplateSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(1).max(80),
+  setActive: z.boolean().optional().default(false),
+});
+
+export const assessmentTemplateActivateSchema = z.object({
+  templateId: z.string().uuid(),
 });
 
 export const gradeScaleSchema = z.object({

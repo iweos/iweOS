@@ -5,22 +5,25 @@ import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
-import { deleteAssessmentTypeAction, upsertAssessmentTypeAction } from "@/lib/server/admin-actions";
+import {
+  deleteAssessmentTemplateAction,
+  setActiveAssessmentTemplateAction,
+  upsertAssessmentTemplateAction,
+} from "@/lib/server/admin-actions";
 
-type AssessmentTypeRow = {
+type AssessmentTemplateRow = {
   id: string;
   name: string;
-  weight: number;
-  orderIndex: number;
   isActive: boolean;
+  itemCount: number;
 };
 
-type AssessmentTypeTableProps = {
-  templateId: string;
-  rows: AssessmentTypeRow[];
+type AssessmentTemplateTableProps = {
+  rows: AssessmentTemplateRow[];
+  selectedTemplateId?: string;
 };
 
-export default function AssessmentTypeTable({ templateId, rows }: AssessmentTypeTableProps) {
+export default function AssessmentTemplateTable({ rows, selectedTemplateId }: AssessmentTemplateTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -42,53 +45,35 @@ export default function AssessmentTypeTable({ templateId, rows }: AssessmentType
           <thead>
             <tr>
               <Th>Name</Th>
-              <Th>Max Score</Th>
-              <Th>Order</Th>
-              <Th>Active</Th>
+              <Th>Assessments</Th>
+              <Th>Status</Th>
               <Th>Action</Th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => {
               const isEditing = editingId === row.id;
+              const isSelected = selectedTemplateId === row.id;
+
               return (
                 <tr key={row.id}>
                   {isEditing ? (
                     <>
-                      <Td colSpan={4}>
+                      <Td colSpan={3}>
                         <form
                           action={(formData) => {
                             runAction(async () => {
-                              await upsertAssessmentTypeAction(formData);
+                              await upsertAssessmentTemplateAction(formData);
                               setEditingId(null);
                             });
                           }}
                           className="d-flex flex-wrap gap-2 align-items-end"
                         >
                           <input type="hidden" name="id" value={row.id} />
-                          <input type="hidden" name="templateId" value={templateId} />
                           <Input name="name" className="assessment-input assessment-name" defaultValue={row.name} required />
-                          <Input
-                            name="weight"
-                            type="number"
-                            className="assessment-input assessment-short"
-                            defaultValue={row.weight}
-                            required
-                          />
-                          <Input
-                            name="orderIndex"
-                            type="number"
-                            className="assessment-input assessment-short"
-                            defaultValue={row.orderIndex}
-                            required
-                          />
-                          <Select
-                            name="isActive"
-                            className="assessment-input assessment-short"
-                            defaultValue={row.isActive ? "on" : "off"}
-                          >
-                            <option value="on">Yes</option>
-                            <option value="off">No</option>
+                          <Select name="setActive" className="assessment-input assessment-short" defaultValue={row.isActive ? "on" : "off"}>
+                            <option value="on">Set Active</option>
+                            <option value="off">Keep Status</option>
                           </Select>
                           <Button variant="primary" size="sm" type="submit" disabled={isPending}>
                             {isPending ? "Saving..." : "Save"}
@@ -102,13 +87,12 @@ export default function AssessmentTypeTable({ templateId, rows }: AssessmentType
                         <form
                           action={(formData) => {
                             runAction(async () => {
-                              await deleteAssessmentTypeAction(formData);
+                              await deleteAssessmentTemplateAction(formData);
                               setEditingId(null);
                             });
                           }}
                         >
-                          <input type="hidden" name="id" value={row.id} />
-                          <input type="hidden" name="templateId" value={templateId} />
+                          <input type="hidden" name="templateId" value={row.id} />
                           <Button variant="danger" size="sm" type="submit" disabled={isPending}>
                             Delete
                           </Button>
@@ -117,23 +101,41 @@ export default function AssessmentTypeTable({ templateId, rows }: AssessmentType
                     </>
                   ) : (
                     <>
-                      <Td>{row.name}</Td>
-                      <Td>{row.weight}</Td>
-                      <Td>{row.orderIndex}</Td>
-                      <Td>{row.isActive ? "Yes" : "No"}</Td>
+                      <Td>
+                        {row.name}
+                        {isSelected ? <span className="ms-2 badge bg-light text-dark">Selected</span> : null}
+                      </Td>
+                      <Td>{row.itemCount}</Td>
+                      <Td>{row.isActive ? "Active" : "Inactive"}</Td>
                       <Td className="d-flex flex-wrap gap-1">
-                        <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(row.id)}>
+                        <a className="btn btn-sm btn-secondary" href={`/app/admin/grading/assessment-types?templateId=${row.id}`}>
+                          Open
+                        </a>
+                        {!row.isActive ? (
+                          <form
+                            action={(formData) => {
+                              runAction(async () => {
+                                await setActiveAssessmentTemplateAction(formData);
+                              });
+                            }}
+                          >
+                            <input type="hidden" name="templateId" value={row.id} />
+                            <Button variant="primary" size="sm" type="submit" disabled={isPending}>
+                              Make Active
+                            </Button>
+                          </form>
+                        ) : null}
+                        <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(row.id)} disabled={isPending}>
                           Edit
                         </Button>
                         <form
                           action={(formData) => {
                             runAction(async () => {
-                              await deleteAssessmentTypeAction(formData);
+                              await deleteAssessmentTemplateAction(formData);
                             });
                           }}
                         >
-                          <input type="hidden" name="id" value={row.id} />
-                          <input type="hidden" name="templateId" value={templateId} />
+                          <input type="hidden" name="templateId" value={row.id} />
                           <Button variant="danger" size="sm" type="submit" disabled={isPending}>
                             Delete
                           </Button>
@@ -146,10 +148,10 @@ export default function AssessmentTypeTable({ templateId, rows }: AssessmentType
             })}
             {rows.length === 0 && (
               <tr>
-                  <Td colSpan={5} className="text-muted">
-                  No assessment items in this template yet.
-                  </Td>
-                </tr>
+                <Td colSpan={4} className="text-muted">
+                  No assessment templates yet.
+                </Td>
+              </tr>
             )}
           </tbody>
         </Table>

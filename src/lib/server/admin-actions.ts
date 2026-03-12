@@ -8,6 +8,8 @@ import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 import {
+  assessmentTemplateActivateSchema,
+  assessmentTemplateSchema,
   assessmentTypeSchema,
   classSchema,
   classSubjectBatchSchema,
@@ -1239,11 +1241,214 @@ export async function removeEnrollmentAction(formData: FormData) {
   revalidateAdminPages();
 }
 
+export async function upsertAssessmentTemplateAction(formData: FormData) {
+  const profile = await requireRole("admin");
+
+  const parsed = assessmentTemplateSchema.safeParse({
+    id: formValue(formData, "id") || undefined,
+    name: formValue(formData, "name"),
+    setActive: formValue(formData, "setActive") === "on",
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid assessment template payload.");
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const existingTemplateCount = await tx.assessmentTemplate.count({
+        where: { schoolId: profile.schoolId },
+      });
+
+      let templateId = parsed.data.id;
+
+      if (templateId) {
+        const existingTemplate = await tx.assessmentTemplate.findFirst({
+          where: {
+            id: templateId,
+            schoolId: profile.schoolId,
+          },
+          select: { id: true },
+        });
+
+        if (!existingTemplate) {
+          throw new Error("Assessment template not found.");
+        }
+
+        await tx.assessmentTemplate.update({
+          where: { id: templateId },
+          data: { name: parsed.data.name },
+        });
+      } else {
+        const created = await tx.assessmentTemplate.create({
+          data: {
+            schoolId: profile.schoolId,
+            name: parsed.data.name,
+          },
+          select: { id: true },
+        });
+        templateId = created.id;
+      }
+
+      if (!templateId) {
+        throw new Error("Assessment template could not be saved.");
+      }
+
+      const shouldActivate = parsed.data.setActive || existingTemplateCount === 0;
+      if (shouldActivate) {
+        await tx.assessmentTemplate.updateMany({
+          where: { schoolId: profile.schoolId },
+          data: { isActive: false },
+        });
+        await tx.assessmentTemplate.update({
+          where: { id: templateId },
+          data: { isActive: true },
+        });
+      }
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw assessmentSchemaSyncError();
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("This assessment template name already exists.");
+    }
+
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
+export async function setActiveAssessmentTemplateAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = assessmentTemplateActivateSchema.safeParse({
+    templateId: formValue(formData, "templateId"),
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid template selection.");
+  }
+
+  try {
+    const template = await prisma.assessmentTemplate.findFirst({
+      where: {
+        id: parsed.data.templateId,
+        schoolId: profile.schoolId,
+      },
+      select: { id: true },
+    });
+
+    if (!template) {
+      throw new Error("Assessment template not found.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.assessmentTemplate.updateMany({
+        where: { schoolId: profile.schoolId },
+        data: { isActive: false },
+      });
+      await tx.assessmentTemplate.update({
+        where: { id: template.id },
+        data: { isActive: true },
+      });
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw assessmentSchemaSyncError();
+    }
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
+export async function deleteAssessmentTemplateAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = assessmentTemplateActivateSchema.safeParse({
+    templateId: formValue(formData, "templateId"),
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid template selection.");
+  }
+
+  try {
+    const [template, templateCount, usedInScores] = await Promise.all([
+      prisma.assessmentTemplate.findFirst({
+        where: {
+          id: parsed.data.templateId,
+          schoolId: profile.schoolId,
+        },
+        select: { id: true, isActive: true },
+      }),
+      prisma.assessmentTemplate.count({
+        where: { schoolId: profile.schoolId },
+      }),
+      prisma.scoreAssessmentValue.findFirst({
+        where: {
+          schoolId: profile.schoolId,
+          assessmentType: {
+            templateId: parsed.data.templateId,
+          },
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!template) {
+      throw new Error("Assessment template not found.");
+    }
+
+    if (templateCount <= 1) {
+      throw new Error("At least one assessment template must remain.");
+    }
+
+    if (usedInScores) {
+      throw new Error("This template has score records and cannot be deleted.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.assessmentTemplate.delete({
+        where: { id: template.id },
+      });
+
+      if (!template.isActive) {
+        return;
+      }
+
+      const fallback = await tx.assessmentTemplate.findFirst({
+        where: { schoolId: profile.schoolId },
+        orderBy: { createdAt: "asc" },
+        select: { id: true },
+      });
+
+      if (!fallback) {
+        return;
+      }
+
+      await tx.assessmentTemplate.update({
+        where: { id: fallback.id },
+        data: { isActive: true },
+      });
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw assessmentSchemaSyncError();
+    }
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
 export async function upsertAssessmentTypeAction(formData: FormData) {
   const profile = await requireRole("admin");
 
   const parsed = assessmentTypeSchema.safeParse({
     id: formValue(formData, "id") || undefined,
+    templateId: formValue(formData, "templateId"),
     name: formValue(formData, "name"),
     weight: formValue(formData, "weight"),
     orderIndex: formValue(formData, "orderIndex"),
@@ -1254,10 +1459,31 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid assessment type payload.");
   }
 
-  let existing: Array<{ id: string; weight: number }> = [];
+  let existingTemplate: { id: string } | null = null;
+  let existing: Array<{ id: string; weight: number; isActive: boolean }> = [];
   try {
+    existingTemplate = await prisma.assessmentTemplate.findFirst({
+      where: {
+        id: parsed.data.templateId,
+        schoolId: profile.schoolId,
+      },
+      select: { id: true },
+    });
+
+    if (!existingTemplate) {
+      throw new Error("Assessment template not found.");
+    }
+
     existing = await prisma.assessmentType.findMany({
-      where: { schoolId: profile.schoolId },
+      where: {
+        schoolId: profile.schoolId,
+        templateId: parsed.data.templateId,
+      },
+      select: {
+        id: true,
+        weight: true,
+        isActive: true,
+      },
     });
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
@@ -1267,20 +1493,33 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
   }
 
   const currentTotal = existing
-    .filter((item) => item.id !== parsed.data.id)
+    .filter((item) => item.id !== parsed.data.id && item.isActive)
     .reduce((sum, item) => sum + item.weight, 0);
 
-  if (currentTotal + parsed.data.weight > 100) {
-    throw new Error("Total assessment weights cannot exceed 100.");
+  if (parsed.data.isActive && currentTotal + parsed.data.weight > 100) {
+    throw new Error("Total active assessment score allocation cannot exceed 100.");
   }
 
   if (parsed.data.id) {
     try {
-      await prisma.assessmentType.updateMany({
+      const target = await prisma.assessmentType.findFirst({
         where: {
           id: parsed.data.id,
           schoolId: profile.schoolId,
         },
+        select: { id: true, templateId: true },
+      });
+
+      if (!target) {
+        throw new Error("Assessment type not found.");
+      }
+
+      if (target.templateId !== parsed.data.templateId) {
+        throw new Error("Assessment type cannot be moved across templates.");
+      }
+
+      await prisma.assessmentType.update({
+        where: { id: target.id },
         data: {
           name: parsed.data.name,
           weight: parsed.data.weight,
@@ -1292,6 +1531,11 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
       if (isPrismaSchemaMismatchError(error)) {
         throw assessmentSchemaSyncError();
       }
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new Error("This assessment name already exists in the selected template.");
+      }
+
       throw error;
     }
   } else {
@@ -1299,6 +1543,7 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
       await prisma.assessmentType.create({
         data: {
           schoolId: profile.schoolId,
+          templateId: parsed.data.templateId,
           name: parsed.data.name,
           weight: parsed.data.weight,
           orderIndex: parsed.data.orderIndex,
@@ -1309,6 +1554,11 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
       if (isPrismaSchemaMismatchError(error)) {
         throw assessmentSchemaSyncError();
       }
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new Error("This assessment name already exists in the selected template.");
+      }
+
       throw error;
     }
   }
@@ -1321,6 +1571,18 @@ export async function deleteAssessmentTypeAction(formData: FormData) {
   const id = formValue(formData, "id");
 
   try {
+    const usage = await prisma.scoreAssessmentValue.findFirst({
+      where: {
+        schoolId: profile.schoolId,
+        assessmentTypeId: id,
+      },
+      select: { id: true },
+    });
+
+    if (usage) {
+      throw new Error("This assessment type has score records and cannot be deleted.");
+    }
+
     await prisma.assessmentType.deleteMany({
       where: {
         id,

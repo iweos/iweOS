@@ -16,8 +16,11 @@ export default async function TeacherGradeEntryPage({
 }: {
   searchParams: Promise<GradeEntrySearchParams>;
 }) {
-  const gradingClient = prisma as unknown as { assessmentType?: typeof prisma.assessmentType };
-  if (!gradingClient.assessmentType) {
+  const gradingClient = prisma as unknown as {
+    assessmentType?: typeof prisma.assessmentType;
+    assessmentTemplate?: typeof prisma.assessmentTemplate;
+  };
+  if (!gradingClient.assessmentType || !gradingClient.assessmentTemplate) {
     return (
       <section className="section-panel space-y-2">
         <p className="section-kicker">Teacher Portal</p>
@@ -33,7 +36,7 @@ export default async function TeacherGradeEntryPage({
   const params = await searchParams;
   const context = await requireTeacherPortalContext(params.teacherProfileId);
 
-  const [terms, classesInView, assessmentTypes] = await Promise.all([
+  const [terms, classesInView, activeTemplate] = await Promise.all([
     prisma.term.findMany({
       where: { schoolId: context.actorProfile.schoolId },
       orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
@@ -53,14 +56,28 @@ export default async function TeacherGradeEntryPage({
             orderBy: { class: { name: "asc" } },
           })
           .then((rows) => rows.map((row) => row.class)),
-    gradingClient.assessmentType.findMany({
+    gradingClient.assessmentTemplate.findFirst({
       where: {
         schoolId: context.actorProfile.schoolId,
         isActive: true,
       },
-      orderBy: { orderIndex: "asc" },
+      select: {
+        id: true,
+        name: true,
+      },
     }),
   ]);
+
+  const assessmentTypes = activeTemplate
+    ? await gradingClient.assessmentType.findMany({
+        where: {
+          schoolId: context.actorProfile.schoolId,
+          templateId: activeTemplate.id,
+          isActive: true,
+        },
+        orderBy: { orderIndex: "asc" },
+      })
+    : [];
 
   const selectedTermId = params.termId && terms.some((term) => term.id === params.termId) ? params.termId : terms[0]?.id;
   const selectedClassId =
@@ -195,13 +212,17 @@ export default async function TeacherGradeEntryPage({
           </div>
         </form>
 
-        <p className="text-xs text-[var(--muted)]">Assessment weight total: {weightTotal}%</p>
+        <p className="text-xs text-[var(--muted)]">
+          Active Template: {activeTemplate?.name ?? "None"} • Score allocation total: {weightTotal}
+        </p>
       </section>
 
       <section className="section-panel space-y-3">
         <h2 className="section-heading">Student Scores</h2>
         {!selectedClassId || !selectedTermId || !selectedSubjectId ? (
           <p className="section-subtle">No valid class/term/subject in this view.</p>
+        ) : assessmentTypes.length === 0 ? (
+          <p className="section-subtle">No active assessment items found in the active template.</p>
         ) : (
           <form action={saveScoresAction} className="space-y-3">
             <input type="hidden" name="termId" value={selectedTermId} />
@@ -218,7 +239,7 @@ export default async function TeacherGradeEntryPage({
                       <Th key={assessment.id}>
                         {assessment.name}
                         <br />
-                        <span className="text-xs text-[var(--muted)]">{assessment.weight}%</span>
+                        <span className="text-xs text-[var(--muted)]">Max {assessment.weight}</span>
                       </Th>
                     ))}
                     <Th>Total</Th>
@@ -239,7 +260,7 @@ export default async function TeacherGradeEntryPage({
                               name={`score_${enrollment.studentId}_${assessment.id}`}
                               type="number"
                               min={0}
-                              max={100}
+                              max={assessment.weight}
                               step={0.01}
                               className="input"
                               defaultValue={score?.values.get(assessment.id)?.toString() ?? "0"}

@@ -2,7 +2,7 @@
 
 import { ProfileRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { calculateWeightedTotal, getGradeForTotal } from "@/lib/server/grading";
+import { calculateAssessmentTotal, getGradeForTotal } from "@/lib/server/grading";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import { scoreValueSchema } from "@/lib/validation/schemas";
@@ -67,6 +67,9 @@ export async function saveScoresAction(formData: FormData) {
       where: {
         schoolId: actorProfile.schoolId,
         isActive: true,
+        template: {
+          isActive: true,
+        },
       },
       orderBy: { orderIndex: "asc" },
     }),
@@ -94,7 +97,7 @@ export async function saveScoresAction(formData: FormData) {
 
   const weightTotal = assessmentTypes.reduce((sum, item) => sum + item.weight, 0);
   if (weightTotal !== 100) {
-    throw new Error("Assessment weights must add up to exactly 100 before saving scores.");
+    throw new Error("Active assessment max scores must add up to exactly 100 before saving scores.");
   }
 
   const enrollments = await prisma.enrollment.findMany({
@@ -116,15 +119,23 @@ export async function saveScoresAction(formData: FormData) {
     for (const row of enrollments) {
       const assessmentInputs = assessmentTypes.map((assessment) => {
         const value = parseScoreOrZero(formData.get(`score_${row.studentId}_${assessment.id}`));
+        if (value > assessment.weight) {
+          throw new Error(`${assessment.name} cannot exceed ${assessment.weight}.`);
+        }
         return {
+          name: assessment.name,
           assessmentTypeId: assessment.id,
           value,
           weight: assessment.weight,
         };
       });
 
-      const total = calculateWeightedTotal(assessmentInputs.map((item) => ({ score: item.value, weight: item.weight })));
+      const total = calculateAssessmentTotal(assessmentInputs.map((item) => ({ score: item.value })));
       const grade = getGradeForTotal(total, gradeScale);
+      const valueByName = new Map(assessmentInputs.map((item) => [item.name.trim().toUpperCase(), item.value]));
+      const ca1 = valueByName.get("CA1") ?? assessmentInputs[0]?.value ?? 0;
+      const ca2 = valueByName.get("CA2") ?? assessmentInputs[1]?.value ?? 0;
+      const exam = valueByName.get("EXAM") ?? assessmentInputs[assessmentInputs.length - 1]?.value ?? 0;
 
       const score = await tx.score.upsert({
         where: {
@@ -141,9 +152,9 @@ export async function saveScoresAction(formData: FormData) {
             context.mode === "admin_override" && actorProfile.role === ProfileRole.ADMIN
               ? actorProfile.id
               : context.effectiveTeacherProfile.id,
-          ca1: assessmentInputs[0]?.value ?? 0,
-          ca2: assessmentInputs[1]?.value ?? 0,
-          exam: assessmentInputs[2]?.value ?? 0,
+          ca1,
+          ca2,
+          exam,
           total,
           grade,
         },
@@ -157,9 +168,9 @@ export async function saveScoresAction(formData: FormData) {
             context.mode === "admin_override" && actorProfile.role === ProfileRole.ADMIN
               ? actorProfile.id
               : context.effectiveTeacherProfile.id,
-          ca1: assessmentInputs[0]?.value ?? 0,
-          ca2: assessmentInputs[1]?.value ?? 0,
-          exam: assessmentInputs[2]?.value ?? 0,
+          ca1,
+          ca2,
+          exam,
           total,
           grade,
         },

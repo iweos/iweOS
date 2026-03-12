@@ -328,19 +328,34 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
       });
 
       const onboardingTx = tx as unknown as {
+        assessmentTemplate?: {
+          create: (args: {
+            data: { schoolId: string; name: string; isActive: boolean };
+            select: { id: true };
+          }) => Promise<{ id: string }>;
+        };
         assessmentType?: {
           createMany: (args: {
-            data: Array<{ schoolId: string; name: string; weight: number; orderIndex: number }>;
+            data: Array<{ schoolId: string; templateId: string; name: string; weight: number; orderIndex: number }>;
           }) => Promise<unknown>;
         };
       };
 
-      if (onboardingTx.assessmentType) {
+      if (onboardingTx.assessmentTemplate && onboardingTx.assessmentType) {
+        const template = await onboardingTx.assessmentTemplate.create({
+          data: {
+            schoolId: school.id,
+            name: "Default",
+            isActive: true,
+          },
+          select: { id: true },
+        });
+
         await onboardingTx.assessmentType.createMany({
           data: [
-            { schoolId: school.id, name: "CA1", weight: 20, orderIndex: 1 },
-            { schoolId: school.id, name: "CA2", weight: 20, orderIndex: 2 },
-            { schoolId: school.id, name: "EXAM", weight: 60, orderIndex: 3 },
+            { schoolId: school.id, templateId: template.id, name: "CA1", weight: 20, orderIndex: 1 },
+            { schoolId: school.id, templateId: template.id, name: "CA2", weight: 20, orderIndex: 2 },
+            { schoolId: school.id, templateId: template.id, name: "EXAM", weight: 60, orderIndex: 3 },
           ],
         });
       }
