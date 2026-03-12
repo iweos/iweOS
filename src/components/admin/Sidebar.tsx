@@ -11,6 +11,9 @@ type SidebarProps = {
   onMenuToggle: () => void;
   onSidebarToggle: () => void;
   sidebarMinimized: boolean;
+  mode: "admin" | "teacher";
+  homeHref: string;
+  settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
 };
@@ -61,6 +64,12 @@ const groupedLinks: NavGroup[] = [
 
 const trailingLinks: NavLink[] = [{ label: "Settings", href: "/app/admin/settings", icon: "fas fa-cog" }];
 
+const teacherLinks: NavLink[] = [
+  { label: "Dashboard", href: "/app/teacher/dashboard", icon: "fas fa-home" },
+  { label: "Grade Entry", href: "/app/teacher/grade-entry", icon: "fas fa-clipboard-check" },
+  { label: "Results", href: "/app/teacher/results", icon: "fas fa-book-reader" },
+];
+
 function isActive(pathname: string, href: string) {
   if (pathname === href) return true;
   if (href === "/app/admin/payments") return pathname.startsWith("/app/admin/payments/");
@@ -77,11 +86,19 @@ export default function Sidebar({
   onMenuToggle,
   onSidebarToggle,
   sidebarMinimized,
+  mode,
+  homeHref,
+  settingsHref,
   profileName,
   profileEmail,
 }: SidebarProps) {
   const pathname = usePathname();
   const [groupOpenMap, setGroupOpenMap] = useState<Record<string, boolean>>({});
+  const isTeacherMode = mode === "teacher";
+
+  const mainLinks = isTeacherMode ? teacherLinks : primaryLinks;
+  const menuGroups = isTeacherMode ? [] : groupedLinks;
+  const footerLinks = isTeacherMode ? (settingsHref ? [{ label: "Settings", href: settingsHref, icon: "fas fa-cog" }] : []) : trailingLinks;
 
   function isGroupOpen(group: NavGroup) {
     return groupOpenMap[group.id] ?? isGroupActive(pathname, group);
@@ -99,7 +116,7 @@ export default function Sidebar({
       <div className="sidebar-logo">
         <div className="logo-header" data-background-color="dark">
           <BrandLogo
-            href="/app/admin/dashboard"
+            href={homeHref}
             variant="light"
             className="logo"
             iconClassName="navbar-brand logo-icon"
@@ -130,15 +147,15 @@ export default function Sidebar({
             <div className="info">
               <a href="#account">
                 <span>
-                  {profileName ?? "Admin User"}
-                  <span className="user-level">{profileEmail ?? "admin@iweos.app"}</span>
+                  {profileName ?? (isTeacherMode ? "Teacher User" : "Admin User")}
+                  <span className="user-level">{profileEmail ?? (isTeacherMode ? "teacher@iweos.app" : "admin@iweos.app")}</span>
                 </span>
               </a>
             </div>
           </div>
 
           <ul className="nav nav-secondary">
-            {primaryLinks.map((item) => {
+            {mainLinks.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <li key={item.href} className={`nav-item ${active ? "active" : ""}`}>
@@ -150,14 +167,16 @@ export default function Sidebar({
               );
             })}
 
-            <li className="nav-section">
-              <span className="sidebar-mini-icon">
-                <i className="fa fa-ellipsis-h" />
-              </span>
-              <h4 className="text-section">Management</h4>
-            </li>
+            {menuGroups.length > 0 ? (
+              <li className="nav-section">
+                <span className="sidebar-mini-icon">
+                  <i className="fa fa-ellipsis-h" />
+                </span>
+                <h4 className="text-section">{isTeacherMode ? "Teacher Portal" : "Management"}</h4>
+              </li>
+            ) : null}
 
-            {groupedLinks.map((group) => {
+            {menuGroups.map((group) => {
               const active = isGroupActive(pathname, group);
               const open = isGroupOpen(group);
 
@@ -199,7 +218,7 @@ export default function Sidebar({
               );
             })}
 
-            {trailingLinks.map((item) => {
+            {footerLinks.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <li key={item.href} className={`nav-item ${active ? "active" : ""}`}>

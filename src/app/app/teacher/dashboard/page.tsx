@@ -1,6 +1,10 @@
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { ProfileRole } from "@prisma/client";
 import { prisma } from "@/lib/server/prisma";
+import Card from "@/components/admin/Card";
+import PageHeader from "@/components/admin/PageHeader";
+import StatCard from "@/components/admin/ui/StatCard";
+import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 
 type TeacherDashboardSearchParams = {
   teacherProfileId?: string;
@@ -50,21 +54,16 @@ export default async function TeacherDashboardPage({
       : context.effectiveTeacherProfile.fullName;
 
   return (
-    <>
-      <section className="section-panel space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="section-kicker">Teacher Portal</p>
-            <h1 className="section-title">{label}</h1>
-            <p className="section-subtle">
-              Active Term: {activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "Not configured"}
-            </p>
-          </div>
-          {context.actorProfile.role === ProfileRole.ADMIN && (
-            <form method="get" className="flex items-end gap-2">
-              <label className="space-y-1">
+    <div className="d-grid gap-3">
+      <PageHeader
+        title="Teacher Dashboard"
+        subtitle={`Active Term: ${activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "Not configured"}`}
+        rightActions={
+          context.actorProfile.role === ProfileRole.ADMIN ? (
+            <form method="get" className="d-flex flex-wrap align-items-end gap-2">
+              <label className="d-grid gap-1">
                 <span className="field-label">View As</span>
-                <select name="teacherProfileId" className="select" defaultValue={params.teacherProfileId ?? ""}>
+                <select name="teacherProfileId" className="form-select form-select-sm" defaultValue={params.teacherProfileId ?? ""}>
                   <option value="">Admin Override (All classes)</option>
                   {context.teacherOptions.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
@@ -73,42 +72,56 @@ export default async function TeacherDashboardPage({
                   ))}
                 </select>
               </label>
-              <button className="btn btn-muted" type="submit">
+              <button className="btn btn-primary" type="submit">
                 Apply
               </button>
             </form>
-          )}
-        </div>
-      </section>
+          ) : null
+        }
+      />
 
-      <section className="section-panel">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <article className="metric-card">
-            <p className="metric-label">Classes In View</p>
-            <p className="metric-value">{assignments.length}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Submitted Score Rows</p>
-            <p className="metric-value">{totalScores}</p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Portal Mode</p>
-            <p className="metric-value text-base leading-6">
-              {context.mode === "admin_override" ? "Admin" : "Teacher"}
-            </p>
-          </article>
+      <Card subtitle={`Signed in as ${label}`}>
+        <div className="row g-3">
+          <div className="col-sm-6 col-xl-4">
+            <StatCard label="Classes In View" value={assignments.length} icon="fas fa-th-large" cardVariant="secondary" />
+          </div>
+          <div className="col-sm-6 col-xl-4">
+            <StatCard label="Submitted Score Rows" value={totalScores} icon="fas fa-clipboard-check" cardVariant="info" />
+          </div>
+          <div className="col-sm-6 col-xl-4">
+            <StatCard
+              label="Portal Mode"
+              value={context.mode === "admin_override" ? "Admin" : "Teacher"}
+              icon="fas fa-user-tag"
+              cardVariant={context.mode === "admin_override" ? "warning" : "success"}
+            />
+          </div>
         </div>
-      </section>
+      </Card>
 
-      <section className="section-panel">
-        <h2 className="section-heading">Classes</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-[#374151]">
-          {assignments.map((row) => (
-            <li key={row.id}>{row.name}</li>
-          ))}
-          {assignments.length === 0 && <li>No classes available in this view.</li>}
-        </ul>
-      </section>
-    </>
+      <Card title="Classes in View">
+        <TableWrap>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Class</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {assignments.map((row) => (
+                <tr key={row.id}>
+                  <Td>{row.name}</Td>
+                </tr>
+              ))}
+              {assignments.length === 0 && (
+                <tr>
+                  <Td className="text-muted">No classes available in this view.</Td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </TableWrap>
+      </Card>
+    </div>
   );
 }

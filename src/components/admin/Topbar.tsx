@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useClerk } from "@clerk/nextjs";
 import BrandLogo from "@/components/BrandLogo";
 
 type TopbarProps = {
   onMenuToggle: () => void;
   onSidebarToggle: () => void;
   sidebarMinimized: boolean;
+  mode: "admin" | "teacher";
+  homeHref: string;
+  settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
 };
@@ -21,18 +25,38 @@ export default function Topbar({
   onMenuToggle,
   onSidebarToggle,
   sidebarMinimized,
+  mode,
+  homeHref,
+  settingsHref,
   profileName,
   profileEmail,
 }: TopbarProps) {
+  const { signOut } = useClerk();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const roleLabel = mode === "teacher" ? "Teacher" : "Admin";
+
+  function handleSignOut() {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+    setProfileOpen(false);
+    setNotificationsOpen(false);
+    void signOut({ redirectUrl: "/sign-in" }).catch(() => {
+      setIsSigningOut(false);
+    });
+  }
 
   return (
     <div className="main-header">
       <div className="main-header-logo">
         <div className="logo-header" data-background-color="dark">
           <BrandLogo
-            href="/app/admin/dashboard"
+            href={homeHref}
             variant="light"
             className="logo"
             iconClassName="navbar-brand logo-icon"
@@ -56,12 +80,16 @@ export default function Topbar({
         <div className="container-fluid">
           <nav className="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
             <div className="input-group">
-              <div className="input-group-prepend">
+            <div className="input-group-prepend">
                 <button type="button" className="btn btn-search pe-1">
                   <i className="fa fa-search search-icon" />
                 </button>
               </div>
-              <input type="text" placeholder="Search students, teachers, payments..." className="form-control" />
+              <input
+                type="text"
+                placeholder={mode === "teacher" ? "Search students, classes, scores..." : "Search students, teachers, payments..."}
+                className="form-control"
+              />
             </div>
           </nav>
 
@@ -118,7 +146,7 @@ export default function Topbar({
                   </div>
                 </div>
                 <span className="profile-username">
-                  <span className="op-7">Hi,</span> <span className="fw-bold">{profileName ?? "Admin"}</span>
+                  <span className="op-7">Hi,</span> <span className="fw-bold">{profileName ?? roleLabel}</span>
                 </span>
               </button>
 
@@ -133,19 +161,26 @@ export default function Topbar({
                           </div>
                         </div>
                         <div className="u-text">
-                          <h4>{profileName ?? "Admin User"}</h4>
+                          <h4>{profileName ?? `${roleLabel} User`}</h4>
                           <p className="text-muted">{profileEmail ?? "admin@iweos.app"}</p>
                         </div>
                       </div>
                     </li>
                     <li>
                       <div className="dropdown-divider" />
-                      <a className="dropdown-item" href="/app/admin/settings">
-                        Account Settings
-                      </a>
-                      <a className="dropdown-item text-danger" href="#signout">
-                        Sign out
-                      </a>
+                      {settingsHref ? (
+                        <a className="dropdown-item" href={settingsHref}>
+                          Account Settings
+                        </a>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="dropdown-item text-danger border-0 bg-transparent text-start w-100"
+                        onClick={handleSignOut}
+                        disabled={isSigningOut}
+                      >
+                        {isSigningOut ? "Signing out..." : "Sign out"}
+                      </button>
                     </li>
                   </div>
                 </ul>

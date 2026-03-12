@@ -7,14 +7,26 @@ import Topbar from "@/components/admin/Topbar";
 
 type AdminShellProps = {
   children: React.ReactNode;
+  mode?: "admin" | "teacher";
+  homeHref?: string;
+  settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
 };
 
-export default function AdminShell({ children, profileName, profileEmail }: AdminShellProps) {
+export default function AdminShell({
+  children,
+  mode = "admin",
+  homeHref,
+  settingsHref,
+  profileName,
+  profileEmail,
+}: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const pathname = usePathname();
+  const resolvedHomeHref = homeHref ?? (mode === "teacher" ? "/app/teacher/dashboard" : "/app/admin/dashboard");
+  const resolvedSettingsHref = settingsHref ?? (mode === "admin" ? "/app/admin/settings" : undefined);
 
   useEffect(() => {
     document.documentElement.classList.toggle("nav_open", mobileOpen);
@@ -44,6 +56,9 @@ export default function AdminShell({ children, profileName, profileEmail }: Admi
         onMenuToggle={() => setMobileOpen((current) => !current)}
         onSidebarToggle={() => setSidebarMinimized((current) => !current)}
         sidebarMinimized={sidebarMinimized}
+        mode={mode}
+        homeHref={resolvedHomeHref}
+        settingsHref={resolvedSettingsHref}
         profileName={profileName}
         profileEmail={profileEmail}
       />
@@ -52,6 +67,9 @@ export default function AdminShell({ children, profileName, profileEmail }: Admi
           onMenuToggle={() => setMobileOpen((current) => !current)}
           onSidebarToggle={() => setSidebarMinimized((current) => !current)}
           sidebarMinimized={sidebarMinimized}
+          mode={mode}
+          homeHref={resolvedHomeHref}
+          settingsHref={resolvedSettingsHref}
           profileName={profileName}
           profileEmail={profileEmail}
         />
