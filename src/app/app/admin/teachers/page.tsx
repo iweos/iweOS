@@ -1,4 +1,11 @@
-import { addTeacherAction, setProfileRoleAction, toggleTeacherStatusAction } from "@/lib/server/admin-actions";
+import {
+  addTeacherAction,
+  deleteTeacherAction,
+  manualLinkTeacherAccountAction,
+  setProfileRoleAction,
+  toggleTeacherStatusAction,
+  updateTeacherAction,
+} from "@/lib/server/admin-actions";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
@@ -6,7 +13,16 @@ import { ProfileRole } from "@prisma/client";
 import Link from "next/link";
 import StatCard from "@/components/admin/ui/StatCard";
 
-export default async function AdminTeachersPage() {
+type AdminTeachersSearchParams = {
+  editTeacherId?: string;
+};
+
+export default async function AdminTeachersPage({
+  searchParams,
+}: {
+  searchParams: Promise<AdminTeachersSearchParams>;
+}) {
+  const params = await searchParams;
   const profile = await requireRole("admin");
 
   const [teachers, admins] = await Promise.all([
@@ -31,6 +47,7 @@ export default async function AdminTeachersPage() {
   const linkedAccounts = teachers.filter((teacher) => Boolean(teacher.clerkUserId)).length;
   const pendingAccounts = totalTeachers - linkedAccounts;
   const totalAdmins = admins.length;
+  const editingTeacher = params.editTeacherId ? teachers.find((teacher) => teacher.id === params.editTeacherId) ?? null : null;
 
   return (
     <>
@@ -87,6 +104,33 @@ export default async function AdminTeachersPage() {
         </p>
       </section>
 
+      {editingTeacher ? (
+        <section className="card card-body d-grid gap-3">
+          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <h2 className="section-heading mb-0">Edit Teacher</h2>
+            <Link className="btn btn-secondary" href="/app/admin/teachers">
+              Cancel
+            </Link>
+          </div>
+          <form action={updateTeacherAction} className="grid gap-3 md:grid-cols-3">
+            <input type="hidden" name="teacherId" value={editingTeacher.id} />
+            <label className="d-grid gap-1">
+              <span className="field-label">Full Name</span>
+              <input name="fullName" className="form-control" defaultValue={editingTeacher.fullName} required />
+            </label>
+            <label className="d-grid gap-1">
+              <span className="field-label">Email</span>
+              <input name="email" type="email" className="form-control" defaultValue={editingTeacher.email} required />
+            </label>
+            <div className="align-self-end">
+              <button className="btn btn-primary" type="submit">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
+
       <section className="card card-body">
         <h2 className="section-heading">Teacher Directory</h2>
         <TableWrap className="mt-2">
@@ -111,17 +155,32 @@ export default async function AdminTeachersPage() {
                 <Td>Teacher</Td>
                 <Td>
                   <div className="d-flex flex-wrap gap-1">
+                    <form action={manualLinkTeacherAccountAction}>
+                      <input type="hidden" name="teacherId" value={teacher.id} />
+                      <button className="btn btn-secondary" type="submit">
+                        {teacher.clerkUserId ? "Re-Link" : "Link"}
+                      </button>
+                    </form>
                     <form action={toggleTeacherStatusAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
                       <button className="btn btn-secondary" type="submit">
                         {teacher.isActive ? "Deactivate" : "Activate"}
                       </button>
                     </form>
+                    <Link className="btn btn-secondary" href={`/app/admin/teachers?editTeacherId=${teacher.id}`}>
+                      Edit
+                    </Link>
                     <form action={setProfileRoleAction}>
                       <input type="hidden" name="profileId" value={teacher.id} />
                       <input type="hidden" name="targetRole" value="admin" />
                       <button className="btn btn-primary" type="submit">
                         Make Admin
+                      </button>
+                    </form>
+                    <form action={deleteTeacherAction}>
+                      <input type="hidden" name="teacherId" value={teacher.id} />
+                      <button className="btn btn-danger" type="submit">
+                        Delete
                       </button>
                     </form>
                   </div>

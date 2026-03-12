@@ -278,6 +278,55 @@ export async function addTeacherAction(formData: FormData) {
   revalidateAdminPages();
 }
 
+export async function updateTeacherAction(formData: FormData) {
+  const actor = await requireRole("admin");
+  const teacherId = formValue(formData, "teacherId");
+
+  const parsed = teacherSchema.safeParse({
+    fullName: formValue(formData, "fullName"),
+    email: formValue(formData, "email").toLowerCase(),
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid teacher payload.");
+  }
+
+  const teacher = await prisma.profile.findFirst({
+    where: {
+      id: teacherId,
+      schoolId: actor.schoolId,
+      role: ProfileRole.TEACHER,
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found.");
+  }
+
+  const emailTaken = await prisma.profile.findFirst({
+    where: {
+      schoolId: actor.schoolId,
+      id: { not: teacher.id },
+      email: { equals: parsed.data.email, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
+
+  if (emailTaken) {
+    throw new Error("Another profile in this school already uses that email.");
+  }
+
+  await prisma.profile.update({
+    where: { id: teacher.id },
+    data: {
+      fullName: parsed.data.fullName,
+      email: parsed.data.email,
+    },
+  });
+
+  revalidateAdminPages();
+}
+
 export async function toggleTeacherStatusAction(formData: FormData) {
   const profile = await requireRole("admin");
   const teacherId = formValue(formData, "teacherId");
@@ -299,6 +348,104 @@ export async function toggleTeacherStatusAction(formData: FormData) {
     data: { isActive: !teacher.isActive },
   });
 
+  revalidateAdminPages();
+}
+
+export async function deleteTeacherAction(formData: FormData) {
+  const actor = await requireRole("admin");
+  const teacherId = formValue(formData, "teacherId");
+
+  const teacher = await prisma.profile.findFirst({
+    where: {
+      id: teacherId,
+      schoolId: actor.schoolId,
+      role: ProfileRole.TEACHER,
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found.");
+  }
+
+  const [assignmentCount, scoreCount] = await Promise.all([
+    prisma.teacherClassAssignment.count({
+      where: {
+        schoolId: actor.schoolId,
+        teacherProfileId: teacher.id,
+      },
+    }),
+    prisma.score.count({
+      where: {
+        schoolId: actor.schoolId,
+        teacherProfileId: teacher.id,
+      },
+    }),
+  ]);
+
+  if (assignmentCount > 0 || scoreCount > 0) {
+    throw new Error("Cannot delete teacher with existing assignments or score records. Deactivate instead.");
+  }
+
+  await prisma.profile.delete({
+    where: { id: teacher.id },
+  });
+
+  revalidateAdminPages();
+}
+
+export async function manualLinkTeacherAccountAction(formData: FormData) {
+  const actor = await requireRole("admin");
+  const teacherId = formValue(formData, "teacherId");
+
+  const teacher = await prisma.profile.findFirst({
+    where: {
+      id: teacherId,
+      schoolId: actor.schoolId,
+      role: ProfileRole.TEACHER,
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found.");
+  }
+
+  const normalizedEmail = teacher.email.trim().toLowerCase();
+  const client = await clerkClient();
+  const users = await client.users.getUserList({
+    emailAddress: [normalizedEmail],
+    limit: 10,
+  });
+
+  const clerkUser = users.data.find((user) =>
+    user.emailAddresses.some((entry) => entry.emailAddress.trim().toLowerCase() === normalizedEmail),
+  );
+
+  if (!clerkUser) {
+    throw new Error("No signed-up account found for this email yet.");
+  }
+
+  const existingLink = await prisma.profile.findUnique({
+    where: { clerkUserId: clerkUser.id },
+    select: { id: true, schoolId: true, email: true },
+  });
+
+  if (existingLink && existingLink.id !== teacher.id) {
+    throw new Error(
+      existingLink.schoolId === actor.schoolId
+        ? `This account is already linked to ${existingLink.email} in this school.`
+        : "This account is already linked to another school profile.",
+    );
+  }
+
+  const updated = await prisma.profile.update({
+    where: { id: teacher.id },
+    data: {
+      clerkUserId: clerkUser.id,
+      isActive: true,
+    },
+  });
+
+  await syncRoleMetadata(updated.clerkUserId, updated.role, updated.schoolId);
   revalidateAdminPages();
 }
 
