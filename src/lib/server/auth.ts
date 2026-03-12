@@ -8,6 +8,17 @@ type ProfileWithSchool = Prisma.ProfileGetPayload<{
   include: { school: true };
 }>;
 
+type PendingInviteProfile = {
+  id: string;
+  role: ProfileRole;
+  fullName: string;
+  email: string;
+  isActive: boolean;
+  createdAt: Date;
+  schoolId: string;
+  schoolName: string;
+};
+
 const DEFAULT_GRADE_SCALE = [
   { gradeLetter: "A", minScore: 70, maxScore: 100, orderIndex: 1 },
   { gradeLetter: "B", minScore: 60, maxScore: 69, orderIndex: 2 },
@@ -106,21 +117,10 @@ export async function getCurrentProfile(clerkUserId?: string): Promise<ProfileWi
   return profile;
 }
 
-export async function ensureProfileForAuthenticatedUser(): Promise<ProfileWithSchool> {
+async function resolveAuthIdentity() {
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");
-  }
-
-  const existingByClerkId = await getCurrentProfile(userId);
-  if (existingByClerkId) {
-    const recovered = await recoverAdminIfMissing(existingByClerkId);
-    await syncMetadataIfPossible(
-      recovered.clerkUserId,
-      toAppRole(recovered.role),
-      recovered.schoolId,
-    );
-    return recovered;
   }
 
   const user = await currentUser();
@@ -139,18 +139,74 @@ export async function ensureProfileForAuthenticatedUser(): Promise<ProfileWithSc
   const fullName =
     [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || email.split("@")[0] || "User";
 
-  const invitedTeacherProfile = await prisma.profile.findFirst({
+  return { userId, email, fullName };
+}
+
+async function findPendingProfilesByEmail(email: string): Promise<ProfileWithSchool[]> {
+  return prisma.profile.findMany({
     where: {
       email: { equals: email, mode: "insensitive" },
       clerkUserId: null,
-      role: ProfileRole.TEACHER,
     },
     include: { school: true },
+    orderBy: { createdAt: "desc" },
   });
+}
 
-  if (invitedTeacherProfile) {
+export async function getPendingInviteProfilesForAuthenticatedUser(): Promise<PendingInviteProfile[]> {
+  const { userId, email } = await resolveAuthIdentity();
+  const existingByClerkId = await getCurrentProfile(userId);
+  if (existingByClerkId) {
+    return [];
+  }
+
+  const pendingProfiles = await findPendingProfilesByEmail(email);
+  return pendingProfiles.map((profile) => ({
+    id: profile.id,
+    role: profile.role,
+    fullName: profile.fullName,
+    email: profile.email,
+    isActive: profile.isActive,
+    createdAt: profile.createdAt,
+    schoolId: profile.schoolId,
+    schoolName: profile.school.name,
+  }));
+}
+
+export async function ensureProfileForAuthenticatedUser(preferredProfileId?: string): Promise<ProfileWithSchool> {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const existingByClerkId = await getCurrentProfile(userId);
+  if (existingByClerkId) {
+    const recovered = await recoverAdminIfMissing(existingByClerkId);
+    await syncMetadataIfPossible(
+      recovered.clerkUserId,
+      toAppRole(recovered.role),
+      recovered.schoolId,
+    );
+    return recovered;
+  }
+
+  const { email, fullName } = await resolveAuthIdentity();
+  const pendingProfiles = await findPendingProfilesByEmail(email);
+
+  if (pendingProfiles.length > 0) {
+    const selectedPendingProfile =
+      preferredProfileId
+        ? pendingProfiles.find((profile) => profile.id === preferredProfileId) ?? null
+        : pendingProfiles.length === 1
+          ? pendingProfiles[0]
+          : null;
+
+    if (!selectedPendingProfile) {
+      redirect("/onboarding");
+    }
+
     const linkedProfile = await prisma.profile.update({
-      where: { id: invitedTeacherProfile.id },
+      where: { id: selectedPendingProfile.id },
       data: {
         clerkUserId: userId,
         fullName,
