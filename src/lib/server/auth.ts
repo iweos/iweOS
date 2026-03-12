@@ -19,6 +19,13 @@ type PendingInviteProfile = {
   schoolName: string;
 };
 
+type AuthIdentity = {
+  userId: string;
+  primaryEmail: string;
+  emails: string[];
+  fullName: string;
+};
+
 const DEFAULT_GRADE_SCALE = [
   { gradeLetter: "A", minScore: 70, maxScore: 100, orderIndex: 1 },
   { gradeLetter: "B", minScore: 60, maxScore: 69, orderIndex: 2 },
@@ -117,7 +124,11 @@ export async function getCurrentProfile(clerkUserId?: string): Promise<ProfileWi
   return profile;
 }
 
-async function resolveAuthIdentity() {
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
+async function resolveAuthIdentity(): Promise<AuthIdentity> {
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");
@@ -128,40 +139,80 @@ async function resolveAuthIdentity() {
     redirect("/sign-in");
   }
 
-  const email =
+  const primaryRaw =
     user.emailAddresses.find((entry) => entry.id === user.primaryEmailAddressId)?.emailAddress ??
     user.emailAddresses[0]?.emailAddress;
+  const allEmails = Array.from(
+    new Set(
+      user.emailAddresses
+        .map((entry) => entry.emailAddress)
+        .filter(Boolean)
+        .map(normalizeEmail),
+    ),
+  );
+  const primaryEmail = primaryRaw ? normalizeEmail(primaryRaw) : allEmails[0];
 
-  if (!email) {
+  if (!primaryEmail) {
     throw new Error("Authenticated Clerk user has no email address.");
+  }
+  if (allEmails.length === 0) {
+    allEmails.push(primaryEmail);
   }
 
   const fullName =
-    [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || email.split("@")[0] || "User";
+    [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || primaryEmail.split("@")[0] || "User";
 
-  return { userId, email, fullName };
+  return { userId, primaryEmail, emails: allEmails, fullName };
 }
 
-async function findPendingProfilesByEmail(email: string): Promise<ProfileWithSchool[]> {
+async function findPendingProfilesByEmails(emails: string[]): Promise<ProfileWithSchool[]> {
+  if (emails.length === 0) {
+    return [];
+  }
+
   return prisma.profile.findMany({
     where: {
-      email: { equals: email, mode: "insensitive" },
       clerkUserId: null,
       isActive: true,
+      OR: emails.map((email) => ({
+        email: { equals: email, mode: "insensitive" },
+      })),
     },
     include: { school: true },
     orderBy: { createdAt: "desc" },
   });
 }
 
-export async function getPendingInviteProfilesForAuthenticatedUser(): Promise<PendingInviteProfile[]> {
-  const { userId, email } = await resolveAuthIdentity();
-  const existingByClerkId = await getCurrentProfile(userId);
-  if (existingByClerkId) {
-    return [];
+async function reassignClerkUserLink(
+  currentProfileId: string,
+  targetProfile: ProfileWithSchool,
+  userId: string,
+  fullName: string,
+) {
+  if (currentProfileId === targetProfile.id) {
+    return targetProfile;
   }
 
-  const pendingProfiles = await findPendingProfilesByEmail(email);
+  return prisma.$transaction(async (tx) => {
+    await tx.profile.update({
+      where: { id: currentProfileId },
+      data: { clerkUserId: null },
+    });
+
+    return tx.profile.update({
+      where: { id: targetProfile.id },
+      data: {
+        clerkUserId: userId,
+        fullName,
+      },
+      include: { school: true },
+    });
+  });
+}
+
+export async function getPendingInviteProfilesForAuthenticatedUser(): Promise<PendingInviteProfile[]> {
+  const { emails } = await resolveAuthIdentity();
+  const pendingProfiles = await findPendingProfilesByEmails(emails);
   return pendingProfiles.map((profile) => ({
     id: profile.id,
     role: profile.role,
@@ -175,14 +226,35 @@ export async function getPendingInviteProfilesForAuthenticatedUser(): Promise<Pe
 }
 
 export async function ensureProfileForAuthenticatedUser(preferredProfileId?: string): Promise<ProfileWithSchool> {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
+  const { userId, primaryEmail, emails, fullName } = await resolveAuthIdentity();
   const existingByClerkId = await getCurrentProfile(userId);
+  const pendingProfiles = await findPendingProfilesByEmails(emails);
+
   if (existingByClerkId) {
     const recovered = await recoverAdminIfMissing(existingByClerkId);
+
+    if (pendingProfiles.length > 0) {
+      const selectedPendingProfile =
+        preferredProfileId
+          ? pendingProfiles.find((profile) => profile.id === preferredProfileId) ?? null
+          : null;
+
+      if (selectedPendingProfile) {
+        const relinkedProfile = await reassignClerkUserLink(recovered.id, selectedPendingProfile, userId, fullName);
+        await syncMetadataIfPossible(relinkedProfile.clerkUserId, toAppRole(relinkedProfile.role), relinkedProfile.schoolId);
+        return relinkedProfile;
+      }
+
+      if (!recovered.isActive) {
+        if (pendingProfiles.length === 1) {
+          const relinkedProfile = await reassignClerkUserLink(recovered.id, pendingProfiles[0], userId, fullName);
+          await syncMetadataIfPossible(relinkedProfile.clerkUserId, toAppRole(relinkedProfile.role), relinkedProfile.schoolId);
+          return relinkedProfile;
+        }
+        redirect("/onboarding");
+      }
+    }
+
     await syncMetadataIfPossible(
       recovered.clerkUserId,
       toAppRole(recovered.role),
@@ -190,9 +262,6 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
     );
     return recovered;
   }
-
-  const { email, fullName } = await resolveAuthIdentity();
-  const pendingProfiles = await findPendingProfilesByEmail(email);
 
   if (pendingProfiles.length > 0) {
     const selectedPendingProfile =
@@ -236,7 +305,7 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
           schoolId: school.id,
           role: ProfileRole.ADMIN,
           fullName,
-          email,
+          email: primaryEmail,
         },
         include: { school: true },
       });
