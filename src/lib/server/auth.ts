@@ -147,6 +147,7 @@ async function findPendingProfilesByEmail(email: string): Promise<ProfileWithSch
     where: {
       email: { equals: email, mode: "insensitive" },
       clerkUserId: null,
+      isActive: true,
     },
     include: { school: true },
     orderBy: { createdAt: "desc" },
