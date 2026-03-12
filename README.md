@@ -21,6 +21,8 @@ Create `.env.local` from `.env.example`:
 - `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (default `/sign-up`)
 - `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` (default `/app`)
 - `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` (default `/onboarding`)
+- `NEXT_PUBLIC_AUTH_DEBUG` (optional; set `1` to enable client-side Clerk auth diagnostics logs)
+- `CLERK_AUTH_DEBUG` (optional; set `1` to enable server-side Clerk auth diagnostics logs)
 
 ## Install and Run
 
@@ -63,7 +65,7 @@ node --test src/lib/server/payments/allocation.test.mjs
 
 ## Role Enforcement
 
-- Middleware (`src/middleware.ts`) protects `/onboarding` and `/app/*`.
+- Middleware (`src/proxy.ts`) protects `/onboarding` and `/app/*`.
 - Server guards enforce role and tenancy for all sensitive operations:
   - `requireRole("admin" | "teacher")`
   - `requireProfile()`

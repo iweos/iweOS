@@ -87,6 +87,24 @@ function getSubmitter(event: Event) {
   return form.querySelector<HTMLElement>("button[type='submit'], input[type='submit']");
 }
 
+function isInsideLoadingOptOut(element: Element | null) {
+  return Boolean(element?.closest("[data-loading-indicator='off']"));
+}
+
+function isInsideClerkComponent(element: Element | null) {
+  return Boolean(
+    element?.closest(
+      [
+        ".cl-rootBox",
+        ".cl-cardBox",
+        "[id^='clerk']",
+        "[class^='cl-']",
+        "[class*=' cl-']",
+      ].join(","),
+    ),
+  );
+}
+
 function toDurationMs(value: unknown) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
@@ -337,8 +355,14 @@ export default function GlobalPendingIndicator() {
       if (!(form instanceof HTMLFormElement)) {
         return;
       }
+      if (isInsideLoadingOptOut(form) || isInsideClerkComponent(form)) {
+        return;
+      }
 
       const submitter = getSubmitter(event);
+      if (submitter && (isInsideLoadingOptOut(submitter) || isInsideClerkComponent(submitter))) {
+        return;
+      }
       if (submitter?.dataset.loadingIndicator === "off") {
         return;
       }
@@ -358,6 +382,9 @@ export default function GlobalPendingIndicator() {
 
       const anchor = target.closest("a");
       if (!(anchor instanceof HTMLAnchorElement) || !isInternalNavigationLink(anchor)) {
+        return;
+      }
+      if (isInsideLoadingOptOut(anchor) || isInsideClerkComponent(anchor)) {
         return;
       }
       if (anchor.dataset.loadingIndicator === "off") {

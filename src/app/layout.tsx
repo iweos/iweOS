@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
+import ClerkDiagnosticsClient from "@/components/ClerkDiagnosticsClient";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
 import "./globals.css";
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <link rel="shortcut icon" href="/favicon-dove.svg" />
         </head>
         <body className={`${display.variable} ${ui.variable} ui`}>
+          <ClerkDiagnosticsClient />
           <GlobalPendingIndicator />
           <GlobalTableEnhancer />
           {children}

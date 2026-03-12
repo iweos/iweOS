@@ -1,9 +1,12 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { logClerkServerDiagnosticsOnce } from "@/lib/server/clerk-diagnostics";
 
 const isProtectedRoute = createRouteMatcher(["/onboarding(.*)", "/app(.*)", "/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  logClerkServerDiagnosticsOnce(req);
+
   if (!isProtectedRoute(req)) {
     return NextResponse.next();
   }
