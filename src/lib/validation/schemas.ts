@@ -93,6 +93,11 @@ export const enrollmentSchema = z.object({
   termId: z.string().uuid(),
 });
 
+export const enrollmentBulkSchema = z.object({
+  classId: z.string().uuid(),
+  termId: z.string().uuid(),
+});
+
 export const gradingSettingsSchema = z
   .object({
     ca1Weight: z.coerce.number().int().min(0).max(100),

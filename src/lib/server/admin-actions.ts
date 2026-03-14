@@ -14,6 +14,7 @@ import {
   classSchema,
   classSubjectBatchSchema,
   classSubjectAssignmentSchema,
+  enrollmentBulkSchema,
   enrollmentSchema,
   gradeScaleSchema,
   schoolSchema,
@@ -1223,6 +1224,87 @@ export async function enrollStudentAction(formData: FormData) {
       termId: term.id,
     },
   });
+
+  revalidateAdminPages();
+}
+
+export async function bulkEnrollStudentsByClassAction(formData: FormData) {
+  const profile = await requireRole("admin");
+
+  const parsed = enrollmentBulkSchema.safeParse({
+    classId: formValue(formData, "classId"),
+    termId: formValue(formData, "termId"),
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid bulk enrollment payload.");
+  }
+
+  let klass: Awaited<ReturnType<typeof prisma.class.findFirst>> = null;
+  let term: Awaited<ReturnType<typeof prisma.term.findFirst>> = null;
+
+  try {
+    [klass, term] = await Promise.all([
+      prisma.class.findFirst({
+        where: {
+          id: parsed.data.classId,
+          schoolId: profile.schoolId,
+        },
+      }),
+      prisma.term.findFirst({
+        where: {
+          id: parsed.data.termId,
+          schoolId: profile.schoolId,
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+    throw error;
+  }
+
+  if (!klass || !term) {
+    throw new Error("Class or term not found in this school.");
+  }
+
+  const eligibleStudents = await prisma.student.findMany({
+    where: {
+      schoolId: profile.schoolId,
+      status: "active",
+      className: {
+        equals: klass.name,
+        mode: "insensitive",
+      },
+    },
+    select: { id: true },
+  });
+
+  if (eligibleStudents.length === 0) {
+    throw new Error(`No active students are currently registered under ${klass.name}.`);
+  }
+
+  await prisma.$transaction(
+    eligibleStudents.map((student) =>
+      prisma.enrollment.upsert({
+        where: {
+          studentId_classId_termId: {
+            studentId: student.id,
+            classId: klass.id,
+            termId: term.id,
+          },
+        },
+        update: {},
+        create: {
+          schoolId: profile.schoolId,
+          studentId: student.id,
+          classId: klass.id,
+          termId: term.id,
+        },
+      }),
+    ),
+  );
 
   revalidateAdminPages();
 }
