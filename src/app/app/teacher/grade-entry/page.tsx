@@ -1,6 +1,8 @@
 import { ProfileRole } from "@prisma/client";
+import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
+import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { saveScoresAction } from "@/lib/server/teacher-actions";
 import { prisma } from "@/lib/server/prisma";
 
@@ -9,6 +11,8 @@ type GradeEntrySearchParams = {
   termId?: string;
   classId?: string;
   subjectId?: string;
+  status?: string;
+  message?: string;
 };
 
 export default async function TeacherGradeEntryPage({
@@ -34,100 +38,147 @@ export default async function TeacherGradeEntryPage({
   }
 
   const params = await searchParams;
+  const status = params.status === "success" || params.status === "error" ? params.status : null;
+  const message = (params.message ?? "").trim();
   const context = await requireTeacherPortalContext(params.teacherProfileId);
+  let terms: Awaited<ReturnType<typeof prisma.term.findMany>> = [];
+  let classesInView: Array<{ id: string; name: string }> = [];
+  let activeTemplate: { id: string; name: string } | null = null;
+  let assessmentTypes: Awaited<ReturnType<typeof prisma.assessmentType.findMany>> = [];
 
-  const [terms, classesInView, activeTemplate] = await Promise.all([
-    prisma.term.findMany({
-      where: { schoolId: context.actorProfile.schoolId },
-      orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
-    }),
-    context.mode === "admin_override"
-      ? prisma.class.findMany({
-          where: { schoolId: context.actorProfile.schoolId },
-          orderBy: { name: "asc" },
-        })
-      : prisma.teacherClassAssignment
-          .findMany({
-            where: {
-              schoolId: context.actorProfile.schoolId,
-              teacherProfileId: context.effectiveTeacherProfile.id,
-            },
-            include: { class: true },
-            orderBy: { class: { name: "asc" } },
+  try {
+    [terms, classesInView, activeTemplate] = await Promise.all([
+      prisma.term.findMany({
+        where: { schoolId: context.actorProfile.schoolId },
+        orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
+      }),
+      context.mode === "admin_override"
+        ? prisma.class.findMany({
+            where: { schoolId: context.actorProfile.schoolId },
+            orderBy: { name: "asc" },
           })
-          .then((rows) => rows.map((row) => row.class)),
-    gradingClient.assessmentTemplate.findFirst({
-      where: {
-        schoolId: context.actorProfile.schoolId,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-  ]);
-
-  const assessmentTypes = activeTemplate
-    ? await gradingClient.assessmentType.findMany({
+        : prisma.teacherClassAssignment
+            .findMany({
+              where: {
+                schoolId: context.actorProfile.schoolId,
+                teacherProfileId: context.effectiveTeacherProfile.id,
+              },
+              include: { class: true },
+              orderBy: { class: { name: "asc" } },
+            })
+            .then((rows) => rows.map((row) => row.class)),
+      gradingClient.assessmentTemplate.findFirst({
         where: {
           schoolId: context.actorProfile.schoolId,
-          templateId: activeTemplate.id,
           isActive: true,
         },
-        orderBy: { orderIndex: "asc" },
-      })
-    : [];
+        select: {
+          id: true,
+          name: true,
+        },
+      }),
+    ]);
+
+    assessmentTypes = activeTemplate
+      ? await gradingClient.assessmentType.findMany({
+          where: {
+            schoolId: context.actorProfile.schoolId,
+            templateId: activeTemplate.id,
+            isActive: true,
+          },
+          orderBy: { orderIndex: "asc" },
+        })
+      : [];
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return (
+        <section className="section-panel space-y-2">
+          <p className="section-kicker">Teacher Portal</p>
+          <h1 className="section-title">Score Entry Setup Required</h1>
+          <p className="section-subtle">
+            Production is missing the latest grading schema. Run <code>npx prisma migrate deploy</code> against the production
+            database, then redeploy the app.
+          </p>
+        </section>
+      );
+    }
+
+    throw error;
+  }
 
   const selectedTermId = params.termId && terms.some((term) => term.id === params.termId) ? params.termId : terms[0]?.id;
   const selectedClassId =
     params.classId && classesInView.some((klass) => klass.id === params.classId) ? params.classId : classesInView[0]?.id;
 
-  const classSubjects = selectedClassId
-    ? await prisma.classSubject.findMany({
-        where: {
-          schoolId: context.actorProfile.schoolId,
-          classId: selectedClassId,
-        },
-        include: { subject: true },
-        orderBy: { subject: { name: "asc" } },
-      })
-    : [];
+  let classSubjects: Array<
+    Awaited<ReturnType<typeof prisma.classSubject.findMany>>[number]
+  > = [];
+  let selectedSubjectId: string | undefined;
+  let enrollments: Array<Awaited<ReturnType<typeof prisma.enrollment.findMany>>[number]> = [];
+  let existingScores: Array<Awaited<ReturnType<typeof prisma.score.findMany>>[number]> = [];
 
-  const selectedSubjectId =
-    params.subjectId && classSubjects.some((pair) => pair.subjectId === params.subjectId)
-      ? params.subjectId
-      : classSubjects[0]?.subjectId;
-
-  const enrollments =
-    selectedClassId && selectedTermId
-      ? await prisma.enrollment.findMany({
+  try {
+    classSubjects = selectedClassId
+      ? await prisma.classSubject.findMany({
           where: {
             schoolId: context.actorProfile.schoolId,
             classId: selectedClassId,
-            termId: selectedTermId,
           },
-          include: {
-            student: true,
-          },
-          orderBy: { student: { fullName: "asc" } },
+          include: { subject: true },
+          orderBy: { subject: { name: "asc" } },
         })
       : [];
 
-  const existingScores =
-    selectedTermId && selectedSubjectId && selectedClassId
-      ? await prisma.score.findMany({
-          where: {
-            schoolId: context.actorProfile.schoolId,
-            termId: selectedTermId,
-            classId: selectedClassId,
-            subjectId: selectedSubjectId,
-          },
-          include: {
-            assessmentValues: true,
-          },
-        })
-      : [];
+    selectedSubjectId =
+      params.subjectId && classSubjects.some((pair) => pair.subjectId === params.subjectId)
+        ? params.subjectId
+        : classSubjects[0]?.subjectId;
+
+    enrollments =
+      selectedClassId && selectedTermId
+        ? await prisma.enrollment.findMany({
+            where: {
+              schoolId: context.actorProfile.schoolId,
+              classId: selectedClassId,
+              termId: selectedTermId,
+            },
+            include: {
+              student: true,
+            },
+            orderBy: { student: { fullName: "asc" } },
+          })
+        : [];
+
+    existingScores =
+      selectedTermId && selectedSubjectId && selectedClassId
+        ? await prisma.score.findMany({
+            where: {
+              schoolId: context.actorProfile.schoolId,
+              termId: selectedTermId,
+              classId: selectedClassId,
+              subjectId: selectedSubjectId,
+            },
+            include: {
+              assessmentValues: true,
+            },
+          })
+        : [];
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return (
+        <section className="section-panel space-y-2">
+          <p className="section-kicker">Teacher Portal</p>
+          <h1 className="section-title">Score Entry Setup Required</h1>
+          <p className="section-subtle">
+            Production is missing the latest grading schema. Run <code>npx prisma migrate deploy</code> against the production
+            database, then redeploy the app.
+          </p>
+        </section>
+      );
+    }
+
+    throw error;
+  }
 
   const scoreMap = new Map(
     existingScores.map((score) => [
@@ -144,6 +195,7 @@ export default async function TeacherGradeEntryPage({
 
   return (
     <>
+      {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <section className="section-panel space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
