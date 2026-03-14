@@ -39,6 +39,14 @@ function redirectSubjectsStatus(status: "success" | "error", message: string): n
   redirect(`/app/admin/subjects?${query.toString()}`);
 }
 
+function redirectEnrollmentsStatus(status: "success" | "error", message: string): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+  redirect(`/app/admin/assignments/enrollments?${query.toString()}`);
+}
+
 function revalidateAdminPages() {
   revalidatePath("/app/admin/dashboard");
   revalidatePath("/app/admin/settings");
@@ -1187,45 +1195,49 @@ export async function enrollStudentAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid enrollment payload.");
   }
 
-  let student: Awaited<ReturnType<typeof prisma.student.findFirst>> = null;
-  let klass: Awaited<ReturnType<typeof prisma.class.findFirst>> = null;
-  let term: Awaited<ReturnType<typeof prisma.term.findFirst>> = null;
+  let successMessage = "";
 
   try {
-    [student, klass, term] = await Promise.all([
+    const [student, klass, term] = await Promise.all([
       prisma.student.findFirst({ where: { id: parsed.data.studentId, schoolId: profile.schoolId } }),
       prisma.class.findFirst({ where: { id: parsed.data.classId, schoolId: profile.schoolId } }),
       prisma.term.findFirst({ where: { id: parsed.data.termId, schoolId: profile.schoolId } }),
     ]);
-  } catch (error) {
-    if (isPrismaSchemaMismatchError(error)) {
-      throw studentSchemaSyncError();
+
+    if (!student || !klass || !term) {
+      throw new Error("Student, class, or term not found in this school.");
     }
-    throw error;
-  }
 
-  if (!student || !klass || !term) {
-    throw new Error("Student, class, or term not found in this school.");
-  }
-
-  await prisma.enrollment.upsert({
-    where: {
-      studentId_classId_termId: {
+    await prisma.enrollment.upsert({
+      where: {
+        studentId_classId_termId: {
+          studentId: student.id,
+          classId: klass.id,
+          termId: term.id,
+        },
+      },
+      update: {},
+      create: {
+        schoolId: profile.schoolId,
         studentId: student.id,
         classId: klass.id,
         termId: term.id,
       },
-    },
-    update: {},
-    create: {
-      schoolId: profile.schoolId,
-      studentId: student.id,
-      classId: klass.id,
-      termId: term.id,
-    },
-  });
+    });
 
-  revalidateAdminPages();
+    revalidateAdminPages();
+    successMessage = `${student.fullName} enrolled into ${klass.name} for ${term.sessionLabel} ${term.termLabel}.`;
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+    if (error instanceof Error) {
+      redirectEnrollmentsStatus("error", error.message);
+    }
+    throw error;
+  }
+
+  redirectEnrollmentsStatus("success", successMessage);
 }
 
 export async function bulkEnrollStudentsByClassAction(formData: FormData) {
@@ -1240,11 +1252,10 @@ export async function bulkEnrollStudentsByClassAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid bulk enrollment payload.");
   }
 
-  let klass: Awaited<ReturnType<typeof prisma.class.findFirst>> = null;
-  let term: Awaited<ReturnType<typeof prisma.term.findFirst>> = null;
+  let successMessage = "";
 
   try {
-    [klass, term] = await Promise.all([
+    const [klass, term] = await Promise.all([
       prisma.class.findFirst({
         where: {
           id: parsed.data.classId,
@@ -1258,69 +1269,102 @@ export async function bulkEnrollStudentsByClassAction(formData: FormData) {
         },
       }),
     ]);
+
+    if (!klass || !term) {
+      throw new Error("Class or term not found in this school.");
+    }
+
+    const eligibleStudents = await prisma.student.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        status: "active",
+        className: {
+          equals: klass.name,
+          mode: "insensitive",
+        },
+      },
+      select: { id: true },
+    });
+
+    if (eligibleStudents.length === 0) {
+      throw new Error(`No active students are currently registered under ${klass.name}.`);
+    }
+
+    await prisma.$transaction(
+      eligibleStudents.map((student) =>
+        prisma.enrollment.upsert({
+          where: {
+            studentId_classId_termId: {
+              studentId: student.id,
+              classId: klass.id,
+              termId: term.id,
+            },
+          },
+          update: {},
+          create: {
+            schoolId: profile.schoolId,
+            studentId: student.id,
+            classId: klass.id,
+            termId: term.id,
+          },
+        }),
+      ),
+    );
+
+    revalidateAdminPages();
+    successMessage = `${eligibleStudents.length} active student${eligibleStudents.length === 1 ? "" : "s"} enrolled into ${klass.name} for ${term.sessionLabel} ${term.termLabel}.`;
   } catch (error) {
+    if (error instanceof Error && !isPrismaSchemaMismatchError(error)) {
+      redirectEnrollmentsStatus("error", error.message);
+    }
     if (isPrismaSchemaMismatchError(error)) {
       throw studentSchemaSyncError();
     }
     throw error;
   }
 
-  if (!klass || !term) {
-    throw new Error("Class or term not found in this school.");
-  }
-
-  const eligibleStudents = await prisma.student.findMany({
-    where: {
-      schoolId: profile.schoolId,
-      status: "active",
-      className: {
-        equals: klass.name,
-        mode: "insensitive",
-      },
-    },
-    select: { id: true },
-  });
-
-  if (eligibleStudents.length === 0) {
-    throw new Error(`No active students are currently registered under ${klass.name}.`);
-  }
-
-  await prisma.$transaction(
-    eligibleStudents.map((student) =>
-      prisma.enrollment.upsert({
-        where: {
-          studentId_classId_termId: {
-            studentId: student.id,
-            classId: klass.id,
-            termId: term.id,
-          },
-        },
-        update: {},
-        create: {
-          schoolId: profile.schoolId,
-          studentId: student.id,
-          classId: klass.id,
-          termId: term.id,
-        },
-      }),
-    ),
-  );
-
-  revalidateAdminPages();
+  redirectEnrollmentsStatus("success", successMessage);
 }
 
 export async function removeEnrollmentAction(formData: FormData) {
   const profile = await requireRole("admin");
   const enrollmentId = formValue(formData, "enrollmentId");
+  let successMessage = "";
 
-  await prisma.enrollment.deleteMany({
-    where: {
-      id: enrollmentId,
-      schoolId: profile.schoolId,
-    },
-  });
+  try {
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        id: enrollmentId,
+        schoolId: profile.schoolId,
+      },
+      include: {
+        student: { select: { fullName: true } },
+        class: { select: { name: true } },
+        term: { select: { sessionLabel: true, termLabel: true } },
+      },
+    });
 
-  revalidateAdminPages();
+    if (!enrollment) {
+      throw new Error("Enrollment record not found.");
+    }
+
+    await prisma.enrollment.delete({
+      where: { id: enrollment.id },
+    });
+
+    revalidateAdminPages();
+    successMessage = `${enrollment.student.fullName} removed from ${enrollment.class.name} for ${enrollment.term.sessionLabel} ${enrollment.term.termLabel}.`;
+  } catch (error) {
+    if (error instanceof Error && !isPrismaSchemaMismatchError(error)) {
+      redirectEnrollmentsStatus("error", error.message);
+    }
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+    throw error;
+  }
+
+  redirectEnrollmentsStatus("success", successMessage);
 }
 
 export async function upsertAssessmentTemplateAction(formData: FormData) {

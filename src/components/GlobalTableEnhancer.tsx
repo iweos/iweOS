@@ -27,6 +27,9 @@ function enhanceTable(table: HTMLTableElement, index: number) {
   if (table.dataset.iweTableEnhanced === "true") {
     return;
   }
+  if (table.dataset.iweTableEnhancer === "off") {
+    return;
+  }
   if (table.closest(".dataTables_wrapper")) {
     return;
   }
