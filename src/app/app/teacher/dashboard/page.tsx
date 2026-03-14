@@ -304,20 +304,24 @@ export default async function TeacherDashboardPage({
       />
 
       <Card subtitle={`Signed in as ${label}`}>
+        <p className="section-subtle mb-3">
+          Portal mode:{" "}
+          <strong>{context.mode === "admin_override" ? "Admin" : "Teacher"}</strong>
+        </p>
         <div className="row g-3">
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
+          <div className="col-sm-6 col-xl-4">
             <StatCard label="Classes In View" value={assignments.length} icon="fas fa-th-large" cardVariant="secondary" />
           </div>
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
+          <div className="col-sm-6 col-xl-4">
             <StatCard label="Subjects In View" value={uniqueSubjectMap.size} icon="fas fa-book-open" cardVariant="success" />
           </div>
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
+          <div className="col-sm-6 col-xl-4">
             <StatCard label="Students In Active Term" value={uniqueStudentMap.size} icon="fas fa-user-graduate" cardVariant="primary" />
           </div>
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
+          <div className="col-sm-6 col-xl-4">
             <StatCard label="Submitted Score Rows" value={totalScores} icon="fas fa-clipboard-check" cardVariant="info" />
           </div>
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
+          <div className="col-sm-6 col-xl-4">
             <StatCard
               label="Score Completion"
               value={`${completionRate.toFixed(0)}%`}
@@ -326,21 +330,13 @@ export default async function TeacherDashboardPage({
               delta={`${pendingScoreRows} pending of ${expectedScoreRows || 0}`}
             />
           </div>
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
+          <div className="col-sm-6 col-xl-4">
             <StatCard
               label="Current Term Average"
               value={formatMetric(averageTotal)}
               icon="fas fa-award"
               cardVariant="black"
               delta={activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "No active term"}
-            />
-          </div>
-          <div className="col-sm-6 col-xl-4 col-xxl-2">
-            <StatCard
-              label="Portal Mode"
-              value={context.mode === "admin_override" ? "Admin" : "Teacher"}
-              icon="fas fa-user-tag"
-              cardVariant={context.mode === "admin_override" ? "warning" : "success"}
             />
           </div>
         </div>
