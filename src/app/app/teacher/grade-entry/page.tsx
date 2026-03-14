@@ -1,9 +1,8 @@
 import { ProfileRole } from "@prisma/client";
 import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
+import GradeEntryTable from "@/components/teacher/GradeEntryTable";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
-import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
-import { saveScoresAction } from "@/lib/server/teacher-actions";
 import { prisma } from "@/lib/server/prisma";
 
 type GradeEntrySearchParams = {
@@ -110,12 +109,31 @@ export default async function TeacherGradeEntryPage({
   const selectedClassId =
     params.classId && classesInView.some((klass) => klass.id === params.classId) ? params.classId : classesInView[0]?.id;
 
-  let classSubjects: Array<
-    Awaited<ReturnType<typeof prisma.classSubject.findMany>>[number]
-  > = [];
+  let classSubjects: Array<{
+    id: string;
+    subjectId: string;
+    subject: {
+      name: string;
+    };
+  }> = [];
   let selectedSubjectId: string | undefined;
-  let enrollments: Array<Awaited<ReturnType<typeof prisma.enrollment.findMany>>[number]> = [];
-  let existingScores: Array<Awaited<ReturnType<typeof prisma.score.findMany>>[number]> = [];
+  let enrollments: Array<{
+    id: string;
+    studentId: string;
+    student: {
+      studentCode: string;
+      fullName: string;
+    };
+  }> = [];
+  let existingScores: Array<{
+    studentId: string;
+    total: number;
+    grade: string | null;
+    assessmentValues: Array<{
+      assessmentTypeId: string;
+      value: number;
+    }>;
+  }> = [];
 
   try {
     classSubjects = selectedClassId
@@ -149,20 +167,31 @@ export default async function TeacherGradeEntryPage({
           })
         : [];
 
-    existingScores =
-      selectedTermId && selectedSubjectId && selectedClassId
-        ? await prisma.score.findMany({
-            where: {
-              schoolId: context.actorProfile.schoolId,
-              termId: selectedTermId,
-              classId: selectedClassId,
-              subjectId: selectedSubjectId,
-            },
-            include: {
-              assessmentValues: true,
-            },
-          })
-        : [];
+    if (selectedTermId && selectedSubjectId && selectedClassId) {
+      const rawExistingScores = await prisma.score.findMany({
+        where: {
+          schoolId: context.actorProfile.schoolId,
+          termId: selectedTermId,
+          classId: selectedClassId,
+          subjectId: selectedSubjectId,
+        },
+        include: {
+          assessmentValues: true,
+        },
+      });
+
+      existingScores = rawExistingScores.map((score) => ({
+        studentId: score.studentId,
+        total: Number(score.total),
+        grade: score.grade,
+        assessmentValues: score.assessmentValues.map((item) => ({
+          assessmentTypeId: item.assessmentTypeId,
+          value: Number(item.value),
+        })),
+      }));
+    } else {
+      existingScores = [];
+    }
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
       return (
@@ -184,9 +213,9 @@ export default async function TeacherGradeEntryPage({
     existingScores.map((score) => [
       score.studentId,
       {
-        total: score.total,
+        total: Number(score.total),
         grade: score.grade,
-        values: new Map(score.assessmentValues.map((item) => [item.assessmentTypeId, item.value])),
+        values: new Map(score.assessmentValues.map((item) => [item.assessmentTypeId, Number(item.value)])),
       },
     ]),
   );
@@ -276,66 +305,34 @@ export default async function TeacherGradeEntryPage({
         ) : assessmentTypes.length === 0 ? (
           <p className="section-subtle">No active assessment items found in the active template.</p>
         ) : (
-          <form action={saveScoresAction} className="space-y-3">
-            <input type="hidden" name="termId" value={selectedTermId} />
-            <input type="hidden" name="classId" value={selectedClassId} />
-            <input type="hidden" name="subjectId" value={selectedSubjectId} />
-            <input type="hidden" name="teacherProfileId" value={params.teacherProfileId ?? ""} />
-
-            <TableWrap className="table-wrap">
-              <Table>
-                <thead>
-                  <tr>
-                    <Th>Student</Th>
-                    {assessmentTypes.map((assessment) => (
-                      <Th key={assessment.id}>
-                        {assessment.name}
-                        <br />
-                        <span className="text-xs text-[var(--muted)]">Max {assessment.weight}</span>
-                      </Th>
-                    ))}
-                    <Th>Total</Th>
-                    <Th>Grade</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {enrollments.map((enrollment) => {
-                    const score = scoreMap.get(enrollment.studentId);
-                    return (
-                      <tr key={enrollment.id}>
-                        <Td>
-                          {enrollment.student.studentCode} - {enrollment.student.fullName}
-                        </Td>
-                        {assessmentTypes.map((assessment) => (
-                          <Td key={`${enrollment.id}_${assessment.id}`}>
-                            <input
-                              name={`score_${enrollment.studentId}_${assessment.id}`}
-                              type="number"
-                              min={0}
-                              max={assessment.weight}
-                              step={0.01}
-                              className="input"
-                              defaultValue={score?.values.get(assessment.id)?.toString() ?? "0"}
-                            />
-                          </Td>
-                        ))}
-                        <Td>{score?.total.toString() ?? "-"}</Td>
-                        <Td>{score?.grade ?? "-"}</Td>
-                      </tr>
-                    );
-                  })}
-                  {enrollments.length === 0 && (
-                    <tr>
-                      <Td colSpan={assessmentTypes.length + 3}>No enrolled students for this class/term.</Td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </TableWrap>
-            <button className="btn btn-primary" type="submit">
-              Save Scores
-            </button>
-          </form>
+          <GradeEntryTable
+            teacherProfileId={params.teacherProfileId}
+            termId={selectedTermId}
+            classId={selectedClassId}
+            subjectId={selectedSubjectId}
+            assessmentTypes={assessmentTypes.map((assessment) => ({
+              id: assessment.id,
+              name: assessment.name,
+              weight: assessment.weight,
+            }))}
+            initialRows={enrollments.map((enrollment) => {
+              const score = scoreMap.get(enrollment.studentId);
+              return {
+                enrollmentId: enrollment.id,
+                studentId: enrollment.studentId,
+                studentCode: enrollment.student.studentCode,
+                fullName: enrollment.student.fullName,
+                total: score?.total ?? null,
+                grade: score?.grade ?? null,
+                values: Object.fromEntries(
+                  assessmentTypes.map((assessment) => [
+                    assessment.id,
+                    score?.values.get(assessment.id)?.toString() ?? "0",
+                  ]),
+                ),
+              };
+            })}
+          />
         )}
       </section>
     </>
