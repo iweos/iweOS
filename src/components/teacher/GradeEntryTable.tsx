@@ -72,6 +72,16 @@ export default function GradeEntryTable({
     }, 2200);
   }
 
+  function clearStatusClearTimer(studentId: string) {
+    const currentTimeout = clearTimersRef.current[studentId];
+    if (!currentTimeout) {
+      return;
+    }
+
+    window.clearTimeout(currentTimeout);
+    delete clearTimersRef.current[studentId];
+  }
+
   function handleValueChange(studentId: string, assessmentTypeId: string, nextValue: string) {
     setRows((current) =>
       current.map((row) =>
@@ -108,9 +118,10 @@ export default function GradeEntryTable({
 
     const nextRequestVersion = (requestVersionRef.current[studentId] ?? 0) + 1;
     requestVersionRef.current[studentId] = nextRequestVersion;
+    clearStatusClearTimer(studentId);
+    setRowStatus(studentId, { tone: "saving", message: "Saving..." });
 
     startTransition(() => {
-      setRowStatus(studentId, { tone: "saving", message: "Saving..." });
       void saveStudentScoresAction(payload)
         .then((result: SaveStudentScoresResult) => {
           if (requestVersionRef.current[studentId] !== nextRequestVersion) {
@@ -201,17 +212,29 @@ export default function GradeEntryTable({
                   <Td>{row.total?.toString() ?? "-"}</Td>
                   <Td>{row.grade ?? "-"}</Td>
                   <Td>
-                    <span
-                      className={
-                        rowStatus.tone === "error"
-                          ? "text-danger text-xs"
-                          : rowStatus.tone === "saved"
-                            ? "text-success text-xs"
-                            : "text-[var(--muted)] text-xs"
-                      }
-                    >
-                      {rowStatus.message || (isPending ? "" : "Ready")}
-                    </span>
+                    {rowStatus.tone === "saving" ? (
+                      <span className="inline-flex items-center gap-2 text-xs text-[var(--muted)]">
+                        <span className="global-pending-bird inline-bird-loader" aria-hidden="true">
+                          <i className="fas fa-dove bird-base" />
+                          <span className="bird-fill-mask">
+                            <i className="fas fa-dove bird-fill" />
+                          </span>
+                        </span>
+                        <span>{rowStatus.message}</span>
+                      </span>
+                    ) : (
+                      <span
+                        className={
+                          rowStatus.tone === "error"
+                            ? "text-danger text-xs"
+                            : rowStatus.tone === "saved"
+                              ? "text-success text-xs"
+                              : "text-[var(--muted)] text-xs"
+                        }
+                      >
+                        {rowStatus.message || (isPending ? "" : "Ready")}
+                      </span>
+                    )}
                   </Td>
                 </tr>
               );

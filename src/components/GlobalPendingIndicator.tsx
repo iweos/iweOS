@@ -1,7 +1,7 @@
 "use client";
 
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const MIN_VISIBLE_MS = 260;
 const MAX_VISIBLE_MS = 18000;
@@ -121,6 +121,7 @@ export default function GlobalPendingIndicator() {
   const [manualDurationMs, setManualDurationMs] = useState(10000);
   const [manualRunId, setManualRunId] = useState(0);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const isVisibleRef = useRef(false);
   const startedAtRef = useRef(0);
@@ -129,6 +130,7 @@ export default function GlobalPendingIndicator() {
   const triggerElRef = useRef<HTMLElement | null>(null);
   const triggerWasDisabledRef = useRef<boolean | null>(null);
   const lastPathnameRef = useRef(pathname);
+  const lastSearchRef = useRef(searchParams.toString());
   const minTimerRef = useRef<number | null>(null);
   const maxTimerRef = useRef<number | null>(null);
   const noNetworkTimerRef = useRef<number | null>(null);
@@ -404,16 +406,18 @@ export default function GlobalPendingIndicator() {
   }, [beginPending]);
 
   useEffect(() => {
-    if (lastPathnameRef.current === pathname) {
+    const nextSearch = searchParams.toString();
+    if (lastPathnameRef.current === pathname && lastSearchRef.current === nextSearch) {
       return;
     }
     lastPathnameRef.current = pathname;
+    lastSearchRef.current = nextSearch;
 
     const timerId = window.setTimeout(() => finishPending(), 0);
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [finishPending, pathname]);
+  }, [finishPending, pathname, searchParams]);
 
   useEffect(
     () => () => {

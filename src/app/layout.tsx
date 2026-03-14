@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
@@ -61,7 +62,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body className={`${display.variable} ${ui.variable} ui`}>
           <ClerkDiagnosticsClient />
-          <GlobalPendingIndicator />
+          <Suspense fallback={null}>
+            <GlobalPendingIndicator />
+          </Suspense>
           <GlobalTableEnhancer />
           {children}
         </body>

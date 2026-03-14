@@ -1686,6 +1686,11 @@ textarea:focus {
   margin-top: 0.08rem;
 }
 
+.inline-bird-loader {
+  width: 14px;
+  height: 14px;
+}
+
 .global-pending-bird .bird-base,
 .global-pending-bird .bird-fill {
   font-size: 16px;
@@ -1697,6 +1702,11 @@ textarea:focus {
 .global-pending-indicator.is-logo-mode .global-pending-bird .bird-base,
 .global-pending-indicator.is-logo-mode .global-pending-bird .bird-fill {
   font-size: 26px;
+}
+
+.inline-bird-loader .bird-base,
+.inline-bird-loader .bird-fill {
+  font-size: 11px;
 }
 
 .global-pending-bird .bird-base {
