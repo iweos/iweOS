@@ -1,5 +1,6 @@
 import { ProfileRole } from "@prisma/client";
 import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
+import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import GradeEntryTable from "@/components/teacher/GradeEntryTable";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
@@ -287,9 +288,7 @@ export default async function TeacherGradeEntryPage({
           </label>
 
           <div className="self-end">
-            <button className="btn btn-muted" type="submit">
-              Load
-            </button>
+            <AutoSubmitFilters />
           </div>
         </form>
 

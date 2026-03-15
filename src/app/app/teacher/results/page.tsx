@@ -1,6 +1,7 @@
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { ProfileRole } from "@prisma/client";
+import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { prisma } from "@/lib/server/prisma";
 
 type TeacherResultsSearchParams = {
@@ -102,9 +103,7 @@ export default async function TeacherResultsPage({
                 ))}
               </select>
             </label>
-            <button className="btn btn-muted" type="submit">
-              Apply
-            </button>
+            <AutoSubmitFilters />
           </form>
         )}
       </div>

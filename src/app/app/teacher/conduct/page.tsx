@@ -1,4 +1,5 @@
 import { ProfileRole } from "@prisma/client";
+import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import TeacherConductTable from "@/components/teacher/TeacherConductTable";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
@@ -236,9 +237,7 @@ export default async function TeacherConductPage({
           </label>
 
           <div className="self-end">
-            <button className="btn btn-muted" type="submit">
-              Load
-            </button>
+            <AutoSubmitFilters />
           </div>
         </form>
       </section>

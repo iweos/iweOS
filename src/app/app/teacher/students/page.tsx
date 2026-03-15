@@ -3,6 +3,7 @@ import Card from "@/components/admin/Card";
 import PageHeader from "@/components/admin/PageHeader";
 import StatCard from "@/components/admin/ui/StatCard";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
+import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { getGradeForTotal } from "@/lib/server/grading";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
@@ -280,9 +281,7 @@ export default async function TeacherStudentsPage({
           </label>
 
           <div className="self-end">
-            <button className="btn btn-muted" type="submit">
-              Load
-            </button>
+            <AutoSubmitFilters />
           </div>
         </form>
       </section>
