@@ -132,6 +132,13 @@ const TERM_BUNDLE_LABELS = {
   two_semesters: ["1st Semester", "2nd Semester"],
 } as const;
 
+function parseCustomSessionLabels(raw: string) {
+  return raw
+    .split(/\r?\n|,/g)
+    .map((label) => label.trim())
+    .filter(Boolean);
+}
+
 function schoolNameToken(schoolName: string) {
   const cleanedWords = schoolName
     .toUpperCase()
@@ -1040,6 +1047,7 @@ export async function createSessionBundleAction(formData: FormData) {
   const parsed = sessionBundleSchema.safeParse({
     sessionLabel: formValue(formData, "sessionLabel"),
     structure: formValue(formData, "structure"),
+    customLabels: formValue(formData, "customLabels"),
     setFirstActive: formValue(formData, "setFirstActive") === "on",
   });
 
@@ -1048,7 +1056,10 @@ export async function createSessionBundleAction(formData: FormData) {
   }
 
   const sessionLabel = parsed.data.sessionLabel;
-  const termLabels = Array.from(TERM_BUNDLE_LABELS[parsed.data.structure]);
+  const termLabels =
+    parsed.data.structure === "custom"
+      ? parseCustomSessionLabels(parsed.data.customLabels ?? "")
+      : Array.from(TERM_BUNDLE_LABELS[parsed.data.structure]);
 
   await prisma.$transaction(async (tx) => {
     const existingTerms = await tx.term.findMany({

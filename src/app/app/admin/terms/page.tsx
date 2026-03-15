@@ -50,6 +50,7 @@ export default async function AdminTermsPage() {
           <select name="structure" className="form-select" defaultValue="three_terms">
             <option value="three_terms">Three Terms</option>
             <option value="two_semesters">Two Semesters</option>
+            <option value="custom">Custom</option>
           </select>
           <label className="d-flex align-items-center gap-2 text-sm">
             <input name="setFirstActive" type="checkbox" />
@@ -58,6 +59,21 @@ export default async function AdminTermsPage() {
           <button className="btn btn-primary" type="submit">
             Create Session Terms
           </button>
+          <div className="md:col-span-4 d-grid gap-1">
+            <label className="field-label" htmlFor="customLabels">
+              Custom Sub-session Labels
+            </label>
+            <textarea
+              id="customLabels"
+              name="customLabels"
+              className="form-control"
+              rows={4}
+              placeholder={"Use only when structure is Custom.\nExample:\nFirst Half\nMid-Term Break Session\nSecond Half"}
+            />
+            <p className="small text-muted mb-0">
+              Enter one label per line, or separate them with commas. You can add as many as needed, up to 12.
+            </p>
+          </div>
         </form>
       </section>
 

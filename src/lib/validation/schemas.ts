@@ -79,8 +79,54 @@ export const termSchema = z.object({
 
 export const sessionBundleSchema = z.object({
   sessionLabel: z.string().trim().min(1).max(50),
-  structure: z.enum(["three_terms", "two_semesters"]),
+  structure: z.enum(["three_terms", "two_semesters", "custom"]),
+  customLabels: z.string().trim().max(500).optional().or(z.literal("")),
   setFirstActive: z.boolean().optional().default(false),
+}).superRefine((value, ctx) => {
+  if (value.structure !== "custom") {
+    return;
+  }
+
+  const labels = value.customLabels
+    ?.split(/\r?\n|,/g)
+    .map((item) => item.trim())
+    .filter(Boolean) ?? [];
+
+  if (labels.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customLabels"],
+      message: "Enter at least one custom sub-session label.",
+    });
+    return;
+  }
+
+  if (labels.length > 12) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customLabels"],
+      message: "Use at most 12 custom sub-session labels.",
+    });
+  }
+
+  const normalized = labels.map((label) => label.toLowerCase());
+  const unique = new Set(normalized);
+  if (unique.size !== normalized.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customLabels"],
+      message: "Custom sub-session labels must be unique.",
+    });
+  }
+
+  const tooLong = labels.find((label) => label.length > 50);
+  if (tooLong) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customLabels"],
+      message: "Each custom sub-session label must be 50 characters or fewer.",
+    });
+  }
 });
 
 export const teacherAssignmentSchema = z.object({
