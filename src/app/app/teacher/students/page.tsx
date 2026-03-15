@@ -149,21 +149,27 @@ export default async function TeacherStudentsPage({
     const numericScores = subjectScores.map((score) => Number(score.total));
     const classAverage =
       numericScores.length > 0 ? numericScores.reduce((sum, value) => sum + value, 0) / numericScores.length : null;
-    const classHighest = numericScores.length > 0 ? Math.max(...numericScores) : null;
-    const classLowest = numericScores.length > 0 ? Math.min(...numericScores) : null;
     const studentTotal = studentScore ? Number(studentScore.total) : null;
     const gap = studentTotal !== null && classAverage !== null ? studentTotal - classAverage : null;
     const grade =
       studentTotal !== null ? studentScore?.grade?.trim() || getGradeForTotal(studentTotal, gradeScale) : null;
+    const subjectRanking = subjectScores
+      .map((score) => ({
+        studentId: score.studentId,
+        total: Number(score.total),
+      }))
+      .sort((a, b) => b.total - a.total);
+    const subjectPositionIndex = subjectRanking.findIndex((score) => score.studentId === selectedStudentId);
+    const subjectPosition =
+      studentTotal !== null && subjectPositionIndex >= 0 ? `${subjectPositionIndex + 1} / ${subjectRanking.length}` : null;
 
     return {
       subjectId: row.subject.id,
       subjectName: row.subject.name,
       studentTotal,
       classAverage,
-      classHighest,
-      classLowest,
       gap,
+      subjectPosition,
       grade,
       updatedAt: studentScore?.updatedAt ?? null,
     };
@@ -369,7 +375,7 @@ export default async function TeacherStudentsPage({
                       <Th>Student Score</Th>
                       <Th>Class Average</Th>
                       <Th>Gap</Th>
-                      <Th>Class Range</Th>
+                      <Th>Subject Position</Th>
                       <Th>Grade</Th>
                     </tr>
                   </thead>
@@ -382,11 +388,7 @@ export default async function TeacherStudentsPage({
                         <Td>
                           {row.gap === null ? "-" : `${row.gap >= 0 ? "+" : ""}${row.gap.toFixed(1)}`}
                         </Td>
-                        <Td>
-                          {row.classLowest === null || row.classHighest === null
-                            ? "-"
-                            : `${row.classLowest.toFixed(1)} - ${row.classHighest.toFixed(1)}`}
-                        </Td>
+                        <Td>{row.subjectPosition ?? "-"}</Td>
                         <Td>{row.grade ?? "-"}</Td>
                       </tr>
                     ))}
