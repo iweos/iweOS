@@ -8,6 +8,7 @@ type TeacherConductSearchParams = {
   teacherProfileId?: string;
   termId?: string;
   classId?: string;
+  studentId?: string;
 };
 
 export default async function TeacherConductPage({
@@ -164,6 +165,11 @@ export default async function TeacherConductPage({
   );
   const activeConductSections = conductSections.filter((section) => section.categories.length > 0);
   const conductCategories = activeConductSections.flatMap((section) => section.categories);
+  const selectedStudentId =
+    params.studentId && enrollments.some((enrollment) => enrollment.studentId === params.studentId)
+      ? params.studentId
+      : enrollments[0]?.studentId;
+  const selectedStudent = enrollments.find((enrollment) => enrollment.studentId === selectedStudentId) ?? null;
 
   return (
     <>
@@ -180,7 +186,7 @@ export default async function TeacherConductPage({
           </div>
         </div>
 
-        <form method="get" className="grid gap-2 md:grid-cols-4">
+        <form method="get" className="grid gap-2 md:grid-cols-5">
           {context.actorProfile.role === ProfileRole.ADMIN ? (
             <label className="space-y-1">
               <span className="field-label">View As</span>
@@ -217,6 +223,18 @@ export default async function TeacherConductPage({
             </select>
           </label>
 
+          <label className="space-y-1">
+            <span className="field-label">Student</span>
+            <select className="select" name="studentId" defaultValue={selectedStudentId}>
+              {enrollments.length === 0 ? <option value="">No students enrolled</option> : null}
+              {enrollments.map((enrollment) => (
+                <option key={enrollment.studentId} value={enrollment.studentId}>
+                  {enrollment.student.studentCode} - {enrollment.student.fullName}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <div className="self-end">
             <button className="btn btn-muted" type="submit">
               Load
@@ -231,24 +249,26 @@ export default async function TeacherConductPage({
           <p className="section-subtle">No valid class/term in this view.</p>
         ) : activeConductSections.length === 0 ? (
           <p className="section-subtle">No active conduct categories found. Ask admin to configure them under grading.</p>
+        ) : !selectedStudent ? (
+          <p className="section-subtle">No enrolled students found for the selected class and term.</p>
         ) : (
           <TeacherConductTable
             teacherProfileId={params.teacherProfileId}
             termId={selectedTermId}
             classId={selectedClassId}
             conductSections={activeConductSections}
-            initialRows={enrollments.map((enrollment) => ({
-              enrollmentId: enrollment.id,
-              studentId: enrollment.studentId,
-              studentCode: enrollment.student.studentCode,
-              fullName: enrollment.student.fullName,
+            selectedStudent={{
+              enrollmentId: selectedStudent.id,
+              studentId: selectedStudent.studentId,
+              studentCode: selectedStudent.student.studentCode,
+              fullName: selectedStudent.student.fullName,
               values: Object.fromEntries(
                 conductCategories.map((category) => [
                   category.id,
-                  (conductMap.get(`${enrollment.studentId}:${category.id}`) ?? 0).toString(),
+                  (conductMap.get(`${selectedStudent.studentId}:${category.id}`) ?? 0).toString(),
                 ]),
               ),
-            }))}
+            }}
           />
         )}
       </section>
