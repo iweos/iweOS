@@ -43,11 +43,17 @@ export default async function TeacherGradeEntryPage({
   const context = await requireTeacherPortalContext(params.teacherProfileId);
   let terms: Awaited<ReturnType<typeof prisma.term.findMany>> = [];
   let classesInView: Array<{ id: string; name: string }> = [];
-  let activeTemplate: { id: string; name: string } | null = null;
+  let activeTemplate:
+    | {
+        id: string;
+        name: string;
+        isFallback: boolean;
+      }
+    | null = null;
   let assessmentTypes: Awaited<ReturnType<typeof prisma.assessmentType.findMany>> = [];
 
   try {
-    [terms, classesInView, activeTemplate] = await Promise.all([
+    [terms, classesInView] = await Promise.all([
       prisma.term.findMany({
         where: { schoolId: context.actorProfile.schoolId },
         orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
@@ -67,17 +73,71 @@ export default async function TeacherGradeEntryPage({
               orderBy: { class: { name: "asc" } },
             })
             .then((rows) => rows.map((row) => row.class)),
-      gradingClient.assessmentTemplate.findFirst({
+    ]);
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return (
+        <section className="section-panel space-y-2">
+          <p className="section-kicker">Teacher Portal</p>
+          <h1 className="section-title">Score Entry Setup Required</h1>
+          <p className="section-subtle">
+            Production is missing the latest grading schema. Run <code>npx prisma migrate deploy</code> against the production
+            database, then redeploy the app.
+          </p>
+        </section>
+      );
+    }
+
+    throw error;
+  }
+
+  const selectedTermId = params.termId && terms.some((term) => term.id === params.termId) ? params.termId : terms[0]?.id;
+  const selectedClassId =
+    params.classId && classesInView.some((klass) => klass.id === params.classId) ? params.classId : classesInView[0]?.id;
+
+  try {
+    const termTemplate =
+      selectedTermId
+        ? await gradingClient.assessmentTemplate.findFirst({
+            where: {
+              schoolId: context.actorProfile.schoolId,
+              termId: selectedTermId,
+              isPreset: false,
+            },
+            select: {
+              id: true,
+              name: true,
+            },
+          })
+        : null;
+
+    if (termTemplate) {
+      activeTemplate = {
+        id: termTemplate.id,
+        name: termTemplate.name,
+        isFallback: false,
+      };
+    } else {
+      const fallbackTemplate = await gradingClient.assessmentTemplate.findFirst({
         where: {
           schoolId: context.actorProfile.schoolId,
+          isPreset: true,
           isActive: true,
         },
         select: {
           id: true,
           name: true,
         },
-      }),
-    ]);
+      });
+
+      activeTemplate = fallbackTemplate
+        ? {
+            id: fallbackTemplate.id,
+            name: fallbackTemplate.name,
+            isFallback: true,
+          }
+        : null;
+    }
 
     assessmentTypes = activeTemplate
       ? await gradingClient.assessmentType.findMany({
@@ -105,10 +165,6 @@ export default async function TeacherGradeEntryPage({
 
     throw error;
   }
-
-  const selectedTermId = params.termId && terms.some((term) => term.id === params.termId) ? params.termId : terms[0]?.id;
-  const selectedClassId =
-    params.classId && classesInView.some((klass) => klass.id === params.classId) ? params.classId : classesInView[0]?.id;
 
   let classSubjects: Array<{
     id: string;
@@ -293,7 +349,9 @@ export default async function TeacherGradeEntryPage({
         </form>
 
         <p className="text-xs text-[var(--muted)]">
-          Active Template: {activeTemplate?.name ?? "None"} • Score allocation total: {weightTotal}
+          Assessment Scheme: {activeTemplate?.name ?? "None"}
+          {activeTemplate?.isFallback ? " (global fallback)" : ""}
+          {" "}• Score allocation total: {weightTotal}
         </p>
       </section>
 
@@ -301,8 +359,10 @@ export default async function TeacherGradeEntryPage({
         <h2 className="section-heading">Student Scores</h2>
         {!selectedClassId || !selectedTermId || !selectedSubjectId ? (
           <p className="section-subtle">No valid class/term/subject in this view.</p>
+        ) : !activeTemplate ? (
+          <p className="section-subtle">No assessment scheme is assigned to this term yet.</p>
         ) : assessmentTypes.length === 0 ? (
-          <p className="section-subtle">No active assessment items found in the active template.</p>
+          <p className="section-subtle">No active assessment items found in the selected term scheme.</p>
         ) : (
           <GradeEntryTable
             teacherProfileId={params.teacherProfileId}

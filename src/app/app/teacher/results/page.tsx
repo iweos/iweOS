@@ -24,58 +24,41 @@ export default async function TeacherResultsPage({
           teacherProfileId: context.effectiveTeacherProfile.id,
         };
 
-  const [rows, activeTemplate] = await Promise.all([
-    prisma.score.findMany({
-      where: scoreWhere,
-      include: {
-        student: true,
-        class: true,
-        subject: true,
-        term: true,
-        teacherProfile: true,
-        assessmentValues: {
-          include: {
-            assessmentType: {
-              select: {
-                name: true,
-                orderIndex: true,
-              },
+  const rows = await prisma.score.findMany({
+    where: scoreWhere,
+    include: {
+      student: true,
+      class: true,
+      subject: true,
+      term: true,
+      teacherProfile: true,
+      assessmentValues: {
+        include: {
+          assessmentType: {
+            select: {
+              name: true,
+              orderIndex: true,
             },
           },
         },
       },
-      orderBy: [{ term: { createdAt: "desc" } }, { class: { name: "asc" } }, { student: { fullName: "asc" } }],
-      take: 300,
-    }),
-    prisma.assessmentTemplate.findFirst({
-      where: {
-        schoolId: context.actorProfile.schoolId,
-        isActive: true,
-      },
-      include: {
-        types: {
-          where: { isActive: true },
-          orderBy: { orderIndex: "asc" },
-          select: { name: true },
-        },
-      },
-    }),
-  ]);
+    },
+    orderBy: [{ term: { createdAt: "desc" } }, { class: { name: "asc" } }, { student: { fullName: "asc" } }],
+    take: 300,
+  });
 
-  const dynamicColumns =
-    activeTemplate?.types.map((type) => type.name) ??
-    Array.from(
-      new Set(
-        rows
-          .flatMap((row) =>
-            row.assessmentValues
-              .slice()
-              .sort((a, b) => a.assessmentType.orderIndex - b.assessmentType.orderIndex)
-              .map((value) => value.assessmentType.name),
-          )
-          .filter(Boolean),
-      ),
-    );
+  const dynamicColumns = Array.from(
+    new Set(
+      rows
+        .flatMap((row) =>
+          row.assessmentValues
+            .slice()
+            .sort((a, b) => a.assessmentType.orderIndex - b.assessmentType.orderIndex)
+            .map((value) => value.assessmentType.name),
+        )
+        .filter(Boolean),
+    ),
+  );
 
   return (
     <section className="section-panel table-wrap">

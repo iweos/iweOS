@@ -27,6 +27,7 @@ import {
   subjectSchema,
   teacherAssignmentSchema,
   teacherSchema,
+  termAssessmentTemplateSchema,
   termSchema,
 } from "@/lib/validation/schemas";
 
@@ -131,6 +132,114 @@ const TERM_BUNDLE_LABELS = {
   three_terms: ["First Term", "Second Term", "Third Term"],
   two_semesters: ["1st Semester", "2nd Semester"],
 } as const;
+
+async function clonePresetTemplateToTermSnapshot(
+  tx: Prisma.TransactionClient,
+  {
+    schoolId,
+    termId,
+    presetTemplateId,
+  }: {
+    schoolId: string;
+    termId: string;
+    presetTemplateId: string;
+  },
+) {
+  const [term, presetTemplate, existingSnapshot] = await Promise.all([
+    tx.term.findFirst({
+      where: {
+        id: termId,
+        schoolId,
+      },
+      select: {
+        id: true,
+        sessionLabel: true,
+        termLabel: true,
+      },
+    }),
+    tx.assessmentTemplate.findFirst({
+      where: {
+        id: presetTemplateId,
+        schoolId,
+        isPreset: true,
+      },
+      include: {
+        types: {
+          orderBy: { orderIndex: "asc" },
+        },
+      },
+    }),
+    tx.assessmentTemplate.findFirst({
+      where: {
+        schoolId,
+        termId,
+        isPreset: false,
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
+
+  if (!term) {
+    throw new Error("Term not found.");
+  }
+
+  if (!presetTemplate) {
+    throw new Error("Assessment preset not found.");
+  }
+
+  if (presetTemplate.types.length === 0) {
+    throw new Error("Selected assessment preset has no assessment items.");
+  }
+
+  if (existingSnapshot) {
+    const usedInScores = await tx.scoreAssessmentValue.findFirst({
+      where: {
+        schoolId,
+        assessmentType: {
+          templateId: existingSnapshot.id,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (usedInScores) {
+      throw new Error("This term already has saved score records, so its assessment structure can no longer be changed.");
+    }
+
+    await tx.assessmentTemplate.delete({
+      where: { id: existingSnapshot.id },
+    });
+  }
+
+  const snapshotTemplate = await tx.assessmentTemplate.create({
+    data: {
+      schoolId,
+      termId: term.id,
+      sourceTemplateId: presetTemplate.id,
+      name: `${term.sessionLabel} ${term.termLabel} - ${presetTemplate.name}`,
+      isPreset: false,
+      isActive: false,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  await tx.assessmentType.createMany({
+    data: presetTemplate.types.map((type) => ({
+      schoolId,
+      templateId: snapshotTemplate.id,
+      name: type.name,
+      weight: type.weight,
+      orderIndex: type.orderIndex,
+      isActive: type.isActive,
+    })),
+  });
+
+  return snapshotTemplate.id;
+}
 
 function parseCustomSessionLabels(raw: string) {
   return raw
@@ -1062,6 +1171,21 @@ export async function createSessionBundleAction(formData: FormData) {
       : Array.from(TERM_BUNDLE_LABELS[parsed.data.structure]);
 
   await prisma.$transaction(async (tx) => {
+    const activePresetTemplate = await tx.assessmentTemplate.findFirst({
+      where: {
+        schoolId: profile.schoolId,
+        isPreset: true,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        types: {
+          take: 1,
+          select: { id: true },
+        },
+      },
+    });
+
     const existingTerms = await tx.term.findMany({
       where: {
         schoolId: profile.schoolId,
@@ -1104,6 +1228,17 @@ export async function createSessionBundleAction(formData: FormData) {
           termLabel,
           isActive: shouldBeActive,
         },
+        select: {
+          id: true,
+        },
+      }).then(async (createdTerm) => {
+        if (activePresetTemplate && activePresetTemplate.types.length > 0) {
+          await clonePresetTemplateToTermSnapshot(tx, {
+            schoolId: profile.schoolId,
+            termId: createdTerm.id,
+            presetTemplateId: activePresetTemplate.id,
+          });
+        }
       });
     }
   });
@@ -1487,7 +1622,7 @@ export async function upsertAssessmentTemplateAction(formData: FormData) {
   try {
     await prisma.$transaction(async (tx) => {
       const existingTemplateCount = await tx.assessmentTemplate.count({
-        where: { schoolId: profile.schoolId },
+        where: { schoolId: profile.schoolId, isPreset: true },
       });
 
       let templateId = parsed.data.id;
@@ -1497,6 +1632,7 @@ export async function upsertAssessmentTemplateAction(formData: FormData) {
           where: {
             id: templateId,
             schoolId: profile.schoolId,
+            isPreset: true,
           },
           select: { id: true },
         });
@@ -1514,6 +1650,7 @@ export async function upsertAssessmentTemplateAction(formData: FormData) {
           data: {
             schoolId: profile.schoolId,
             name: parsed.data.name,
+            isPreset: true,
           },
           select: { id: true },
         });
@@ -1527,7 +1664,7 @@ export async function upsertAssessmentTemplateAction(formData: FormData) {
       const shouldActivate = parsed.data.setActive || existingTemplateCount === 0;
       if (shouldActivate) {
         await tx.assessmentTemplate.updateMany({
-          where: { schoolId: profile.schoolId },
+          where: { schoolId: profile.schoolId, isPreset: true },
           data: { isActive: false },
         });
         await tx.assessmentTemplate.update({
@@ -1566,6 +1703,7 @@ export async function setActiveAssessmentTemplateAction(formData: FormData) {
       where: {
         id: parsed.data.templateId,
         schoolId: profile.schoolId,
+        isPreset: true,
       },
       select: { id: true },
     });
@@ -1576,7 +1714,7 @@ export async function setActiveAssessmentTemplateAction(formData: FormData) {
 
     await prisma.$transaction(async (tx) => {
       await tx.assessmentTemplate.updateMany({
-        where: { schoolId: profile.schoolId },
+        where: { schoolId: profile.schoolId, isPreset: true },
         data: { isActive: false },
       });
       await tx.assessmentTemplate.update({
@@ -1610,11 +1748,12 @@ export async function deleteAssessmentTemplateAction(formData: FormData) {
         where: {
           id: parsed.data.templateId,
           schoolId: profile.schoolId,
+          isPreset: true,
         },
         select: { id: true, isActive: true },
       }),
       prisma.assessmentTemplate.count({
-        where: { schoolId: profile.schoolId },
+        where: { schoolId: profile.schoolId, isPreset: true },
       }),
       prisma.scoreAssessmentValue.findFirst({
         where: {
@@ -1649,7 +1788,7 @@ export async function deleteAssessmentTemplateAction(formData: FormData) {
       }
 
       const fallback = await tx.assessmentTemplate.findFirst({
-        where: { schoolId: profile.schoolId },
+        where: { schoolId: profile.schoolId, isPreset: true },
         orderBy: { createdAt: "asc" },
         select: { id: true },
       });
@@ -1661,6 +1800,47 @@ export async function deleteAssessmentTemplateAction(formData: FormData) {
       await tx.assessmentTemplate.update({
         where: { id: fallback.id },
         data: { isActive: true },
+      });
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw assessmentSchemaSyncError();
+    }
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
+export async function assignAssessmentTemplateToTermAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = termAssessmentTemplateSchema.safeParse({
+    termId: formValue(formData, "termId"),
+    templateId: formValue(formData, "templateId"),
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid term assessment assignment.");
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const existingTermScores = await tx.score.findFirst({
+        where: {
+          schoolId: profile.schoolId,
+          termId: parsed.data.termId,
+        },
+        select: { id: true },
+      });
+
+      if (existingTermScores) {
+        throw new Error("This term already has saved scores, so its assessment setup cannot be changed.");
+      }
+
+      await clonePresetTemplateToTermSnapshot(tx, {
+        schoolId: profile.schoolId,
+        termId: parsed.data.termId,
+        presetTemplateId: parsed.data.templateId,
       });
     });
   } catch (error) {
@@ -1696,6 +1876,7 @@ export async function upsertAssessmentTypeAction(formData: FormData) {
       where: {
         id: parsed.data.templateId,
         schoolId: profile.schoolId,
+        isPreset: true,
       },
       select: { id: true },
     });
@@ -1801,6 +1982,21 @@ export async function deleteAssessmentTypeAction(formData: FormData) {
   const id = formValue(formData, "id");
 
   try {
+    const assessmentType = await prisma.assessmentType.findFirst({
+      where: {
+        id,
+        schoolId: profile.schoolId,
+        template: {
+          isPreset: true,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!assessmentType) {
+      throw new Error("Assessment type not found.");
+    }
+
     const usage = await prisma.scoreAssessmentValue.findFirst({
       where: {
         schoolId: profile.schoolId,
@@ -1815,7 +2011,7 @@ export async function deleteAssessmentTypeAction(formData: FormData) {
 
     await prisma.assessmentType.deleteMany({
       where: {
-        id,
+        id: assessmentType.id,
         schoolId: profile.schoolId,
       },
     });

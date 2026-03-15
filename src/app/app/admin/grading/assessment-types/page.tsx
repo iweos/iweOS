@@ -7,12 +7,17 @@ import Select from "@/components/admin/ui/Select";
 import AssessmentTemplateTable from "@/components/grading/AssessmentTemplateTable";
 import AssessmentTypeTable from "@/components/grading/AssessmentTypeTable";
 import { requireRole } from "@/lib/server/auth";
-import { upsertAssessmentTemplateAction, upsertAssessmentTypeAction } from "@/lib/server/admin-actions";
+import {
+  assignAssessmentTemplateToTermAction,
+  upsertAssessmentTemplateAction,
+  upsertAssessmentTypeAction,
+} from "@/lib/server/admin-actions";
 import { prisma } from "@/lib/server/prisma";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 
 type AssessmentTypesSearchParams = {
   templateId?: string;
+  termId?: string;
 };
 
 export default async function GradingAssessmentTypesPage({
@@ -47,6 +52,20 @@ export default async function GradingAssessmentTypesPage({
     isActive: boolean;
     _count: { types: number };
   }> = [];
+  let terms: Array<{
+    id: string;
+    sessionLabel: string;
+    termLabel: string;
+    isActive: boolean;
+    assessmentTemplate: {
+      id: string;
+      name: string;
+      sourceTemplateId: string | null;
+    } | null;
+    _count: {
+      scores: number;
+    };
+  }> = [];
   let assessmentTypes: Array<{
     id: string;
     name: string;
@@ -56,11 +75,35 @@ export default async function GradingAssessmentTypesPage({
   }> = [];
 
   try {
-    templates = await gradingClient.assessmentTemplate.findMany({
-      where: { schoolId: profile.schoolId },
-      include: { _count: { select: { types: true } } },
-      orderBy: [{ isActive: "desc" }, { createdAt: "asc" }],
-    });
+    [templates, terms] = await Promise.all([
+      gradingClient.assessmentTemplate.findMany({
+        where: { schoolId: profile.schoolId, isPreset: true },
+        include: { _count: { select: { types: true } } },
+        orderBy: [{ isActive: "desc" }, { createdAt: "asc" }],
+      }),
+      prisma.term.findMany({
+        where: { schoolId: profile.schoolId },
+        orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
+        select: {
+          id: true,
+          sessionLabel: true,
+          termLabel: true,
+          isActive: true,
+          assessmentTemplate: {
+            select: {
+              id: true,
+              name: true,
+              sourceTemplateId: true,
+            },
+          },
+          _count: {
+            select: {
+              scores: true,
+            },
+          },
+        },
+      }),
+    ]);
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
       return (
@@ -82,6 +125,10 @@ export default async function GradingAssessmentTypesPage({
     (params.templateId ? templates.find((item) => item.id === params.templateId) : null) ??
     templates.find((item) => item.isActive) ??
     templates[0];
+  const selectedTerm =
+    (params.termId ? terms.find((item) => item.id === params.termId) : null) ??
+    terms.find((item) => item.isActive) ??
+    terms[0];
 
   if (selectedTemplate) {
     try {
@@ -117,12 +164,12 @@ export default async function GradingAssessmentTypesPage({
     <Section>
       <PageHeader
         title="Assessment Types"
-        subtitle="Create assessment templates (e.g. 3test) and manage CA/Exam items inside each template."
+        subtitle="Create reusable assessment presets, then assign a fixed preset snapshot to each term."
         rightActions={
           <div className="text-md-end">
-            <p className="small text-muted mb-1">Active Template</p>
+            <p className="small text-muted mb-1">Active Preset</p>
             <h3 className="h5 fw-bold mb-2">{activeTemplateName}</h3>
-            <p className="small text-muted mb-1">Current Active Total</p>
+            <p className="small text-muted mb-1">Selected Preset Total</p>
             <h3 className="h3 fw-bold mb-0">
               <span className="assessment-total-pulse">{totalWeight}%</span>
             </h3>
@@ -161,6 +208,85 @@ export default async function GradingAssessmentTypesPage({
           }))}
           selectedTemplateId={selectedTemplate?.id}
         />
+      </Card>
+
+      <Card title="Assign Preset To Term" subtitle="Each term gets its own fixed snapshot so later changes do not affect past terms.">
+        {!selectedTemplate || !selectedTerm ? (
+          <p className="small text-muted mb-0">Create at least one preset and one term before assigning a term scheme.</p>
+        ) : (
+          <form action={assignAssessmentTemplateToTermAction} className="grid gap-3 md:grid-cols-4">
+            <label className="d-grid gap-1">
+              <span className="field-label">Term</span>
+              <Select name="termId" defaultValue={selectedTerm.id}>
+                {terms.map((term) => (
+                  <option key={term.id} value={term.id}>
+                    {term.sessionLabel} {term.termLabel} {term.isActive ? "(Active)" : ""}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <label className="d-grid gap-1">
+              <span className="field-label">Preset</span>
+              <Select name="templateId" defaultValue={selectedTemplate.id}>
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <div className="align-self-end">
+              <Button variant="primary" type="submit">
+                Assign To Term
+              </Button>
+            </div>
+            <div className="small text-muted align-self-end">
+              {selectedTerm.assessmentTemplate
+                ? `Current fixed scheme: ${selectedTerm.assessmentTemplate.name}`
+                : "No fixed scheme assigned to this term yet."}
+            </div>
+          </form>
+        )}
+      </Card>
+
+      <Card title="Term Assessment Schemes">
+        <div className="table-responsive">
+          <table className="table display table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Term</th>
+                <th>Fixed Scheme</th>
+                <th>Scores Recorded</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {terms.map((term) => (
+                <tr key={term.id}>
+                  <td>
+                    {term.sessionLabel} {term.termLabel}
+                  </td>
+                  <td>{term.assessmentTemplate?.name ?? "Not assigned"}</td>
+                  <td>{term._count.scores}</td>
+                  <td>
+                    {term._count.scores > 0
+                      ? "Locked"
+                      : term.assessmentTemplate
+                        ? "Ready"
+                        : "Pending assignment"}
+                  </td>
+                </tr>
+              ))}
+              {terms.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-muted">
+                    No terms created yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       <Card title={selectedTemplate ? `Add Assessment Item (${selectedTemplate.name})` : "Add Assessment Item"}>

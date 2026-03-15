@@ -186,6 +186,11 @@ export const assessmentTemplateActivateSchema = z.object({
   templateId: z.string().uuid(),
 });
 
+export const termAssessmentTemplateSchema = z.object({
+  termId: z.string().uuid(),
+  templateId: z.string().uuid(),
+});
+
 export const gradeScaleSchema = z.object({
   id: z.string().uuid().optional(),
   gradeLetter: z.string().trim().min(1).max(2),

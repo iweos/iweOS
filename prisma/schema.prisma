@@ -145,6 +145,7 @@ model Term {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   school       School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  assessmentTemplate AssessmentTemplate?
   enrollments  Enrollment[]
   studentConducts StudentConduct[]
   scores       Score[]
@@ -267,16 +268,22 @@ model GradingSetting {
 model AssessmentTemplate {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   schoolId   String   @map("school_id") @db.Uuid
+  termId     String?  @unique @map("term_id") @db.Uuid
+  sourceTemplateId String? @map("source_template_id") @db.Uuid
   name       String
+  isPreset   Boolean  @default(true) @map("is_preset")
   isActive   Boolean  @default(false) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   school     School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  term       Term?            @relation(fields: [termId], references: [id], onDelete: SetNull)
   types      AssessmentType[]
 
   @@unique([schoolId, name])
   @@index([schoolId])
+  @@index([schoolId, isPreset])
   @@index([schoolId, isActive])
+  @@index([sourceTemplateId])
   @@map("assessment_templates")
 }
 

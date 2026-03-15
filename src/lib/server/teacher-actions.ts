@@ -113,6 +113,55 @@ function parseNumberishConductOrZero(raw: string | number | null | undefined) {
   return parsed.data;
 }
 
+async function getAssessmentTypesForTerm(schoolId: string, termId: string) {
+  const termSnapshot = await prisma.assessmentTemplate.findFirst({
+    where: {
+      schoolId,
+      termId,
+      isPreset: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      sourceTemplateId: true,
+      types: {
+        where: { isActive: true },
+        orderBy: { orderIndex: "asc" },
+      },
+    },
+  });
+
+  if (termSnapshot && termSnapshot.types.length > 0) {
+    return {
+      templateName: termSnapshot.name,
+      isFallback: false,
+      types: termSnapshot.types,
+    };
+  }
+
+  const activePreset = await prisma.assessmentTemplate.findFirst({
+    where: {
+      schoolId,
+      isPreset: true,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      types: {
+        where: { isActive: true },
+        orderBy: { orderIndex: "asc" },
+      },
+    },
+  });
+
+  return {
+    templateName: activePreset?.name ?? null,
+    isFallback: true,
+    types: activePreset?.types ?? [],
+  };
+}
+
 export async function saveStudentConductAction(input: SaveStudentConductInput): Promise<SaveStudentConductResult> {
   try {
     const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
@@ -274,7 +323,7 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
             },
           });
 
-    const [assignment, term, classSubject, gradeScale, assessmentTypes, enrollment] = await Promise.all([
+    const [assignment, term, classSubject, gradeScale, enrollment] = await Promise.all([
       assignmentPromise,
       prisma.term.findFirst({
         where: {
@@ -293,16 +342,6 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
         where: { schoolId: actorProfile.schoolId },
         orderBy: { orderIndex: "asc" },
       }),
-      prisma.assessmentType.findMany({
-        where: {
-          schoolId: actorProfile.schoolId,
-          isActive: true,
-          template: {
-            isActive: true,
-          },
-        },
-        orderBy: { orderIndex: "asc" },
-      }),
       prisma.enrollment.findFirst({
         where: {
           schoolId: actorProfile.schoolId,
@@ -313,6 +352,8 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
         select: { id: true },
       }),
     ]);
+    const assessmentSetup = await getAssessmentTypesForTerm(actorProfile.schoolId, termId);
+    const assessmentTypes = assessmentSetup.types;
 
     if (!assignment) {
       return { ok: false, message: "Selected teacher is not assigned to this class." };
@@ -330,7 +371,7 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
       return { ok: false, message: "Grade scale is not configured." };
     }
     if (assessmentTypes.length === 0) {
-      return { ok: false, message: "Assessment types are not configured." };
+      return { ok: false, message: "No assessment scheme is assigned to this term yet." };
     }
 
     const submittedValueMap = new Map(input.scores.map((item) => [item.assessmentTypeId, item.value]));
@@ -472,7 +513,7 @@ export async function saveScoresAction(formData: FormData) {
             },
           });
 
-    const [assignment, term, classSubject, gradeScale, assessmentTypes] = await Promise.all([
+    const [assignment, term, classSubject, gradeScale] = await Promise.all([
       assignmentPromise,
       prisma.term.findFirst({
         where: {
@@ -491,17 +532,9 @@ export async function saveScoresAction(formData: FormData) {
         where: { schoolId: actorProfile.schoolId },
         orderBy: { orderIndex: "asc" },
       }),
-      prisma.assessmentType.findMany({
-        where: {
-          schoolId: actorProfile.schoolId,
-          isActive: true,
-          template: {
-            isActive: true,
-          },
-        },
-        orderBy: { orderIndex: "asc" },
-      }),
     ]);
+    const assessmentSetup = await getAssessmentTypesForTerm(actorProfile.schoolId, termId);
+    const assessmentTypes = assessmentSetup.types;
 
     if (!assignment) {
       throw new Error("Selected teacher is not assigned to this class.");
@@ -520,7 +553,7 @@ export async function saveScoresAction(formData: FormData) {
     }
 
     if (assessmentTypes.length === 0) {
-      throw new Error("Assessment types are not configured.");
+      throw new Error("No assessment scheme is assigned to this term yet.");
     }
 
     const weightTotal = assessmentTypes.reduce((sum, item) => sum + item.weight, 0);
