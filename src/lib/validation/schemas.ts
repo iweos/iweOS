@@ -191,6 +191,14 @@ export const termAssessmentTemplateSchema = z.object({
   templateId: z.string().uuid(),
 });
 
+export const promotionActionSchema = z.object({
+  sourceSessionLabel: z.string().trim().min(1).max(50),
+  sourceClassId: z.string().uuid(),
+  targetTermId: z.string().uuid(),
+  targetClassId: z.string().uuid(),
+  studentIds: z.array(z.string().uuid()).min(1, "Select at least one student to promote."),
+});
+
 export const gradeScaleSchema = z.object({
   id: z.string().uuid().optional(),
   gradeLetter: z.string().trim().min(1).max(2),

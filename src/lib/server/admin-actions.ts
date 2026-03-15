@@ -28,6 +28,7 @@ import {
   teacherAssignmentSchema,
   teacherSchema,
   termAssessmentTemplateSchema,
+  promotionActionSchema,
   termSchema,
 } from "@/lib/validation/schemas";
 
@@ -49,6 +50,37 @@ function redirectEnrollmentsStatus(status: "success" | "error", message: string)
     message,
   });
   redirect(`/app/admin/assignments/enrollments?${query.toString()}`);
+}
+
+function redirectPromotionStatus(
+  status: "success" | "error",
+  message: string,
+  options?: {
+    sessionLabel?: string;
+    sourceClassId?: string;
+    targetTermId?: string;
+    targetClassId?: string;
+  },
+): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+
+  if (options?.sessionLabel) {
+    query.set("sessionLabel", options.sessionLabel);
+  }
+  if (options?.sourceClassId) {
+    query.set("sourceClassId", options.sourceClassId);
+  }
+  if (options?.targetTermId) {
+    query.set("targetTermId", options.targetTermId);
+  }
+  if (options?.targetClassId) {
+    query.set("targetClassId", options.targetClassId);
+  }
+
+  redirect(`/app/admin/grading/promotion?${query.toString()}`);
 }
 
 function revalidateAdminPages() {
@@ -1604,6 +1636,166 @@ export async function removeEnrollmentAction(formData: FormData) {
   }
 
   redirectEnrollmentsStatus("success", successMessage);
+}
+
+export async function promoteStudentsAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const sourceSessionLabel = formValue(formData, "sourceSessionLabel");
+  const sourceClassId = formValue(formData, "sourceClassId");
+  const targetTermId = formValue(formData, "targetTermId");
+  const targetClassId = formValue(formData, "targetClassId");
+  const studentIds = formData
+    .getAll("studentIds")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+
+  const parsed = promotionActionSchema.safeParse({
+    sourceSessionLabel,
+    sourceClassId,
+    targetTermId,
+    targetClassId,
+    studentIds,
+  });
+
+  if (!parsed.success) {
+    redirectPromotionStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion payload.", {
+      sessionLabel: sourceSessionLabel,
+      sourceClassId,
+      targetTermId,
+      targetClassId,
+    });
+  }
+
+  try {
+    const [sourceClass, targetClass, targetTerm, sourceSessionTerms] = await Promise.all([
+      prisma.class.findFirst({
+        where: {
+          id: parsed.data.sourceClassId,
+          schoolId: profile.schoolId,
+        },
+        select: { id: true, name: true },
+      }),
+      prisma.class.findFirst({
+        where: {
+          id: parsed.data.targetClassId,
+          schoolId: profile.schoolId,
+        },
+        select: { id: true, name: true },
+      }),
+      prisma.term.findFirst({
+        where: {
+          id: parsed.data.targetTermId,
+          schoolId: profile.schoolId,
+        },
+        select: { id: true, sessionLabel: true, termLabel: true },
+      }),
+      prisma.term.findMany({
+        where: {
+          schoolId: profile.schoolId,
+          sessionLabel: parsed.data.sourceSessionLabel,
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!sourceClass) {
+      throw new Error("Source class not found.");
+    }
+    if (!targetClass) {
+      throw new Error("Target class not found.");
+    }
+    if (!targetTerm) {
+      throw new Error("Target term not found.");
+    }
+    if (sourceSessionTerms.length === 0) {
+      throw new Error("Source session not found.");
+    }
+
+    const eligibleEnrollments = await prisma.enrollment.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        classId: parsed.data.sourceClassId,
+        termId: {
+          in: sourceSessionTerms.map((term) => term.id),
+        },
+        studentId: {
+          in: parsed.data.studentIds,
+        },
+      },
+      select: { studentId: true },
+    });
+
+    const eligibleStudentIds = Array.from(new Set(eligibleEnrollments.map((row) => row.studentId)));
+    if (eligibleStudentIds.length === 0) {
+      throw new Error("None of the selected students belong to the chosen source class and session.");
+    }
+
+    const existingTargetEnrollments = await prisma.enrollment.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        classId: parsed.data.targetClassId,
+        termId: parsed.data.targetTermId,
+        studentId: {
+          in: eligibleStudentIds,
+        },
+      },
+      select: { studentId: true },
+    });
+
+    const alreadyEnrolledIds = new Set(existingTargetEnrollments.map((row) => row.studentId));
+    const studentsToEnroll = eligibleStudentIds.filter((studentId) => !alreadyEnrolledIds.has(studentId));
+
+    await prisma.$transaction(async (tx) => {
+      await tx.student.updateMany({
+        where: {
+          schoolId: profile.schoolId,
+          id: { in: eligibleStudentIds },
+        },
+        data: {
+          className: targetClass.name,
+          status: "active",
+        },
+      });
+
+      if (studentsToEnroll.length > 0) {
+        await tx.enrollment.createMany({
+          data: studentsToEnroll.map((studentId) => ({
+            schoolId: profile.schoolId,
+            studentId,
+            classId: parsed.data.targetClassId,
+            termId: parsed.data.targetTermId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    });
+
+    revalidateAdminPages();
+
+    const alreadyEnrolledCount = eligibleStudentIds.length - studentsToEnroll.length;
+    const successMessage =
+      alreadyEnrolledCount === 0
+        ? `${eligibleStudentIds.length} student${eligibleStudentIds.length === 1 ? "" : "s"} promoted into ${targetClass.name} for ${targetTerm.sessionLabel} ${targetTerm.termLabel}.`
+        : `${studentsToEnroll.length} student${studentsToEnroll.length === 1 ? "" : "s"} newly promoted into ${targetClass.name} for ${targetTerm.sessionLabel} ${targetTerm.termLabel}. ${alreadyEnrolledCount} student${alreadyEnrolledCount === 1 ? " was" : "s were"} already enrolled there.`;
+
+    redirectPromotionStatus("success", successMessage, {
+      sessionLabel: parsed.data.sourceSessionLabel,
+      sourceClassId: parsed.data.sourceClassId,
+      targetTermId: parsed.data.targetTermId,
+      targetClassId: parsed.data.targetClassId,
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+
+    redirectPromotionStatus("error", error instanceof Error ? error.message : "Unable to complete promotion right now.", {
+      sessionLabel: sourceSessionLabel,
+      sourceClassId,
+      targetTermId,
+      targetClassId,
+    });
+  }
 }
 
 export async function upsertAssessmentTemplateAction(formData: FormData) {
