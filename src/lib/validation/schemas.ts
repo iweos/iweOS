@@ -148,8 +148,16 @@ export const gradeScaleSchema = z.object({
   orderIndex: z.coerce.number().int().min(1).max(99),
 });
 
+export const conductSectionSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(1).max(80),
+  orderIndex: z.coerce.number().int().min(1).max(99),
+  isActive: z.boolean().optional().default(true),
+});
+
 export const conductCategorySchema = z.object({
   id: z.string().uuid().optional(),
+  sectionId: z.string().uuid(),
   name: z.string().trim().min(1).max(80),
   maxScore: z.coerce.number().min(1).max(100),
   orderIndex: z.coerce.number().int().min(1).max(99),

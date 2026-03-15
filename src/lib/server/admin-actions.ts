@@ -15,6 +15,7 @@ import {
   classSubjectBatchSchema,
   classSubjectAssignmentSchema,
   conductCategorySchema,
+  conductSectionSchema,
   enrollmentBulkSchema,
   enrollmentSchema,
   gradeScaleSchema,
@@ -1893,6 +1894,7 @@ export async function upsertConductCategoryAction(formData: FormData) {
   const profile = await requireRole("admin");
   const parsed = conductCategorySchema.safeParse({
     id: formValue(formData, "id") || undefined,
+    sectionId: formValue(formData, "sectionId"),
     name: formValue(formData, "name"),
     maxScore: formValue(formData, "maxScore"),
     orderIndex: formValue(formData, "orderIndex"),
@@ -1911,6 +1913,7 @@ export async function upsertConductCategoryAction(formData: FormData) {
           schoolId: profile.schoolId,
         },
         data: {
+          sectionId: parsed.data.sectionId,
           name: parsed.data.name,
           maxScore: parsed.data.maxScore,
           orderIndex: parsed.data.orderIndex,
@@ -1921,6 +1924,7 @@ export async function upsertConductCategoryAction(formData: FormData) {
       await prisma.conductCategory.create({
         data: {
           schoolId: profile.schoolId,
+          sectionId: parsed.data.sectionId,
           name: parsed.data.name,
           maxScore: parsed.data.maxScore,
           orderIndex: parsed.data.orderIndex,
@@ -1934,6 +1938,87 @@ export async function upsertConductCategoryAction(formData: FormData) {
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       throw new Error("This conduct category already exists.");
+    }
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
+export async function upsertConductSectionAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = conductSectionSchema.safeParse({
+    id: formValue(formData, "id") || undefined,
+    name: formValue(formData, "name"),
+    orderIndex: formValue(formData, "orderIndex"),
+    isActive: formValue(formData, "isActive") !== "off",
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid conduct category payload.");
+  }
+
+  try {
+    if (parsed.data.id) {
+      await prisma.conductSection.updateMany({
+        where: {
+          id: parsed.data.id,
+          schoolId: profile.schoolId,
+        },
+        data: {
+          name: parsed.data.name,
+          orderIndex: parsed.data.orderIndex,
+          isActive: parsed.data.isActive,
+        },
+      });
+    } else {
+      await prisma.conductSection.create({
+        data: {
+          schoolId: profile.schoolId,
+          name: parsed.data.name,
+          orderIndex: parsed.data.orderIndex,
+          isActive: parsed.data.isActive,
+        },
+      });
+    }
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw conductSchemaSyncError();
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("This conduct category already exists.");
+    }
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
+export async function deleteConductSectionAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const id = formValue(formData, "id");
+
+  try {
+    const categoryCount = await prisma.conductCategory.count({
+      where: {
+        schoolId: profile.schoolId,
+        sectionId: id,
+      },
+    });
+
+    if (categoryCount > 0) {
+      throw new Error("Delete or move the sub-categories in this conduct category first.");
+    }
+
+    await prisma.conductSection.deleteMany({
+      where: {
+        id,
+        schoolId: profile.schoolId,
+      },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw conductSchemaSyncError();
     }
     throw error;
   }

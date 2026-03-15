@@ -10,6 +10,12 @@ type ConductCategoryRow = {
   maxScore: number;
 };
 
+type ConductSectionRow = {
+  id: string;
+  name: string;
+  categories: ConductCategoryRow[];
+};
+
 type ConductStudentRow = {
   enrollmentId: string;
   studentId: string;
@@ -22,7 +28,7 @@ type TeacherConductTableProps = {
   teacherProfileId?: string;
   termId: string;
   classId: string;
-  conductCategories: ConductCategoryRow[];
+  conductSections: ConductSectionRow[];
   initialRows: ConductStudentRow[];
 };
 
@@ -37,7 +43,7 @@ export default function TeacherConductTable({
   teacherProfileId,
   termId,
   classId,
-  conductCategories,
+  conductSections,
   initialRows,
 }: TeacherConductTableProps) {
   const [rows, setRows] = useState(initialRows);
@@ -46,6 +52,10 @@ export default function TeacherConductTable({
   const clearTimersRef = useRef<Record<string, number>>({});
   const requestVersionRef = useRef<Record<string, number>>({});
 
+  const conductCategories = useMemo(
+    () => conductSections.flatMap((section) => section.categories),
+    [conductSections],
+  );
   const totalColumns = conductCategories.length + 2;
   const rowsByStudentId = useMemo(() => new Map(rows.map((row) => [row.studentId, row])), [rows]);
 
@@ -154,15 +164,24 @@ export default function TeacherConductTable({
         <Table>
           <thead>
             <tr>
-              <Th>Student</Th>
-              {conductCategories.map((category) => (
-                <Th key={category.id}>
-                  {category.name}
-                  <br />
-                  <span className="text-xs text-[var(--muted)]">Max {category.maxScore}</span>
+              <Th rowSpan={2}>Student</Th>
+              {conductSections.map((section) => (
+                <Th key={section.id} colSpan={section.categories.length} className="text-center">
+                  {section.name}
                 </Th>
               ))}
-              <Th>Status</Th>
+              <Th rowSpan={2}>Status</Th>
+            </tr>
+            <tr>
+              {conductSections.flatMap((section) =>
+                section.categories.map((category) => (
+                  <Th key={category.id}>
+                    {category.name}
+                    <br />
+                    <span className="text-xs text-[var(--muted)]">Max {category.maxScore}</span>
+                  </Th>
+                )),
+              )}
             </tr>
           </thead>
           <tbody>

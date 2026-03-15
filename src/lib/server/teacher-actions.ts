@@ -158,8 +158,11 @@ export async function saveStudentConductAction(input: SaveStudentConductInput): 
         where: {
           schoolId: actorProfile.schoolId,
           isActive: true,
+          section: {
+            isActive: true,
+          },
         },
-        orderBy: { orderIndex: "asc" },
+        orderBy: [{ section: { orderIndex: "asc" } }, { orderIndex: "asc" }, { name: "asc" }],
       }),
     ]);
 

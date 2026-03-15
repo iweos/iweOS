@@ -5,29 +5,21 @@ import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
-import { deleteConductCategoryAction, upsertConductCategoryAction } from "@/lib/server/admin-actions";
+import { deleteConductSectionAction, upsertConductSectionAction } from "@/lib/server/admin-actions";
 
-type ConductCategoryRow = {
+type ConductSectionRow = {
   id: string;
-  sectionId: string;
-  sectionName: string;
   name: string;
-  maxScore: number;
   orderIndex: number;
   isActive: boolean;
+  categoryCount: number;
 };
 
-type ConductSectionOption = {
-  id: string;
-  name: string;
+type ConductSectionTableProps = {
+  rows: ConductSectionRow[];
 };
 
-type ConductCategoryTableProps = {
-  sections: ConductSectionOption[];
-  rows: ConductCategoryRow[];
-};
-
-export default function ConductCategoryTable({ sections, rows }: ConductCategoryTableProps) {
+export default function ConductSectionTable({ rows }: ConductSectionTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -49,10 +41,9 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
           <thead>
             <tr>
               <Th>Category</Th>
-              <Th>Sub-category</Th>
-              <Th>Max Score</Th>
               <Th>Order</Th>
               <Th>Active</Th>
+              <Th>Sub-categories</Th>
               <Th>Action</Th>
             </tr>
           </thead>
@@ -63,26 +54,18 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                 <tr key={row.id}>
                   {isEditing ? (
                     <>
-                      <Td colSpan={5}>
+                      <Td colSpan={4}>
                         <form
                           action={(formData) => {
                             runAction(async () => {
-                              await upsertConductCategoryAction(formData);
+                              await upsertConductSectionAction(formData);
                               setEditingId(null);
                             });
                           }}
                           className="d-flex flex-wrap gap-2 align-items-end"
                         >
                           <input type="hidden" name="id" value={row.id} />
-                          <Select name="sectionId" defaultValue={row.sectionId} required>
-                            {sections.map((section) => (
-                              <option key={section.id} value={section.id}>
-                                {section.name}
-                              </option>
-                            ))}
-                          </Select>
                           <Input name="name" defaultValue={row.name} required />
-                          <Input name="maxScore" type="number" min={1} max={100} defaultValue={row.maxScore} required />
                           <Input name="orderIndex" type="number" min={1} max={99} defaultValue={row.orderIndex} required />
                           <Select name="isActive" defaultValue={row.isActive ? "on" : "off"}>
                             <option value="on">Yes</option>
@@ -100,7 +83,7 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                         <form
                           action={(formData) => {
                             runAction(async () => {
-                              await deleteConductCategoryAction(formData);
+                              await deleteConductSectionAction(formData);
                               setEditingId(null);
                             });
                           }}
@@ -114,11 +97,10 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                     </>
                   ) : (
                     <>
-                      <Td>{row.sectionName}</Td>
                       <Td>{row.name}</Td>
-                      <Td>{row.maxScore}</Td>
                       <Td>{row.orderIndex}</Td>
                       <Td>{row.isActive ? "Yes" : "No"}</Td>
+                      <Td>{row.categoryCount}</Td>
                       <Td className="d-flex flex-wrap gap-1">
                         <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(row.id)}>
                           Edit
@@ -126,7 +108,7 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                         <form
                           action={(formData) => {
                             runAction(async () => {
-                              await deleteConductCategoryAction(formData);
+                              await deleteConductSectionAction(formData);
                             });
                           }}
                         >
@@ -143,8 +125,8 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
             })}
             {rows.length === 0 ? (
               <tr>
-                <Td colSpan={6} className="text-muted">
-                  No conduct sub-categories yet.
+                <Td colSpan={5} className="text-muted">
+                  No conduct categories yet.
                 </Td>
               </tr>
             ) : null}

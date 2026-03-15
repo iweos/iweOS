@@ -20,10 +20,14 @@ export default async function TeacherConductPage({
 
   let terms: Array<{ id: string; sessionLabel: string; termLabel: string; isActive: boolean }> = [];
   let classesInView: Array<{ id: string; name: string }> = [];
-  let conductCategories: Array<{ id: string; name: string; maxScore: number }> = [];
+  let conductSections: Array<{
+    id: string;
+    name: string;
+    categories: Array<{ id: string; name: string; maxScore: number }>;
+  }> = [];
 
   try {
-    [terms, classesInView, conductCategories] = await Promise.all([
+    [terms, classesInView, conductSections] = await Promise.all([
       prisma.term.findMany({
         where: { schoolId: context.actorProfile.schoolId },
         orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
@@ -45,13 +49,21 @@ export default async function TeacherConductPage({
               orderBy: { class: { name: "asc" } },
             })
             .then((rows) => rows.map((row) => row.class)),
-      prisma.conductCategory.findMany({
+      prisma.conductSection.findMany({
         where: {
           schoolId: context.actorProfile.schoolId,
           isActive: true,
         },
-        orderBy: { orderIndex: "asc" },
-        select: { id: true, name: true, maxScore: true },
+        orderBy: [{ orderIndex: "asc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          categories: {
+            where: { isActive: true },
+            orderBy: [{ orderIndex: "asc" }, { name: "asc" }],
+            select: { id: true, name: true, maxScore: true },
+          },
+        },
       }),
     ]);
   } catch (error) {
@@ -150,6 +162,8 @@ export default async function TeacherConductPage({
   const conductMap = new Map(
     existingConducts.map((row) => [`${row.studentId}:${row.conductCategoryId}`, row.score]),
   );
+  const activeConductSections = conductSections.filter((section) => section.categories.length > 0);
+  const conductCategories = activeConductSections.flatMap((section) => section.categories);
 
   return (
     <>
@@ -215,14 +229,14 @@ export default async function TeacherConductPage({
         <h2 className="section-heading">Student Conduct</h2>
         {!selectedClassId || !selectedTermId ? (
           <p className="section-subtle">No valid class/term in this view.</p>
-        ) : conductCategories.length === 0 ? (
+        ) : activeConductSections.length === 0 ? (
           <p className="section-subtle">No active conduct categories found. Ask admin to configure them under grading.</p>
         ) : (
           <TeacherConductTable
             teacherProfileId={params.teacherProfileId}
             termId={selectedTermId}
             classId={selectedClassId}
-            conductCategories={conductCategories}
+            conductSections={activeConductSections}
             initialRows={enrollments.map((enrollment) => ({
               enrollmentId: enrollment.id,
               studentId: enrollment.studentId,

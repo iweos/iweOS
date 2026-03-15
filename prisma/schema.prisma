@@ -78,6 +78,7 @@ model School {
   gradingSettings         GradingSetting?
   assessmentTemplates     AssessmentTemplate[]
   assessmentTypes         AssessmentType[]
+  conductSections         ConductSection[]
   conductCategories       ConductCategory[]
   gradeScale              GradeScale[]
   scores                  Score[]
@@ -316,9 +317,27 @@ model GradeScale {
   @@map("grade_scale")
 }
 
+model ConductSection {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId   String   @map("school_id") @db.Uuid
+  name       String
+  orderIndex Int      @default(1) @map("order_index")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school     School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  categories ConductCategory[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+  @@index([schoolId, orderIndex])
+  @@map("conduct_sections")
+}
+
 model ConductCategory {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   schoolId   String   @map("school_id") @db.Uuid
+  sectionId  String   @map("section_id") @db.Uuid
   name       String
   maxScore   Int      @map("max_score")
   orderIndex Int      @default(1) @map("order_index")
@@ -326,10 +345,12 @@ model ConductCategory {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   school     School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  section    ConductSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   scores     StudentConduct[]
 
-  @@unique([schoolId, name])
+  @@unique([schoolId, sectionId, name])
   @@index([schoolId])
+  @@index([sectionId])
   @@index([schoolId, orderIndex])
   @@map("conduct_categories")
 }
