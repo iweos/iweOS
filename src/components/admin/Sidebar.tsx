@@ -77,6 +77,7 @@ const trailingLinks: NavLink[] = [{ label: "Settings", href: "/app/admin/setting
 
 const teacherLinks: NavLink[] = [
   { label: "Dashboard", href: "/app/teacher/dashboard", icon: "fas fa-home" },
+  { label: "Students", href: "/app/teacher/students", icon: "fas fa-user-graduate" },
   { label: "Grade Entry", href: "/app/teacher/grade-entry", icon: "fas fa-clipboard-check" },
   { label: "Conduct", href: "/app/teacher/conduct", icon: "fas fa-star" },
   { label: "Results", href: "/app/teacher/results", icon: "fas fa-book-reader" },
