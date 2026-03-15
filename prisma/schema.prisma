@@ -78,8 +78,10 @@ model School {
   gradingSettings         GradingSetting?
   assessmentTemplates     AssessmentTemplate[]
   assessmentTypes         AssessmentType[]
+  conductCategories       ConductCategory[]
   gradeScale              GradeScale[]
   scores                  Score[]
+  studentConducts         StudentConduct[]
   scoreAssessmentValues   ScoreAssessmentValue[]
   feeItemCatalogs         FeeItemCatalog[]
   feeSchedules            FeeSchedule[]
@@ -106,6 +108,7 @@ model Profile {
 
   school                   School                    @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   teacherClassAssignments  TeacherClassAssignment[]
+  studentConducts          StudentConduct[]
   scores                   Score[]
 
   @@index([schoolId])
@@ -124,6 +127,7 @@ model Class {
   classSubjects            ClassSubject[]
   enrollments              Enrollment[]
   teacherClassAssignments  TeacherClassAssignment[]
+  studentConducts          StudentConduct[]
   scores                   Score[]
 
   @@index([schoolId])
@@ -141,6 +145,7 @@ model Term {
 
   school       School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   enrollments  Enrollment[]
+  studentConducts StudentConduct[]
   scores       Score[]
 
   @@index([schoolId])
@@ -167,6 +172,7 @@ model Student {
 
   school           School             @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   enrollments      Enrollment[]
+  studentConducts  StudentConduct[]
   scores           Score[]
   invoiceLineItems InvoiceLineItem[]
   ledgerEntries    LedgerEntry[]
@@ -310,6 +316,24 @@ model GradeScale {
   @@map("grade_scale")
 }
 
+model ConductCategory {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId   String   @map("school_id") @db.Uuid
+  name       String
+  maxScore   Int      @map("max_score")
+  orderIndex Int      @default(1) @map("order_index")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school     School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  scores     StudentConduct[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+  @@index([schoolId, orderIndex])
+  @@map("conduct_categories")
+}
+
 model Score {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   schoolId         String    @map("school_id") @db.Uuid
@@ -340,6 +364,34 @@ model Score {
   @@index([classId])
   @@index([teacherProfileId])
   @@map("scores")
+}
+
+model StudentConduct {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId          String   @map("school_id") @db.Uuid
+  termId            String   @map("term_id") @db.Uuid
+  classId           String   @map("class_id") @db.Uuid
+  studentId         String   @map("student_id") @db.Uuid
+  conductCategoryId String   @map("conduct_category_id") @db.Uuid
+  teacherProfileId  String   @map("teacher_profile_id") @db.Uuid
+  score             Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school            School          @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  term              Term            @relation(fields: [termId], references: [id], onDelete: Restrict)
+  class             Class           @relation(fields: [classId], references: [id], onDelete: Restrict)
+  student           Student         @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  conductCategory   ConductCategory @relation(fields: [conductCategoryId], references: [id], onDelete: Restrict)
+  teacherProfile    Profile         @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, conductCategoryId, termId])
+  @@index([schoolId])
+  @@index([termId])
+  @@index([classId])
+  @@index([teacherProfileId])
+  @@index([conductCategoryId])
+  @@map("student_conducts")
 }
 
 model ScoreAssessmentValue {

@@ -77,6 +77,12 @@ export const termSchema = z.object({
   isActive: z.boolean().optional().default(false),
 });
 
+export const sessionBundleSchema = z.object({
+  sessionLabel: z.string().trim().min(1).max(50),
+  structure: z.enum(["three_terms", "two_semesters"]),
+  setFirstActive: z.boolean().optional().default(false),
+});
+
 export const teacherAssignmentSchema = z.object({
   teacherProfileId: z.string().uuid(),
   classId: z.string().uuid(),
@@ -142,7 +148,17 @@ export const gradeScaleSchema = z.object({
   orderIndex: z.coerce.number().int().min(1).max(99),
 });
 
+export const conductCategorySchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(1).max(80),
+  maxScore: z.coerce.number().min(1).max(100),
+  orderIndex: z.coerce.number().int().min(1).max(99),
+  isActive: z.boolean().optional().default(true),
+});
+
 export const scoreValueSchema = z.coerce.number().min(0).max(100);
+
+export const conductValueSchema = z.coerce.number().min(0).max(100);
 
 export const paymentSettingsSchema = z.object({
   processingFeePercent: z.coerce.number().int().min(0).max(20),

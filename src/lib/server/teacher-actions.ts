@@ -7,7 +7,7 @@ import { calculateAssessmentTotal, getGradeForTotal } from "@/lib/server/grading
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
-import { scoreValueSchema } from "@/lib/validation/schemas";
+import { conductValueSchema, scoreValueSchema } from "@/lib/validation/schemas";
 
 export type SaveStudentScoresInput = {
   teacherProfileId?: string;
@@ -27,6 +27,28 @@ export type SaveStudentScoresResult =
       message: string;
       total: number;
       grade: string;
+      values: Record<string, string>;
+    }
+  | {
+      ok: false;
+      message: string;
+    };
+
+export type SaveStudentConductInput = {
+  teacherProfileId?: string;
+  termId: string;
+  classId: string;
+  studentId: string;
+  conduct: Array<{
+    conductCategoryId: string;
+    value: string | number;
+  }>;
+};
+
+export type SaveStudentConductResult =
+  | {
+      ok: true;
+      message: string;
       values: Record<string, string>;
     }
   | {
@@ -80,6 +102,148 @@ function parseNumberishScoreOrZero(raw: string | number | null | undefined) {
   }
 
   return parsed.data;
+}
+
+function parseNumberishConductOrZero(raw: string | number | null | undefined) {
+  const parsed = conductValueSchema.safeParse(raw ?? "0");
+  if (!parsed.success) {
+    return 0;
+  }
+
+  return parsed.data;
+}
+
+export async function saveStudentConductAction(input: SaveStudentConductInput): Promise<SaveStudentConductResult> {
+  try {
+    const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
+    const context = await requireTeacherPortalContext(requestedTeacherId);
+    const actorProfile = context.actorProfile;
+    const termId = input.termId.trim();
+    const classId = input.classId.trim();
+    const studentId = input.studentId.trim();
+
+    if (!termId || !classId || !studentId) {
+      return { ok: false, message: "Term, class, and student are required." };
+    }
+
+    const assignmentPromise =
+      context.mode === "admin_override"
+        ? Promise.resolve({ id: "admin-override" })
+        : prisma.teacherClassAssignment.findFirst({
+            where: {
+              schoolId: actorProfile.schoolId,
+              teacherProfileId: context.effectiveTeacherProfile.id,
+              classId,
+            },
+          });
+
+    const [assignment, term, enrollment, conductCategories] = await Promise.all([
+      assignmentPromise,
+      prisma.term.findFirst({
+        where: {
+          id: termId,
+          schoolId: actorProfile.schoolId,
+        },
+      }),
+      prisma.enrollment.findFirst({
+        where: {
+          schoolId: actorProfile.schoolId,
+          termId,
+          classId,
+          studentId,
+        },
+        select: { id: true },
+      }),
+      prisma.conductCategory.findMany({
+        where: {
+          schoolId: actorProfile.schoolId,
+          isActive: true,
+        },
+        orderBy: { orderIndex: "asc" },
+      }),
+    ]);
+
+    if (!assignment) {
+      return { ok: false, message: "Selected teacher is not assigned to this class." };
+    }
+    if (!term) {
+      return { ok: false, message: "Selected term does not belong to your school." };
+    }
+    if (!enrollment) {
+      return { ok: false, message: "This student is not enrolled for the selected class and term." };
+    }
+    if (conductCategories.length === 0) {
+      return { ok: false, message: "Conduct categories are not configured." };
+    }
+
+    const submittedValueMap = new Map(input.conduct.map((item) => [item.conductCategoryId, item.value]));
+    const conductInputs = conductCategories.map((category) => {
+      const value = parseNumberishConductOrZero(submittedValueMap.get(category.id));
+      if (value > category.maxScore) {
+        throw new Error(`${category.name} cannot exceed ${category.maxScore}.`);
+      }
+      return {
+        conductCategoryId: category.id,
+        value,
+      };
+    });
+
+    await prisma.$transaction(async (tx) => {
+      for (const item of conductInputs) {
+        await tx.studentConduct.upsert({
+          where: {
+            studentId_conductCategoryId_termId: {
+              studentId,
+              conductCategoryId: item.conductCategoryId,
+              termId,
+            },
+          },
+          update: {
+            schoolId: actorProfile.schoolId,
+            classId,
+            teacherProfileId:
+              context.mode === "admin_override" && actorProfile.role === ProfileRole.ADMIN
+                ? actorProfile.id
+                : context.effectiveTeacherProfile.id,
+            score: item.value,
+          },
+          create: {
+            schoolId: actorProfile.schoolId,
+            termId,
+            classId,
+            studentId,
+            conductCategoryId: item.conductCategoryId,
+            teacherProfileId:
+              context.mode === "admin_override" && actorProfile.role === ProfileRole.ADMIN
+                ? actorProfile.id
+                : context.effectiveTeacherProfile.id,
+            score: item.value,
+          },
+        });
+      }
+    });
+
+    revalidatePath("/app/teacher/dashboard");
+    revalidatePath("/app/teacher/conduct");
+
+    return {
+      ok: true,
+      message: "Conduct saved successfully.",
+      values: Object.fromEntries(conductInputs.map((item) => [item.conductCategoryId, item.value.toString()])),
+    };
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return {
+        ok: false,
+        message: "Conduct setup is not yet available in this environment. Run the latest Prisma migration, then redeploy.",
+      };
+    }
+
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to save conduct right now.",
+    };
+  }
 }
 
 export async function saveStudentScoresAction(input: SaveStudentScoresInput): Promise<SaveStudentScoresResult> {

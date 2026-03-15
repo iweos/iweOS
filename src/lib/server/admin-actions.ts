@@ -14,10 +14,12 @@ import {
   classSchema,
   classSubjectBatchSchema,
   classSubjectAssignmentSchema,
+  conductCategorySchema,
   enrollmentBulkSchema,
   enrollmentSchema,
   gradeScaleSchema,
   schoolSchema,
+  sessionBundleSchema,
   studentBulkSchema,
   studentSchema,
   studentUpdateSchema,
@@ -64,7 +66,10 @@ function revalidateAdminPages() {
   revalidatePath("/app/admin/assignments/enrollments");
   revalidatePath("/app/admin/grading");
   revalidatePath("/app/admin/grading/assessment-types");
+  revalidatePath("/app/admin/grading/grade-entry");
+  revalidatePath("/app/admin/grading/conduct");
   revalidatePath("/app/admin/grading/grades");
+  revalidatePath("/app/admin/grading/promotion");
   revalidatePath("/app/admin/grading-settings");
   revalidatePath("/app/admin/payments");
   revalidatePath("/app/admin/payments/invoices");
@@ -75,6 +80,7 @@ function revalidateAdminPages() {
   revalidatePath("/app/admin/payments/settings");
   revalidatePath("/pay");
   revalidatePath("/app/teacher/dashboard");
+  revalidatePath("/app/teacher/conduct");
   revalidatePath("/app/teacher/grade-entry");
   revalidatePath("/app/teacher/results");
 }
@@ -115,6 +121,15 @@ function studentSchemaSyncError() {
 function assessmentSchemaSyncError() {
   return new Error(schemaSyncMessage("Assessment type"));
 }
+
+function conductSchemaSyncError() {
+  return new Error(schemaSyncMessage("Conduct"));
+}
+
+const TERM_BUNDLE_LABELS = {
+  three_terms: ["First Term", "Second Term", "Third Term"],
+  two_semesters: ["1st Semester", "2nd Semester"],
+} as const;
 
 function schoolNameToken(schoolName: string) {
   const cleanedWords = schoolName
@@ -1019,6 +1034,71 @@ export async function createTermAction(formData: FormData) {
   revalidateAdminPages();
 }
 
+export async function createSessionBundleAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = sessionBundleSchema.safeParse({
+    sessionLabel: formValue(formData, "sessionLabel"),
+    structure: formValue(formData, "structure"),
+    setFirstActive: formValue(formData, "setFirstActive") === "on",
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid academic session payload.");
+  }
+
+  const sessionLabel = parsed.data.sessionLabel;
+  const termLabels = Array.from(TERM_BUNDLE_LABELS[parsed.data.structure]);
+
+  await prisma.$transaction(async (tx) => {
+    const existingTerms = await tx.term.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        sessionLabel,
+        termLabel: { in: termLabels },
+      },
+      select: {
+        id: true,
+        termLabel: true,
+      },
+    });
+
+    if (parsed.data.setFirstActive) {
+      await tx.term.updateMany({
+        where: { schoolId: profile.schoolId },
+        data: { isActive: false },
+      });
+    }
+
+    const existingByLabel = new Map(existingTerms.map((term) => [term.termLabel, term]));
+
+    for (const [index, termLabel] of termLabels.entries()) {
+      const shouldBeActive = parsed.data.setFirstActive && index === 0;
+      const existing = existingByLabel.get(termLabel);
+
+      if (existing) {
+        if (shouldBeActive) {
+          await tx.term.update({
+            where: { id: existing.id },
+            data: { isActive: true },
+          });
+        }
+        continue;
+      }
+
+      await tx.term.create({
+        data: {
+          schoolId: profile.schoolId,
+          sessionLabel,
+          termLabel,
+          isActive: shouldBeActive,
+        },
+      });
+    }
+  });
+
+  revalidateAdminPages();
+}
+
 export async function setActiveTermAction(formData: FormData) {
   const profile = await requireRole("admin");
   const termId = formValue(formData, "termId");
@@ -1290,29 +1370,41 @@ export async function bulkEnrollStudentsByClassAction(formData: FormData) {
       throw new Error(`No active students are currently registered under ${klass.name}.`);
     }
 
-    await prisma.$transaction(
-      eligibleStudents.map((student) =>
-        prisma.enrollment.upsert({
-          where: {
-            studentId_classId_termId: {
-              studentId: student.id,
-              classId: klass.id,
-              termId: term.id,
-            },
-          },
-          update: {},
-          create: {
-            schoolId: profile.schoolId,
-            studentId: student.id,
-            classId: klass.id,
-            termId: term.id,
-          },
-        }),
-      ),
-    );
+    const studentIds = eligibleStudents.map((student) => student.id);
+    const existingEnrollments = await prisma.enrollment.findMany({
+      where: {
+        schoolId: profile.schoolId,
+        classId: klass.id,
+        termId: term.id,
+        studentId: { in: studentIds },
+      },
+      select: { studentId: true },
+    });
+
+    const existingStudentIds = new Set(existingEnrollments.map((enrollment) => enrollment.studentId));
+    const studentsToCreate = eligibleStudents.filter((student) => !existingStudentIds.has(student.id));
+    const alreadyEnrolledCount = eligibleStudents.length - studentsToCreate.length;
+
+    if (studentsToCreate.length > 0) {
+      await prisma.enrollment.createMany({
+        data: studentsToCreate.map((student) => ({
+          schoolId: profile.schoolId,
+          studentId: student.id,
+          classId: klass.id,
+          termId: term.id,
+        })),
+        skipDuplicates: true,
+      });
+    }
 
     revalidateAdminPages();
-    successMessage = `${eligibleStudents.length} active student${eligibleStudents.length === 1 ? "" : "s"} enrolled into ${klass.name} for ${term.sessionLabel} ${term.termLabel}.`;
+    if (studentsToCreate.length === 0) {
+      successMessage = `No new enrollments for ${klass.name} in ${term.sessionLabel} ${term.termLabel}. ${alreadyEnrolledCount} student${alreadyEnrolledCount === 1 ? " was" : "s were"} already enrolled.`;
+    } else if (alreadyEnrolledCount === 0) {
+      successMessage = `${studentsToCreate.length} active student${studentsToCreate.length === 1 ? "" : "s"} newly enrolled into ${klass.name} for ${term.sessionLabel} ${term.termLabel}.`;
+    } else {
+      successMessage = `${studentsToCreate.length} active student${studentsToCreate.length === 1 ? "" : "s"} newly enrolled into ${klass.name} for ${term.sessionLabel} ${term.termLabel}. ${alreadyEnrolledCount} student${alreadyEnrolledCount === 1 ? " was" : "s were"} already enrolled.`;
+    }
   } catch (error) {
     if (error instanceof Error && !isPrismaSchemaMismatchError(error)) {
       redirectEnrollmentsStatus("error", error.message);
@@ -1793,6 +1885,91 @@ export async function deleteGradeScaleAction(formData: FormData) {
       schoolId: profile.schoolId,
     },
   });
+
+  revalidateAdminPages();
+}
+
+export async function upsertConductCategoryAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = conductCategorySchema.safeParse({
+    id: formValue(formData, "id") || undefined,
+    name: formValue(formData, "name"),
+    maxScore: formValue(formData, "maxScore"),
+    orderIndex: formValue(formData, "orderIndex"),
+    isActive: formValue(formData, "isActive") !== "off",
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid conduct category payload.");
+  }
+
+  try {
+    if (parsed.data.id) {
+      await prisma.conductCategory.updateMany({
+        where: {
+          id: parsed.data.id,
+          schoolId: profile.schoolId,
+        },
+        data: {
+          name: parsed.data.name,
+          maxScore: parsed.data.maxScore,
+          orderIndex: parsed.data.orderIndex,
+          isActive: parsed.data.isActive,
+        },
+      });
+    } else {
+      await prisma.conductCategory.create({
+        data: {
+          schoolId: profile.schoolId,
+          name: parsed.data.name,
+          maxScore: parsed.data.maxScore,
+          orderIndex: parsed.data.orderIndex,
+          isActive: parsed.data.isActive,
+        },
+      });
+    }
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw conductSchemaSyncError();
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("This conduct category already exists.");
+    }
+    throw error;
+  }
+
+  revalidateAdminPages();
+}
+
+export async function deleteConductCategoryAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const id = formValue(formData, "id");
+
+  try {
+    const usage = await prisma.studentConduct.findFirst({
+      where: {
+        schoolId: profile.schoolId,
+        conductCategoryId: id,
+      },
+      select: { id: true },
+    });
+
+    if (usage) {
+      throw new Error("This conduct category already has saved conduct records and cannot be deleted.");
+    }
+
+    await prisma.conductCategory.deleteMany({
+      where: {
+        id,
+        schoolId: profile.schoolId,
+      },
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw conductSchemaSyncError();
+    }
+    throw error;
+  }
 
   revalidateAdminPages();
 }

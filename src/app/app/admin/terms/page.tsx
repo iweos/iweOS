@@ -1,4 +1,4 @@
-import { createTermAction, deleteTermAction, setActiveTermAction } from "@/lib/server/admin-actions";
+import { createSessionBundleAction, deleteTermAction, setActiveTermAction } from "@/lib/server/admin-actions";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
@@ -10,9 +10,10 @@ export default async function AdminTermsPage() {
 
   const terms = await prisma.term.findMany({
     where: { schoolId: profile.schoolId },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ sessionLabel: "desc" }, { createdAt: "asc" }],
   });
 
+  const sessionCount = new Set(terms.map((term) => term.sessionLabel)).size;
   const activeTerms = terms.filter((term) => term.isActive).length;
 
   return (
@@ -21,8 +22,8 @@ export default async function AdminTermsPage() {
         <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
           <div>
             <p className="section-kicker">Academic Setup</p>
-            <h1 className="section-title">Terms</h1>
-            <p className="section-subtle">Manage sessions/terms and keep one term active for grading and payments.</p>
+            <h1 className="section-title">Sessions & Terms</h1>
+            <p className="section-subtle">Create a session once, then generate the correct term or semester structure for it.</p>
           </div>
           <div className="d-flex flex-wrap gap-2 align-items-center">
             <Link className="btn btn-secondary" href="/app/admin/dashboard">
@@ -35,21 +36,27 @@ export default async function AdminTermsPage() {
         </div>
         <div className="row g-3">
           <div className="col-12 col-sm-6 col-lg-4">
+            <StatCard label="Total Sessions" value={sessionCount} icon="fas fa-layer-group" cardVariant="primary" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4">
             <StatCard label="Total Terms" value={terms.length} icon="fas fa-calendar-alt" cardVariant="secondary" />
           </div>
           <div className="col-12 col-sm-6 col-lg-4">
             <StatCard label="Active Terms" value={activeTerms} icon="fas fa-check-circle" cardVariant="success" />
           </div>
         </div>
-        <form action={createTermAction} className="grid gap-3 md:grid-cols-4">
+        <form action={createSessionBundleAction} className="grid gap-3 md:grid-cols-4">
           <input name="sessionLabel" className="form-control" placeholder="2025/2026" required />
-          <input name="termLabel" className="form-control" placeholder="First Term" required />
+          <select name="structure" className="form-select" defaultValue="three_terms">
+            <option value="three_terms">Three Terms</option>
+            <option value="two_semesters">Two Semesters</option>
+          </select>
           <label className="d-flex align-items-center gap-2 text-sm">
-            <input name="isActive" type="checkbox" />
-            Set active
+            <input name="setFirstActive" type="checkbox" />
+            Set first term active
           </label>
           <button className="btn btn-primary" type="submit">
-            Add Term
+            Create Session Terms
           </button>
         </form>
       </section>
