@@ -76,6 +76,8 @@ model School {
   enrollments             Enrollment[]
   teacherClassAssignments TeacherClassAssignment[]
   gradingSettings         GradingSetting?
+  promotionPolicy         PromotionPolicy?
+  promotionPolicySubjects PromotionPolicySubject[]
   assessmentTemplates     AssessmentTemplate[]
   assessmentTypes         AssessmentType[]
   conductSections         ConductSection[]
@@ -195,6 +197,7 @@ model Subject {
 
   school        School         @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   classSubjects ClassSubject[]
+  promotionRules PromotionPolicySubject[]
   scores        Score[]
 
   @@index([schoolId])
@@ -265,6 +268,40 @@ model GradingSetting {
   @@map("grading_settings")
 }
 
+model PromotionPolicy {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId              String   @unique @map("school_id") @db.Uuid
+  minimumPassedSubjects Int      @default(5) @map("minimum_passed_subjects")
+  minimumAverage        Decimal  @default(0) @map("minimum_average") @db.Decimal(10, 2)
+  passGradeId           String?  @map("pass_grade_id") @db.Uuid
+  allowManualOverride   Boolean  @default(true) @map("allow_manual_override")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school                School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  passGrade             GradeScale?            @relation(fields: [passGradeId], references: [id], onDelete: SetNull)
+  compulsorySubjects    PromotionPolicySubject[]
+
+  @@map("promotion_policies")
+}
+
+model PromotionPolicySubject {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String   @map("school_id") @db.Uuid
+  policyId  String   @map("policy_id") @db.Uuid
+  subjectId String   @map("subject_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school    School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  policy    PromotionPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  subject   Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([policyId, subjectId])
+  @@index([schoolId])
+  @@index([subjectId])
+  @@map("promotion_policy_subjects")
+}
+
 model AssessmentTemplate {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   schoolId   String   @map("school_id") @db.Uuid
@@ -317,6 +354,7 @@ model GradeScale {
   orderIndex  Int     @map("order_index")
 
   school      School  @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  promotionPolicies PromotionPolicy[]
 
   @@unique([schoolId, gradeLetter])
   @@index([schoolId])

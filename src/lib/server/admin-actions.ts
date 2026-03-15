@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
+import { evaluatePromotionCandidates, resolvePromotionPolicy } from "@/lib/server/promotion";
 import {
   assessmentTemplateActivateSchema,
   assessmentTemplateSchema,
@@ -19,6 +20,7 @@ import {
   enrollmentBulkSchema,
   enrollmentSchema,
   gradeScaleSchema,
+  promotionPolicySchema,
   schoolSchema,
   sessionBundleSchema,
   studentBulkSchema,
@@ -1638,6 +1640,124 @@ export async function removeEnrollmentAction(formData: FormData) {
   redirectEnrollmentsStatus("success", successMessage);
 }
 
+export async function upsertPromotionPolicyAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const sessionLabel = formValue(formData, "sessionLabel");
+  const sourceClassId = formValue(formData, "sourceClassId");
+  const targetTermId = formValue(formData, "targetTermId");
+  const targetClassId = formValue(formData, "targetClassId");
+  const compulsorySubjectIds = formData
+    .getAll("compulsorySubjectIds")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+
+  const parsed = promotionPolicySchema.safeParse({
+    minimumPassedSubjects: formValue(formData, "minimumPassedSubjects"),
+    minimumAverage: formValue(formData, "minimumAverage"),
+    passGradeId: formValue(formData, "passGradeId") || undefined,
+    allowManualOverride: formValue(formData, "allowManualOverride") !== "off",
+    compulsorySubjectIds,
+  });
+
+  if (!parsed.success) {
+    redirectPromotionStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion rules.", {
+      sessionLabel,
+      sourceClassId,
+      targetTermId,
+      targetClassId,
+    });
+  }
+
+  try {
+    const [passGrade, validSubjects] = await Promise.all([
+      parsed.data.passGradeId
+        ? prisma.gradeScale.findFirst({
+            where: {
+              id: parsed.data.passGradeId,
+              schoolId: profile.schoolId,
+            },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+      parsed.data.compulsorySubjectIds.length > 0
+        ? prisma.subject.findMany({
+            where: {
+              schoolId: profile.schoolId,
+              id: { in: parsed.data.compulsorySubjectIds },
+            },
+            select: { id: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    if (parsed.data.passGradeId && !passGrade) {
+      throw new Error("Selected pass grade was not found for this school.");
+    }
+
+    if (validSubjects.length !== parsed.data.compulsorySubjectIds.length) {
+      throw new Error("One or more compulsory subjects are invalid for this school.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const policy = await tx.promotionPolicy.upsert({
+        where: {
+          schoolId: profile.schoolId,
+        },
+        update: {
+          minimumPassedSubjects: parsed.data.minimumPassedSubjects,
+          minimumAverage: parsed.data.minimumAverage,
+          passGradeId: parsed.data.passGradeId || null,
+          allowManualOverride: parsed.data.allowManualOverride,
+        },
+        create: {
+          schoolId: profile.schoolId,
+          minimumPassedSubjects: parsed.data.minimumPassedSubjects,
+          minimumAverage: parsed.data.minimumAverage,
+          passGradeId: parsed.data.passGradeId || null,
+          allowManualOverride: parsed.data.allowManualOverride,
+        },
+        select: { id: true },
+      });
+
+      await tx.promotionPolicySubject.deleteMany({
+        where: {
+          policyId: policy.id,
+        },
+      });
+
+      if (parsed.data.compulsorySubjectIds.length > 0) {
+        await tx.promotionPolicySubject.createMany({
+          data: parsed.data.compulsorySubjectIds.map((subjectId) => ({
+            schoolId: profile.schoolId,
+            policyId: policy.id,
+            subjectId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    });
+
+    revalidateAdminPages();
+    redirectPromotionStatus("success", "Promotion rules saved for this school.", {
+      sessionLabel,
+      sourceClassId,
+      targetTermId,
+      targetClassId,
+    });
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+
+    redirectPromotionStatus("error", error instanceof Error ? error.message : "Unable to save promotion rules right now.", {
+      sessionLabel,
+      sourceClassId,
+      targetTermId,
+      targetClassId,
+    });
+  }
+}
+
 export async function promoteStudentsAction(formData: FormData) {
   const profile = await requireRole("admin");
   const sourceSessionLabel = formValue(formData, "sourceSessionLabel");
@@ -1728,6 +1848,118 @@ export async function promoteStudentsAction(formData: FormData) {
     const eligibleStudentIds = Array.from(new Set(eligibleEnrollments.map((row) => row.studentId)));
     if (eligibleStudentIds.length === 0) {
       throw new Error("None of the selected students belong to the chosen source class and session.");
+    }
+
+    const [gradeScale, promotionPolicy] = await Promise.all([
+      prisma.gradeScale.findMany({
+        where: { schoolId: profile.schoolId },
+        orderBy: { orderIndex: "asc" },
+      }),
+      prisma.promotionPolicy.findUnique({
+        where: { schoolId: profile.schoolId },
+        select: {
+          minimumPassedSubjects: true,
+          minimumAverage: true,
+          passGradeId: true,
+          allowManualOverride: true,
+          compulsorySubjects: {
+            select: {
+              subjectId: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    const effectivePolicy = resolvePromotionPolicy(
+      promotionPolicy
+        ? {
+            minimumPassedSubjects: promotionPolicy.minimumPassedSubjects,
+            minimumAverage: Number(promotionPolicy.minimumAverage),
+            passGradeId: promotionPolicy.passGradeId,
+            allowManualOverride: promotionPolicy.allowManualOverride,
+            compulsorySubjectIds: promotionPolicy.compulsorySubjects.map((item) => item.subjectId),
+          }
+        : null,
+      gradeScale,
+    );
+
+    const [subjects, selectedScores, students] = await Promise.all([
+      prisma.subject.findMany({
+        where: { schoolId: profile.schoolId },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
+      prisma.score.findMany({
+        where: {
+          schoolId: profile.schoolId,
+          classId: parsed.data.sourceClassId,
+          termId: {
+            in: sourceSessionTerms.map((term) => term.id),
+          },
+          studentId: {
+            in: eligibleStudentIds,
+          },
+        },
+        select: {
+          studentId: true,
+          subjectId: true,
+          termId: true,
+          total: true,
+        },
+      }),
+      prisma.student.findMany({
+        where: {
+          schoolId: profile.schoolId,
+          id: {
+            in: eligibleStudentIds,
+          },
+        },
+        select: {
+          id: true,
+          studentCode: true,
+          fullName: true,
+          status: true,
+        },
+      }),
+    ]);
+
+    const evaluatedRows = evaluatePromotionCandidates({
+      students,
+      scores: selectedScores.map((score) => ({
+        studentId: score.studentId,
+        subjectId: score.subjectId,
+        termId: score.termId,
+        total: Number(score.total),
+      })),
+      sessionTermCount: sourceSessionTerms.length,
+      gradeScale,
+      policy: effectivePolicy,
+      subjects,
+    });
+
+    const noScoreRows = evaluatedRows.filter((row) => row.annualAverage === null);
+    if (noScoreRows.length > 0) {
+      const blockedNames = noScoreRows
+        .slice(0, 3)
+        .map((row) => row.fullName)
+        .join(", ");
+      throw new Error(
+        `${blockedNames}${noScoreRows.length > 3 ? " and others" : ""} have no annual scores yet, so they cannot be promoted from this screen.`,
+      );
+    }
+
+    if (!effectivePolicy.allowManualOverride) {
+      const ineligibleSelected = evaluatedRows.filter((row) => eligibleStudentIds.includes(row.studentId) && !row.isEligible);
+      if (ineligibleSelected.length > 0) {
+        const blockedNames = ineligibleSelected
+          .slice(0, 3)
+          .map((row) => row.fullName)
+          .join(", ");
+        throw new Error(
+          `${blockedNames}${ineligibleSelected.length > 3 ? " and others" : ""} do not meet this school's promotion rules, and manual override is turned off.`,
+        );
+      }
     }
 
     const existingTargetEnrollments = await prisma.enrollment.findMany({

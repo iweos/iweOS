@@ -199,6 +199,14 @@ export const promotionActionSchema = z.object({
   studentIds: z.array(z.string().uuid()).min(1, "Select at least one student to promote."),
 });
 
+export const promotionPolicySchema = z.object({
+  minimumPassedSubjects: z.coerce.number().int().min(1).max(50),
+  minimumAverage: z.coerce.number().min(0).max(100),
+  passGradeId: z.string().uuid().optional().or(z.literal("")),
+  allowManualOverride: z.boolean().optional().default(true),
+  compulsorySubjectIds: z.array(z.string().uuid()).optional().default([]),
+});
+
 export const gradeScaleSchema = z.object({
   id: z.string().uuid().optional(),
   gradeLetter: z.string().trim().min(1).max(2),
