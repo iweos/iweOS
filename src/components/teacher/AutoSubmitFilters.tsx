@@ -18,16 +18,14 @@ export default function AutoSubmitFilters({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [manualPending, setManualPending] = useState(false);
-  const lastQueryRef = useRef(searchParams.toString());
+  const submittedQueryRef = useRef<string | null>(null);
 
   useEffect(() => {
     const currentQuery = searchParams.toString();
-    if (currentQuery === lastQueryRef.current) {
-      return;
+    if (submittedQueryRef.current && currentQuery === submittedQueryRef.current) {
+      submittedQueryRef.current = null;
+      setManualPending(false);
     }
-
-    lastQueryRef.current = currentQuery;
-    setManualPending(false);
   }, [searchParams]);
 
   useEffect(() => {
@@ -70,7 +68,7 @@ export default function AutoSubmitFilters({
         return;
       }
 
-      lastQueryRef.current = nextQuery;
+      submittedQueryRef.current = nextQuery;
       setManualPending(true);
       startTransition(() => {
         router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
