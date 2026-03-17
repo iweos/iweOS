@@ -278,6 +278,12 @@ export default async function TeacherGradeEntryPage({
   );
 
   const weightTotal = assessmentTypes.reduce((sum, item) => sum + item.weight, 0);
+  const selectedTerm = terms.find((term) => term.id === selectedTermId) ?? null;
+  const selectedClass = classesInView.find((klass) => klass.id === selectedClassId) ?? null;
+  const selectedSubject = classSubjects.find((pair) => pair.subjectId === selectedSubjectId) ?? null;
+  const selectedTermLabel = selectedTerm ? `${selectedTerm.sessionLabel} ${selectedTerm.termLabel}` : "No term selected";
+  const selectedClassLabel = selectedClass?.name ?? "No class selected";
+  const selectedSubjectLabel = selectedSubject?.subject.name ?? "No subject selected";
 
   return (
     <>
@@ -369,6 +375,9 @@ export default async function TeacherGradeEntryPage({
             termId={selectedTermId}
             classId={selectedClassId}
             subjectId={selectedSubjectId}
+            termLabel={selectedTermLabel}
+            className={selectedClassLabel}
+            subjectName={selectedSubjectLabel}
             assessmentTypes={assessmentTypes.map((assessment) => ({
               id: assessment.id,
               name: assessment.name,

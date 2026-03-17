@@ -25,6 +25,9 @@ type GradeEntryTableProps = {
   termId: string;
   classId: string;
   subjectId: string;
+  termLabel: string;
+  className: string;
+  subjectName: string;
   assessmentTypes: AssessmentTypeRow[];
   initialRows: GradeEntryStudentRow[];
 };
@@ -41,6 +44,9 @@ export default function GradeEntryTable({
   termId,
   classId,
   subjectId,
+  termLabel,
+  className,
+  subjectName,
   assessmentTypes,
   initialRows,
 }: GradeEntryTableProps) {
@@ -163,6 +169,12 @@ export default function GradeEntryTable({
 
   return (
     <div className="space-y-3">
+      <div className="rounded-[0.8rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-3">
+        <p className="field-label mb-1">Loaded score sheet</p>
+        <p className="m-0 text-sm font-semibold text-[var(--fg)]">
+          {subjectName} · {className} · {termLabel}
+        </p>
+      </div>
       <p className="section-subtle">Scores save automatically when you leave a score field.</p>
       <TableWrap className="table-wrap">
         <Table>
