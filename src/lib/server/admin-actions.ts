@@ -1,13 +1,14 @@
 "use server";
 
 import { clerkClient } from "@clerk/nextjs/server";
-import { Prisma, ProfileRole } from "@prisma/client";
+import { Prisma, ProfileRole, ResultPublicationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, resolvePromotionPolicy } from "@/lib/server/promotion";
+import { buildResultPublicationPayload } from "@/lib/server/results";
 import {
   assessmentTemplateActivateSchema,
   assessmentTemplateSchema,
@@ -21,6 +22,7 @@ import {
   enrollmentSchema,
   gradeScaleSchema,
   promotionPolicySchema,
+  resultPublicationSchema,
   schoolSchema,
   sessionBundleSchema,
   studentBulkSchema,
@@ -93,6 +95,33 @@ function redirectPromotionRulesStatus(status: "success" | "error", message: stri
   redirect(`/app/admin/settings/promotion-rules?${query.toString()}`);
 }
 
+function redirectResultsStatus(
+  status: "success" | "error",
+  message: string,
+  options?: {
+    termId?: string;
+    classId?: string;
+    studentId?: string;
+  },
+): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+
+  if (options?.termId) {
+    query.set("termId", options.termId);
+  }
+  if (options?.classId) {
+    query.set("classId", options.classId);
+  }
+  if (options?.studentId) {
+    query.set("studentId", options.studentId);
+  }
+
+  redirect(`/app/admin/grading/results?${query.toString()}`);
+}
+
 function revalidateAdminPages() {
   revalidatePath("/app/admin/dashboard");
   revalidatePath("/app/admin/settings");
@@ -115,6 +144,8 @@ function revalidateAdminPages() {
   revalidatePath("/app/admin/grading/conduct");
   revalidatePath("/app/admin/grading/grades");
   revalidatePath("/app/admin/grading/promotion");
+  revalidatePath("/app/admin/grading/results");
+  revalidatePath("/app/admin/grading/results/print");
   revalidatePath("/app/admin/grading-settings");
   revalidatePath("/app/admin/payments");
   revalidatePath("/app/admin/payments/invoices");
@@ -128,6 +159,7 @@ function revalidateAdminPages() {
   revalidatePath("/app/teacher/conduct");
   revalidatePath("/app/teacher/grade-entry");
   revalidatePath("/app/teacher/results");
+  revalidatePath("/results");
 }
 
 async function syncRoleMetadata(clerkUserId: string | null, role: ProfileRole, schoolId: string) {
@@ -1651,6 +1683,122 @@ export async function removeEnrollmentAction(formData: FormData) {
   }
 
   redirectEnrollmentsStatus("success", successMessage);
+}
+
+export async function setResultPublicationStatusAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const termId = formValue(formData, "termId");
+  const classId = formValue(formData, "classId");
+  const studentId = formValue(formData, "studentId");
+
+  const parsed = resultPublicationSchema.safeParse({
+    studentId,
+    termId,
+    classId,
+    status: formValue(formData, "status"),
+  });
+
+  if (!parsed.success) {
+    redirectResultsStatus("error", parsed.error.issues[0]?.message ?? "Invalid result publication payload.", {
+      termId,
+      classId,
+      studentId,
+    });
+  }
+
+  try {
+    const [student, term, klass, existingPublication] = await Promise.all([
+      prisma.student.findFirst({
+        where: { id: parsed.data.studentId, schoolId: profile.schoolId },
+        select: { id: true, fullName: true },
+      }),
+      prisma.term.findFirst({
+        where: { id: parsed.data.termId, schoolId: profile.schoolId },
+        select: { id: true, sessionLabel: true, termLabel: true },
+      }),
+      prisma.class.findFirst({
+        where: { id: parsed.data.classId, schoolId: profile.schoolId },
+        select: { id: true, name: true },
+      }),
+      prisma.resultPublication.findUnique({
+        where: {
+          studentId_termId: {
+            studentId: parsed.data.studentId,
+            termId: parsed.data.termId,
+          },
+        },
+      }),
+    ]);
+
+    if (!student || !term || !klass) {
+      throw new Error("Student, class, or term could not be found for this result.");
+    }
+
+    const scoreCount = await prisma.score.count({
+      where: {
+        schoolId: profile.schoolId,
+        studentId: parsed.data.studentId,
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+      },
+    });
+
+    if (scoreCount === 0) {
+      throw new Error("This student has no score rows yet for the selected term and class.");
+    }
+
+    const basePublication = buildResultPublicationPayload(existingPublication);
+    const nextStatus =
+      parsed.data.status === "PUBLISHED" ? ResultPublicationStatus.PUBLISHED : ResultPublicationStatus.UNPUBLISHED;
+
+    await prisma.resultPublication.upsert({
+      where: {
+        studentId_termId: {
+          studentId: parsed.data.studentId,
+          termId: parsed.data.termId,
+        },
+      },
+      update: {
+        classId: parsed.data.classId,
+        status: nextStatus,
+        publishedByProfileId: nextStatus === ResultPublicationStatus.PUBLISHED ? profile.id : null,
+        publishedAt: nextStatus === ResultPublicationStatus.PUBLISHED ? new Date() : null,
+      },
+      create: {
+        schoolId: profile.schoolId,
+        studentId: parsed.data.studentId,
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+        shareToken: basePublication.shareToken,
+        status: nextStatus,
+        publishedByProfileId: nextStatus === ResultPublicationStatus.PUBLISHED ? profile.id : null,
+        publishedAt: nextStatus === ResultPublicationStatus.PUBLISHED ? new Date() : null,
+      },
+    });
+
+    revalidateAdminPages();
+    redirectResultsStatus(
+      "success",
+      nextStatus === ResultPublicationStatus.PUBLISHED
+        ? `${student.fullName} result published for ${term.sessionLabel} ${term.termLabel}.`
+        : `${student.fullName} result hidden from shared access.`,
+      {
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+        studentId: parsed.data.studentId,
+      },
+    );
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw studentSchemaSyncError();
+    }
+
+    redirectResultsStatus("error", error instanceof Error ? error.message : "Unable to update result publication right now.", {
+      termId,
+      classId,
+      studentId,
+    });
+  }
 }
 
 export async function upsertPromotionPolicyAction(formData: FormData) {

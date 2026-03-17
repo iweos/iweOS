@@ -227,6 +227,13 @@ export const promotionPolicySchema = z
     }
   });
 
+export const resultPublicationSchema = z.object({
+  studentId: z.string().uuid(),
+  termId: z.string().uuid(),
+  classId: z.string().uuid(),
+  status: z.enum(["PUBLISHED", "UNPUBLISHED"]),
+});
+
 export const gradeScaleSchema = z.object({
   id: z.string().uuid().optional(),
   gradeLetter: z.string().trim().min(1).max(2),

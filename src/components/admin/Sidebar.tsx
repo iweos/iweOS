@@ -66,6 +66,7 @@ const groupedLinks: NavGroup[] = [
     items: [
       { label: "Assessment Types", href: "/app/admin/grading/assessment-types", icon: "fas fa-list-ol" },
       { label: "Grade Entry", href: "/app/admin/grading/grade-entry", icon: "fas fa-pen-alt" },
+      { label: "Results", href: "/app/admin/grading/results", icon: "fas fa-file-alt" },
       { label: "Conduct", href: "/app/admin/grading/conduct", icon: "fas fa-star" },
       { label: "Grades", href: "/app/admin/grading/grades", icon: "fas fa-award" },
       { label: "Promotion", href: "/app/admin/grading/promotion", icon: "fas fa-level-up-alt" },
