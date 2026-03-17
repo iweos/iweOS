@@ -60,7 +60,7 @@ function redirectPromotionStatus(
   options?: {
     sessionLabel?: string;
     sourceClassId?: string;
-    targetTermId?: string;
+    targetSessionLabel?: string;
     targetClassId?: string;
   },
 ): never {
@@ -75,8 +75,8 @@ function redirectPromotionStatus(
   if (options?.sourceClassId) {
     query.set("sourceClassId", options.sourceClassId);
   }
-  if (options?.targetTermId) {
-    query.set("targetTermId", options.targetTermId);
+  if (options?.targetSessionLabel) {
+    query.set("targetSessionLabel", options.targetSessionLabel);
   }
   if (options?.targetClassId) {
     query.set("targetClassId", options.targetClassId);
@@ -85,9 +85,18 @@ function redirectPromotionStatus(
   redirect(`/app/admin/grading/promotion?${query.toString()}`);
 }
 
+function redirectPromotionRulesStatus(status: "success" | "error", message: string): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+  redirect(`/app/admin/settings/promotion-rules?${query.toString()}`);
+}
+
 function revalidateAdminPages() {
   revalidatePath("/app/admin/dashboard");
   revalidatePath("/app/admin/settings");
+  revalidatePath("/app/admin/settings/promotion-rules");
   revalidatePath("/app/admin/school");
   revalidatePath("/app/admin/teachers");
   revalidatePath("/app/admin/classes");
@@ -1642,10 +1651,6 @@ export async function removeEnrollmentAction(formData: FormData) {
 
 export async function upsertPromotionPolicyAction(formData: FormData) {
   const profile = await requireRole("admin");
-  const sessionLabel = formValue(formData, "sessionLabel");
-  const sourceClassId = formValue(formData, "sourceClassId");
-  const targetTermId = formValue(formData, "targetTermId");
-  const targetClassId = formValue(formData, "targetClassId");
   const compulsorySubjectIds = formData
     .getAll("compulsorySubjectIds")
     .map((value) => String(value).trim())
@@ -1655,25 +1660,31 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
     minimumPassedSubjects: formValue(formData, "minimumPassedSubjects"),
     minimumAverage: formValue(formData, "minimumAverage"),
     passGradeId: formValue(formData, "passGradeId") || undefined,
+    requiredCompulsorySubjectsAtGrade: formValue(formData, "requiredCompulsorySubjectsAtGrade"),
+    requiredCompulsoryGradeId: formValue(formData, "requiredCompulsoryGradeId") || undefined,
     allowManualOverride: formValue(formData, "allowManualOverride") !== "off",
     compulsorySubjectIds,
   });
 
   if (!parsed.success) {
-    redirectPromotionStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion rules.", {
-      sessionLabel,
-      sourceClassId,
-      targetTermId,
-      targetClassId,
-    });
+    redirectPromotionRulesStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion rules.");
   }
 
   try {
-    const [passGrade, validSubjects] = await Promise.all([
+    const [passGrade, requiredCompulsoryGrade, validSubjects] = await Promise.all([
       parsed.data.passGradeId
         ? prisma.gradeScale.findFirst({
             where: {
               id: parsed.data.passGradeId,
+              schoolId: profile.schoolId,
+            },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+      parsed.data.requiredCompulsoryGradeId
+        ? prisma.gradeScale.findFirst({
+            where: {
+              id: parsed.data.requiredCompulsoryGradeId,
               schoolId: profile.schoolId,
             },
             select: { id: true },
@@ -1693,6 +1704,9 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
     if (parsed.data.passGradeId && !passGrade) {
       throw new Error("Selected pass grade was not found for this school.");
     }
+    if (parsed.data.requiredCompulsoryGradeId && !requiredCompulsoryGrade) {
+      throw new Error("Selected compulsory grade target was not found for this school.");
+    }
 
     if (validSubjects.length !== parsed.data.compulsorySubjectIds.length) {
       throw new Error("One or more compulsory subjects are invalid for this school.");
@@ -1707,6 +1721,8 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
           minimumPassedSubjects: parsed.data.minimumPassedSubjects,
           minimumAverage: parsed.data.minimumAverage,
           passGradeId: parsed.data.passGradeId || null,
+          requiredCompulsorySubjectsAtGrade: parsed.data.requiredCompulsorySubjectsAtGrade,
+          requiredCompulsoryGradeId: parsed.data.requiredCompulsoryGradeId || null,
           allowManualOverride: parsed.data.allowManualOverride,
         },
         create: {
@@ -1714,6 +1730,8 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
           minimumPassedSubjects: parsed.data.minimumPassedSubjects,
           minimumAverage: parsed.data.minimumAverage,
           passGradeId: parsed.data.passGradeId || null,
+          requiredCompulsorySubjectsAtGrade: parsed.data.requiredCompulsorySubjectsAtGrade,
+          requiredCompulsoryGradeId: parsed.data.requiredCompulsoryGradeId || null,
           allowManualOverride: parsed.data.allowManualOverride,
         },
         select: { id: true },
@@ -1738,23 +1756,13 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
     });
 
     revalidateAdminPages();
-    redirectPromotionStatus("success", "Promotion rules saved for this school.", {
-      sessionLabel,
-      sourceClassId,
-      targetTermId,
-      targetClassId,
-    });
+    redirectPromotionRulesStatus("success", "Promotion rules saved for this school.");
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
       throw studentSchemaSyncError();
     }
 
-    redirectPromotionStatus("error", error instanceof Error ? error.message : "Unable to save promotion rules right now.", {
-      sessionLabel,
-      sourceClassId,
-      targetTermId,
-      targetClassId,
-    });
+    redirectPromotionRulesStatus("error", error instanceof Error ? error.message : "Unable to save promotion rules right now.");
   }
 }
 
@@ -1762,7 +1770,7 @@ export async function promoteStudentsAction(formData: FormData) {
   const profile = await requireRole("admin");
   const sourceSessionLabel = formValue(formData, "sourceSessionLabel");
   const sourceClassId = formValue(formData, "sourceClassId");
-  const targetTermId = formValue(formData, "targetTermId");
+  const targetSessionLabel = formValue(formData, "targetSessionLabel");
   const targetClassId = formValue(formData, "targetClassId");
   const studentIds = formData
     .getAll("studentIds")
@@ -1772,7 +1780,7 @@ export async function promoteStudentsAction(formData: FormData) {
   const parsed = promotionActionSchema.safeParse({
     sourceSessionLabel,
     sourceClassId,
-    targetTermId,
+    targetSessionLabel,
     targetClassId,
     studentIds,
   });
@@ -1781,13 +1789,13 @@ export async function promoteStudentsAction(formData: FormData) {
     redirectPromotionStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion payload.", {
       sessionLabel: sourceSessionLabel,
       sourceClassId,
-      targetTermId,
+      targetSessionLabel,
       targetClassId,
     });
   }
 
   try {
-    const [sourceClass, targetClass, targetTerm, sourceSessionTerms] = await Promise.all([
+    const [sourceClass, targetClass, sourceSessionTerms, targetSessionTerms] = await Promise.all([
       prisma.class.findFirst({
         where: {
           id: parsed.data.sourceClassId,
@@ -1802,19 +1810,20 @@ export async function promoteStudentsAction(formData: FormData) {
         },
         select: { id: true, name: true },
       }),
-      prisma.term.findFirst({
-        where: {
-          id: parsed.data.targetTermId,
-          schoolId: profile.schoolId,
-        },
-        select: { id: true, sessionLabel: true, termLabel: true },
-      }),
       prisma.term.findMany({
         where: {
           schoolId: profile.schoolId,
           sessionLabel: parsed.data.sourceSessionLabel,
         },
         select: { id: true },
+      }),
+      prisma.term.findMany({
+        where: {
+          schoolId: profile.schoolId,
+          sessionLabel: parsed.data.targetSessionLabel,
+        },
+        orderBy: { createdAt: "asc" },
+        select: { id: true, sessionLabel: true, termLabel: true },
       }),
     ]);
 
@@ -1824,12 +1833,17 @@ export async function promoteStudentsAction(formData: FormData) {
     if (!targetClass) {
       throw new Error("Target class not found.");
     }
-    if (!targetTerm) {
-      throw new Error("Target term not found.");
-    }
     if (sourceSessionTerms.length === 0) {
       throw new Error("Source session not found.");
     }
+    if (targetSessionTerms.length === 0) {
+      throw new Error("Target session has no sub-sessions yet.");
+    }
+    if (parsed.data.sourceSessionLabel === parsed.data.targetSessionLabel) {
+      throw new Error("Promotion must move students into a different session.");
+    }
+
+    const targetTerm = targetSessionTerms[0];
 
     const eligibleEnrollments = await prisma.enrollment.findMany({
       where: {
@@ -1861,6 +1875,8 @@ export async function promoteStudentsAction(formData: FormData) {
           minimumPassedSubjects: true,
           minimumAverage: true,
           passGradeId: true,
+          requiredCompulsorySubjectsAtGrade: true,
+          requiredCompulsoryGradeId: true,
           allowManualOverride: true,
           compulsorySubjects: {
             select: {
@@ -1877,6 +1893,8 @@ export async function promoteStudentsAction(formData: FormData) {
             minimumPassedSubjects: promotionPolicy.minimumPassedSubjects,
             minimumAverage: Number(promotionPolicy.minimumAverage),
             passGradeId: promotionPolicy.passGradeId,
+            requiredCompulsorySubjectsAtGrade: promotionPolicy.requiredCompulsorySubjectsAtGrade,
+            requiredCompulsoryGradeId: promotionPolicy.requiredCompulsoryGradeId,
             allowManualOverride: promotionPolicy.allowManualOverride,
             compulsorySubjectIds: promotionPolicy.compulsorySubjects.map((item) => item.subjectId),
           }
@@ -1966,7 +1984,7 @@ export async function promoteStudentsAction(formData: FormData) {
       where: {
         schoolId: profile.schoolId,
         classId: parsed.data.targetClassId,
-        termId: parsed.data.targetTermId,
+        termId: targetTerm.id,
         studentId: {
           in: eligibleStudentIds,
         },
@@ -1995,7 +2013,7 @@ export async function promoteStudentsAction(formData: FormData) {
             schoolId: profile.schoolId,
             studentId,
             classId: parsed.data.targetClassId,
-            termId: parsed.data.targetTermId,
+            termId: targetTerm.id,
           })),
           skipDuplicates: true,
         });
@@ -2008,12 +2026,12 @@ export async function promoteStudentsAction(formData: FormData) {
     const successMessage =
       alreadyEnrolledCount === 0
         ? `${eligibleStudentIds.length} student${eligibleStudentIds.length === 1 ? "" : "s"} promoted into ${targetClass.name} for ${targetTerm.sessionLabel} ${targetTerm.termLabel}.`
-        : `${studentsToEnroll.length} student${studentsToEnroll.length === 1 ? "" : "s"} newly promoted into ${targetClass.name} for ${targetTerm.sessionLabel} ${targetTerm.termLabel}. ${alreadyEnrolledCount} student${alreadyEnrolledCount === 1 ? " was" : "s were"} already enrolled there.`;
+        : `${studentsToEnroll.length} student${studentsToEnroll.length === 1 ? "" : "s"} newly promoted into ${targetClass.name} for ${targetTerm.sessionLabel}. They were enrolled into ${targetTerm.termLabel}. ${alreadyEnrolledCount} student${alreadyEnrolledCount === 1 ? " was" : "s were"} already there.`;
 
     redirectPromotionStatus("success", successMessage, {
       sessionLabel: parsed.data.sourceSessionLabel,
       sourceClassId: parsed.data.sourceClassId,
-      targetTermId: parsed.data.targetTermId,
+      targetSessionLabel: parsed.data.targetSessionLabel,
       targetClassId: parsed.data.targetClassId,
     });
   } catch (error) {
@@ -2024,7 +2042,7 @@ export async function promoteStudentsAction(formData: FormData) {
     redirectPromotionStatus("error", error instanceof Error ? error.message : "Unable to complete promotion right now.", {
       sessionLabel: sourceSessionLabel,
       sourceClassId,
-      targetTermId,
+      targetSessionLabel,
       targetClassId,
     });
   }

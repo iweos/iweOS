@@ -24,6 +24,8 @@ type PromotionPolicyInput = {
   minimumPassedSubjects?: number | null;
   minimumAverage?: number | null;
   passGradeId?: string | null;
+  requiredCompulsorySubjectsAtGrade?: number | null;
+  requiredCompulsoryGradeId?: string | null;
   allowManualOverride?: boolean | null;
   compulsorySubjectIds?: string[];
 };
@@ -34,6 +36,10 @@ export type EffectivePromotionPolicy = {
   passGradeId: string | null;
   passGradeLabel: string;
   passScoreThreshold: number;
+  requiredCompulsorySubjectsAtGrade: number;
+  requiredCompulsoryGradeId: string | null;
+  requiredCompulsoryGradeLabel: string;
+  requiredCompulsoryGradeScoreThreshold: number;
   allowManualOverride: boolean;
   compulsorySubjectIds: string[];
 };
@@ -80,6 +86,19 @@ export function resolvePromotionPolicy(
     passGradeId: passGrade?.id ?? null,
     passGradeLabel: passGrade?.gradeLetter ?? "50+",
     passScoreThreshold: passGrade?.minScore ?? 50,
+    requiredCompulsorySubjectsAtGrade: policy?.requiredCompulsorySubjectsAtGrade ?? 0,
+    requiredCompulsoryGradeId:
+      (policy?.requiredCompulsoryGradeId
+        ? gradeScale.find((item) => item.id === policy.requiredCompulsoryGradeId)?.id
+        : null) ?? null,
+    requiredCompulsoryGradeLabel:
+      (policy?.requiredCompulsoryGradeId
+        ? gradeScale.find((item) => item.id === policy.requiredCompulsoryGradeId)?.gradeLetter
+        : null) ?? "-",
+    requiredCompulsoryGradeScoreThreshold:
+      (policy?.requiredCompulsoryGradeId
+        ? gradeScale.find((item) => item.id === policy.requiredCompulsoryGradeId)?.minScore
+        : null) ?? 0,
     allowManualOverride: policy?.allowManualOverride ?? true,
     compulsorySubjectIds: policy?.compulsorySubjectIds ?? [],
   };
@@ -144,9 +163,19 @@ export function evaluatePromotionCandidates({
         })
         .filter((value): value is string => Boolean(value));
       const compulsoryMet = compulsoryFailures.length === 0;
+      const compulsorySubjectsAtRequiredGrade = policy.compulsorySubjectIds.reduce((count, subjectId) => {
+        const result = annualSubjectResults.find((item) => item.subjectId === subjectId);
+        if (result && result.average >= policy.requiredCompulsoryGradeScoreThreshold) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+      const compulsoryGradeCountMet =
+        policy.requiredCompulsorySubjectsAtGrade === 0 ||
+        compulsorySubjectsAtRequiredGrade >= policy.requiredCompulsorySubjectsAtGrade;
       const passedCountMet = passedSubjects >= policy.minimumPassedSubjects;
       const hasAnnualScores = annualAverage !== null;
-      const isEligible = hasAnnualScores && passedCountMet && averageMet && compulsoryMet;
+      const isEligible = hasAnnualScores && passedCountMet && averageMet && compulsoryMet && compulsoryGradeCountMet;
 
       const reasons: string[] = [];
       if (!hasAnnualScores) {
@@ -160,6 +189,11 @@ export function evaluatePromotionCandidates({
         }
         if (!compulsoryMet) {
           reasons.push(`Compulsory subjects not passed: ${compulsoryFailures.join(", ")}.`);
+        }
+        if (!compulsoryGradeCountMet) {
+          reasons.push(
+            `Only ${compulsorySubjectsAtRequiredGrade} compulsory subject${compulsorySubjectsAtRequiredGrade === 1 ? "" : "s"} reached ${policy.requiredCompulsoryGradeLabel}; need ${policy.requiredCompulsorySubjectsAtGrade}.`,
+          );
         }
       }
 

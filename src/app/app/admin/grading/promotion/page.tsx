@@ -1,14 +1,14 @@
+import Link from "next/link";
 import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import Button from "@/components/admin/ui/Button";
 import Card from "@/components/admin/Card";
-import Input from "@/components/admin/ui/Input";
 import PageHeader from "@/components/admin/PageHeader";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import Section from "@/components/admin/ui/Section";
 import Select from "@/components/admin/ui/Select";
 import StatCard from "@/components/admin/ui/StatCard";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
-import { promoteStudentsAction, upsertPromotionPolicyAction } from "@/lib/server/admin-actions";
+import { promoteStudentsAction } from "@/lib/server/admin-actions";
 import { requireRole } from "@/lib/server/auth";
 import { evaluatePromotionCandidates, resolvePromotionPolicy } from "@/lib/server/promotion";
 import { prisma } from "@/lib/server/prisma";
@@ -16,7 +16,7 @@ import { prisma } from "@/lib/server/prisma";
 type PromotionSearchParams = {
   sessionLabel?: string;
   sourceClassId?: string;
-  targetTermId?: string;
+  targetSessionLabel?: string;
   targetClassId?: string;
   status?: string;
   message?: string;
@@ -58,6 +58,8 @@ export default async function AdminGradingPromotionPage({
         minimumPassedSubjects: true,
         minimumAverage: true,
         passGradeId: true,
+        requiredCompulsorySubjectsAtGrade: true,
+        requiredCompulsoryGradeId: true,
         allowManualOverride: true,
         compulsorySubjects: {
           select: {
@@ -79,16 +81,17 @@ export default async function AdminGradingPromotionPage({
     params.sessionLabel && sessions.includes(params.sessionLabel) ? params.sessionLabel : activeSessionLabel;
   const selectedSourceClassId =
     params.sourceClassId && classes.some((klass) => klass.id === params.sourceClassId) ? params.sourceClassId : classes[0]?.id ?? "";
-  const selectedTargetTermId =
-    params.targetTermId && terms.some((term) => term.id === params.targetTermId)
-      ? params.targetTermId
-      : terms.find((term) => term.sessionLabel !== selectedSessionLabel)?.id ?? terms[0]?.id ?? "";
+  const selectedTargetSessionLabel =
+    params.targetSessionLabel && sessions.includes(params.targetSessionLabel)
+      ? params.targetSessionLabel
+      : sessions.find((sessionLabel) => sessionLabel !== selectedSessionLabel) ?? sessions[0] ?? "";
   const selectedTargetClassId =
     params.targetClassId && classes.some((klass) => klass.id === params.targetClassId) ? params.targetClassId : classes[0]?.id ?? "";
 
   const sessionTerms = terms.filter((term) => term.sessionLabel === selectedSessionLabel);
+  const targetSessionTerms = terms.filter((term) => term.sessionLabel === selectedTargetSessionLabel);
+  const targetStartTerm = targetSessionTerms[0] ?? null;
   const sourceClass = classes.find((klass) => klass.id === selectedSourceClassId) ?? null;
-  const targetTerm = terms.find((term) => term.id === selectedTargetTermId) ?? null;
   const targetClass = classes.find((klass) => klass.id === selectedTargetClassId) ?? null;
 
   const enrollments =
@@ -143,6 +146,8 @@ export default async function AdminGradingPromotionPage({
           minimumPassedSubjects: promotionPolicy.minimumPassedSubjects,
           minimumAverage: Number(promotionPolicy.minimumAverage),
           passGradeId: promotionPolicy.passGradeId,
+          requiredCompulsorySubjectsAtGrade: promotionPolicy.requiredCompulsorySubjectsAtGrade,
+          requiredCompulsoryGradeId: promotionPolicy.requiredCompulsoryGradeId,
           allowManualOverride: promotionPolicy.allowManualOverride,
           compulsorySubjectIds: promotionPolicy.compulsorySubjects.map((item) => item.subjectId),
         }
@@ -198,7 +203,12 @@ export default async function AdminGradingPromotionPage({
       {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <PageHeader
         title="Promotion"
-        subtitle="Set school-wide promotion rules, then review each student against those rules before promoting to the next class and term."
+        subtitle="Review a completed session, compare every student to the saved promotion rules, then move selected students into the next session."
+        rightActions={
+          <Link href="/app/admin/settings/promotion-rules" className="btn btn-secondary">
+            Manage Promotion Rules
+          </Link>
+        }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -208,89 +218,31 @@ export default async function AdminGradingPromotionPage({
         <StatCard label="Class Annual Avg" value={averageOfAverages.toFixed(1)} icon="fas fa-chart-line" cardVariant="info" />
       </div>
 
-      <Card
-        title="School Promotion Rules"
-        subtitle="These rules belong to this school. Use them to model requirements like 5 credits including compulsory subjects."
-      >
-        <form action={upsertPromotionPolicyAction} className="d-grid gap-3">
-          <input type="hidden" name="sessionLabel" value={selectedSessionLabel} />
-          <input type="hidden" name="sourceClassId" value={selectedSourceClassId} />
-          <input type="hidden" name="targetTermId" value={selectedTargetTermId} />
-          <input type="hidden" name="targetClassId" value={selectedTargetClassId} />
-
-          <div className="grid gap-3 md:grid-cols-4">
-            <label className="d-grid gap-1">
-              <span className="field-label">Minimum Passed Subjects</span>
-              <Input name="minimumPassedSubjects" type="number" min={1} max={50} defaultValue={effectivePolicy.minimumPassedSubjects} required />
-            </label>
-
-            <label className="d-grid gap-1">
-              <span className="field-label">Minimum Average</span>
-              <Input name="minimumAverage" type="number" min={0} max={100} step="0.01" defaultValue={effectivePolicy.minimumAverage} required />
-            </label>
-
-            <label className="d-grid gap-1">
-              <span className="field-label">Pass Grade Threshold</span>
-              <Select name="passGradeId" defaultValue={effectivePolicy.passGradeId ?? ""}>
-                <option value="">Use 50 and above</option>
-                {gradeScale.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.gradeLetter} ({item.minScore}-{item.maxScore})
-                  </option>
-                ))}
-              </Select>
-            </label>
-
-            <label className="d-grid gap-1">
-              <span className="field-label">Manual Override</span>
-              <Select name="allowManualOverride" defaultValue={effectivePolicy.allowManualOverride ? "on" : "off"}>
-                <option value="on">Allow admin override</option>
-                <option value="off">Only eligible students</option>
-              </Select>
-            </label>
-          </div>
-
-          <div className="d-grid gap-2">
-            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
-              <span className="field-label mb-0">Compulsory Subjects</span>
-              <span className="small text-muted">
-                Current rule: pass grade {effectivePolicy.passGradeLabel}, minimum {effectivePolicy.minimumPassedSubjects} passed subject{effectivePolicy.minimumPassedSubjects === 1 ? "" : "s"}
-              </span>
-            </div>
-
-            {subjects.length === 0 ? (
-              <p className="section-subtle mb-0">Create subjects first before choosing compulsory subjects for promotion.</p>
-            ) : (
-              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                {subjects.map((subject) => {
-                  const checked = effectivePolicy.compulsorySubjectIds.includes(subject.id);
-                  return (
-                    <label key={subject.id} className="d-flex align-items-center gap-2 rounded border px-3 py-2 bg-white">
-                      <input type="checkbox" name="compulsorySubjectIds" value={subject.id} defaultChecked={checked} />
-                      <span>{subject.name}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <p className="small text-muted mb-0">
-              {compulsorySubjectNames.length > 0
-                ? `Compulsory subjects: ${compulsorySubjectNames.join(", ")}.`
-                : "No compulsory subjects selected yet."}
-            </p>
-            <Button variant="primary" type="submit">
-              Save Promotion Rules
-            </Button>
-          </div>
-        </form>
+      <Card title="Current Promotion Rule" subtitle="Rules are managed under Settings and applied here automatically.">
+        <div className="d-grid gap-2">
+          <p className="small text-muted mb-0">
+            Pass at least <strong>{effectivePolicy.minimumPassedSubjects}</strong> subject{effectivePolicy.minimumPassedSubjects === 1 ? "" : "s"} with grade <strong>{effectivePolicy.passGradeLabel}</strong> or above.
+          </p>
+          <p className="small text-muted mb-0">
+            Minimum annual average: <strong>{effectivePolicy.minimumAverage.toFixed(1)}</strong>
+          </p>
+          <p className="small text-muted mb-0">
+            {effectivePolicy.requiredCompulsorySubjectsAtGrade > 0
+              ? `At least ${effectivePolicy.requiredCompulsorySubjectsAtGrade} compulsory subject${effectivePolicy.requiredCompulsorySubjectsAtGrade === 1 ? "" : "s"} must reach ${effectivePolicy.requiredCompulsoryGradeLabel}.`
+              : "No extra high-grade compulsory requirement is set."}
+          </p>
+          <p className="small text-muted mb-0">
+            {compulsorySubjectNames.length > 0 ? `Compulsory subjects: ${compulsorySubjectNames.join(", ")}.` : "No compulsory subjects selected yet."}
+          </p>
+          <p className="small text-muted mb-0">
+            {effectivePolicy.allowManualOverride ? "Manual override is allowed." : "Manual override is turned off."}
+          </p>
+        </div>
       </Card>
 
-      <Card title="Promotion Filters" subtitle="Pick the completed source session and class you want to review.">
+      <Card title="Promotion Filters" subtitle="Pick the source session and class you want to review.">
         <form method="get" className="grid gap-3 md:grid-cols-3">
-          <input type="hidden" name="targetTermId" value={selectedTargetTermId} />
+          <input type="hidden" name="targetSessionLabel" value={selectedTargetSessionLabel} />
           <input type="hidden" name="targetClassId" value={selectedTargetClassId} />
           <label className="d-grid gap-1">
             <span className="field-label">Source Session</span>
@@ -322,10 +274,10 @@ export default async function AdminGradingPromotionPage({
 
       <Card
         title="Promote Selected Students"
-        subtitle="Eligibility is evaluated from the school rule set above. You can still review and override manually when that rule is enabled."
+        subtitle="Promotion moves students into the chosen target session and enrolls them in that session's first sub-session."
       >
-        {!sourceClass || !targetTerm || !targetClass ? (
-          <p className="section-subtle mb-0">Create classes and terms first before using promotion.</p>
+        {!sourceClass || !targetClass || !targetStartTerm ? (
+          <p className="section-subtle mb-0">Create source and target sessions first before using promotion.</p>
         ) : candidateRows.length === 0 ? (
           <p className="section-subtle mb-0">No students found in this source class and session.</p>
         ) : (
@@ -335,11 +287,11 @@ export default async function AdminGradingPromotionPage({
 
             <div className="grid gap-3 md:grid-cols-2">
               <label className="d-grid gap-1">
-                <span className="field-label">Target Term</span>
-                <Select name="targetTermId" defaultValue={selectedTargetTermId}>
-                  {terms.map((term) => (
-                    <option key={term.id} value={term.id}>
-                      {term.sessionLabel} {term.termLabel} {term.isActive ? "(Active)" : ""}
+                <span className="field-label">Target Session</span>
+                <Select name="targetSessionLabel" defaultValue={selectedTargetSessionLabel}>
+                  {sessions.map((sessionLabel) => (
+                    <option key={sessionLabel} value={sessionLabel}>
+                      {sessionLabel}
                     </option>
                   ))}
                 </Select>
@@ -356,6 +308,10 @@ export default async function AdminGradingPromotionPage({
                 </Select>
               </label>
             </div>
+
+            <p className="small text-muted mb-0">
+              Promotion will create enrollment in <strong>{targetStartTerm.termLabel}</strong>, the first sub-session inside <strong>{selectedTargetSessionLabel}</strong>.
+            </p>
 
             <TableWrap>
               <Table>
@@ -409,7 +365,7 @@ export default async function AdminGradingPromotionPage({
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
               <div>
                 <p className="small text-muted mb-1">
-                  Source: {selectedSessionLabel} / {sourceClass.name} {"->"} Target: {targetTerm.sessionLabel} {targetTerm.termLabel} / {targetClass.name}
+                  Source: {selectedSessionLabel} / {sourceClass.name} {"->"} Target: {selectedTargetSessionLabel} / {targetClass.name}
                 </p>
                 <p className="small text-muted mb-0">
                   {effectivePolicy.allowManualOverride

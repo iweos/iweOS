@@ -274,12 +274,15 @@ model PromotionPolicy {
   minimumPassedSubjects Int      @default(5) @map("minimum_passed_subjects")
   minimumAverage        Decimal  @default(0) @map("minimum_average") @db.Decimal(10, 2)
   passGradeId           String?  @map("pass_grade_id") @db.Uuid
+  requiredCompulsorySubjectsAtGrade Int @default(0) @map("required_compulsory_subjects_at_grade")
+  requiredCompulsoryGradeId String? @map("required_compulsory_grade_id") @db.Uuid
   allowManualOverride   Boolean  @default(true) @map("allow_manual_override")
   createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   school                School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   passGrade             GradeScale?            @relation(fields: [passGradeId], references: [id], onDelete: SetNull)
+  requiredCompulsoryGrade GradeScale?          @relation("promotion_policy_required_grade", fields: [requiredCompulsoryGradeId], references: [id], onDelete: SetNull)
   compulsorySubjects    PromotionPolicySubject[]
 
   @@map("promotion_policies")
@@ -355,6 +358,7 @@ model GradeScale {
 
   school      School  @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   promotionPolicies PromotionPolicy[]
+  promotionPoliciesRequired PromotionPolicy[] @relation("promotion_policy_required_grade")
 
   @@unique([schoolId, gradeLetter])
   @@index([schoolId])

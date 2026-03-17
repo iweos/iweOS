@@ -194,18 +194,38 @@ export const termAssessmentTemplateSchema = z.object({
 export const promotionActionSchema = z.object({
   sourceSessionLabel: z.string().trim().min(1).max(50),
   sourceClassId: z.string().uuid(),
-  targetTermId: z.string().uuid(),
+  targetSessionLabel: z.string().trim().min(1).max(50),
   targetClassId: z.string().uuid(),
   studentIds: z.array(z.string().uuid()).min(1, "Select at least one student to promote."),
 });
 
-export const promotionPolicySchema = z.object({
-  minimumPassedSubjects: z.coerce.number().int().min(1).max(50),
-  minimumAverage: z.coerce.number().min(0).max(100),
-  passGradeId: z.string().uuid().optional().or(z.literal("")),
-  allowManualOverride: z.boolean().optional().default(true),
-  compulsorySubjectIds: z.array(z.string().uuid()).optional().default([]),
-});
+export const promotionPolicySchema = z
+  .object({
+    minimumPassedSubjects: z.coerce.number().int().min(1).max(50),
+    minimumAverage: z.coerce.number().min(0).max(100),
+    passGradeId: z.string().uuid().optional().or(z.literal("")),
+    requiredCompulsorySubjectsAtGrade: z.coerce.number().int().min(0).max(20),
+    requiredCompulsoryGradeId: z.string().uuid().optional().or(z.literal("")),
+    allowManualOverride: z.boolean().optional().default(true),
+    compulsorySubjectIds: z.array(z.string().uuid()).optional().default([]),
+  })
+  .superRefine((value, ctx) => {
+    if (value.requiredCompulsorySubjectsAtGrade > value.compulsorySubjectIds.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["requiredCompulsorySubjectsAtGrade"],
+        message: "The required compulsory-subject count cannot exceed the selected compulsory subjects.",
+      });
+    }
+
+    if (value.requiredCompulsorySubjectsAtGrade > 0 && !value.requiredCompulsoryGradeId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["requiredCompulsoryGradeId"],
+        message: "Choose the grade that compulsory subjects must meet.",
+      });
+    }
+  });
 
 export const gradeScaleSchema = z.object({
   id: z.string().uuid().optional(),
