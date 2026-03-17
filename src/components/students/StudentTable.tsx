@@ -43,6 +43,29 @@ function toSentenceCase(value: string | null | undefined, fallback = "-") {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
+function toDisplayName(value: string | null | undefined, fallback = "-") {
+  const normalized = (value ?? "").trim();
+  if (!normalized) {
+    return fallback;
+  }
+
+  return normalized
+    .toLowerCase()
+    .split(/\s+/)
+    .map((part) =>
+      part
+        .split(/([-'])/)
+        .map((token) => {
+          if (token === "-" || token === "'") {
+            return token;
+          }
+          return token.charAt(0).toUpperCase() + token.slice(1);
+        })
+        .join(""),
+    )
+    .join(" ");
+}
+
 function EyeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16" aria-hidden="true">
@@ -159,6 +182,8 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
         .slice(1)
         .join(" ")
     : "";
+  const activeStudentFullName = activeStudent ? toDisplayName(activeStudent.fullName, "") : "";
+  const activeGuardianName = activeStudent ? toDisplayName(activeStudent.guardianName) : "-";
 
   return (
     <>
@@ -243,9 +268,9 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                     return (
                       <tr key={student.id}>
                         <Td>{student.studentCode}</Td>
-                        <Td>{[fallbackFirstName, fallbackLastName].filter(Boolean).join(" ") || "-"}</Td>
+                        <Td>{toDisplayName([fallbackFirstName, fallbackLastName].filter(Boolean).join(" "))}</Td>
                         <Td>{student.className ?? "-"}</Td>
-                        <Td>{student.guardianName ?? "-"}</Td>
+                        <Td>{toDisplayName(student.guardianName)}</Td>
                         <Td>{toSentenceCase(student.status)}</Td>
                         <Td className="d-flex flex-wrap gap-1">
                           <Button
@@ -370,7 +395,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                 {isModalEditing ? "Edit student record" : "Student profile"}
               </h3>
               <p className="swal-text mb-0">
-                {activeStudent.fullName} · {activeStudent.studentCode}
+                {activeStudentFullName} · {activeStudent.studentCode}
               </p>
             </div>
 
@@ -489,7 +514,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                         <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
                           <div>
                             <p className="field-label mb-1">Student</p>
-                            <h4 className="h5 fw-bold mb-1">{activeStudent.fullName}</h4>
+                            <h4 className="h5 fw-bold mb-1">{activeStudentFullName}</h4>
                             <p className="small text-muted mb-0">{activeStudent.studentCode}</p>
                           </div>
                           <div className="d-flex flex-wrap gap-2">
@@ -507,11 +532,11 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                         <div className="d-grid gap-2">
                           <div>
                             <p className="small text-muted mb-1">First name</p>
-                            <p className="mb-0">{displayFirstName || "-"}</p>
+                            <p className="mb-0">{toDisplayName(displayFirstName)}</p>
                           </div>
                           <div>
                             <p className="small text-muted mb-1">Last name</p>
-                            <p className="mb-0">{displayLastName || "-"}</p>
+                            <p className="mb-0">{toDisplayName(displayLastName)}</p>
                           </div>
                           <div>
                             <p className="small text-muted mb-1">Address</p>
@@ -527,7 +552,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                         <div className="d-grid gap-2">
                           <div>
                             <p className="small text-muted mb-1">Parent/guardian name</p>
-                            <p className="mb-0">{activeStudent.guardianName ?? "-"}</p>
+                            <p className="mb-0">{activeGuardianName}</p>
                           </div>
                           <div>
                             <p className="small text-muted mb-1">Phone</p>
