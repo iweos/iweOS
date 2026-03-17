@@ -1689,10 +1689,14 @@ export async function setResultPublicationStatusAction(formData: FormData) {
   const profile = await requireRole("admin");
   const termId = formValue(formData, "termId");
   const classId = formValue(formData, "classId");
-  const studentId = formValue(formData, "studentId");
+  const studentIds = formData
+    .getAll("studentIds")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+  const primaryStudentId = studentIds[0] ?? "";
 
   const parsed = resultPublicationSchema.safeParse({
-    studentId,
+    studentIds,
     termId,
     classId,
     status: formValue(formData, "status"),
@@ -1702,14 +1706,17 @@ export async function setResultPublicationStatusAction(formData: FormData) {
     redirectResultsStatus("error", parsed.error.issues[0]?.message ?? "Invalid result publication payload.", {
       termId,
       classId,
-      studentId,
+      studentId: primaryStudentId,
     });
   }
 
   try {
-    const [student, term, klass, existingPublication] = await Promise.all([
-      prisma.student.findFirst({
-        where: { id: parsed.data.studentId, schoolId: profile.schoolId },
+    const [students, term, klass, existingPublications] = await Promise.all([
+      prisma.student.findMany({
+        where: {
+          id: { in: parsed.data.studentIds },
+          schoolId: profile.schoolId,
+        },
         select: { id: true, fullName: true },
       }),
       prisma.term.findFirst({
@@ -1720,72 +1727,96 @@ export async function setResultPublicationStatusAction(formData: FormData) {
         where: { id: parsed.data.classId, schoolId: profile.schoolId },
         select: { id: true, name: true },
       }),
-      prisma.resultPublication.findUnique({
+      prisma.resultPublication.findMany({
         where: {
-          studentId_termId: {
-            studentId: parsed.data.studentId,
-            termId: parsed.data.termId,
-          },
+          termId: parsed.data.termId,
+          studentId: { in: parsed.data.studentIds },
         },
       }),
     ]);
 
-    if (!student || !term || !klass) {
-      throw new Error("Student, class, or term could not be found for this result.");
+    if (students.length !== parsed.data.studentIds.length || !term || !klass) {
+      throw new Error("One or more selected students, the class, or the term could not be found for this result.");
     }
 
-    const scoreCount = await prisma.score.count({
+    const scoredStudents = await prisma.score.groupBy({
       where: {
         schoolId: profile.schoolId,
-        studentId: parsed.data.studentId,
+        studentId: { in: parsed.data.studentIds },
         termId: parsed.data.termId,
         classId: parsed.data.classId,
       },
+      by: ["studentId"],
     });
 
-    if (scoreCount === 0) {
-      throw new Error("This student has no score rows yet for the selected term and class.");
+    if (scoredStudents.length === 0) {
+      throw new Error("The selected students have no score rows yet for the selected term and class.");
     }
 
-    const basePublication = buildResultPublicationPayload(existingPublication);
-    const nextStatus =
-      parsed.data.status === "PUBLISHED" ? ResultPublicationStatus.PUBLISHED : ResultPublicationStatus.UNPUBLISHED;
+    const scoredStudentIds = new Set(scoredStudents.map((item) => item.studentId));
+    const targetStudents = students.filter((student) => scoredStudentIds.has(student.id));
 
-    await prisma.resultPublication.upsert({
-      where: {
-        studentId_termId: {
-          studentId: parsed.data.studentId,
-          termId: parsed.data.termId,
-        },
-      },
-      update: {
-        classId: parsed.data.classId,
-        status: nextStatus,
-        publishedByProfileId: nextStatus === ResultPublicationStatus.PUBLISHED ? profile.id : null,
-        publishedAt: nextStatus === ResultPublicationStatus.PUBLISHED ? new Date() : null,
-      },
-      create: {
-        schoolId: profile.schoolId,
-        studentId: parsed.data.studentId,
-        termId: parsed.data.termId,
-        classId: parsed.data.classId,
-        shareToken: basePublication.shareToken,
-        status: nextStatus,
-        publishedByProfileId: nextStatus === ResultPublicationStatus.PUBLISHED ? profile.id : null,
-        publishedAt: nextStatus === ResultPublicationStatus.PUBLISHED ? new Date() : null,
-      },
+    if (targetStudents.length === 0) {
+      throw new Error("None of the selected students have score rows yet for the selected term and class.");
+    }
+
+    const existingPublicationMap = new Map(existingPublications.map((item) => [item.studentId, item]));
+    const nextStatus =
+      parsed.data.status === "PUBLISHED"
+        ? ResultPublicationStatus.PUBLISHED
+        : parsed.data.status === "UNPUBLISHED"
+          ? ResultPublicationStatus.UNPUBLISHED
+          : ResultPublicationStatus.DRAFT;
+
+    await prisma.$transaction(async (tx) => {
+      for (const student of targetStudents) {
+        const basePublication = buildResultPublicationPayload(existingPublicationMap.get(student.id) ?? null);
+        await tx.resultPublication.upsert({
+          where: {
+            studentId_termId: {
+              studentId: student.id,
+              termId: parsed.data.termId,
+            },
+          },
+          update: {
+            classId: parsed.data.classId,
+            status: nextStatus,
+            publishedByProfileId: nextStatus === ResultPublicationStatus.PUBLISHED ? profile.id : null,
+            publishedAt: nextStatus === ResultPublicationStatus.PUBLISHED ? new Date() : null,
+          },
+          create: {
+            schoolId: profile.schoolId,
+            studentId: student.id,
+            termId: parsed.data.termId,
+            classId: parsed.data.classId,
+            shareToken: basePublication.shareToken,
+            status: nextStatus,
+            publishedByProfileId: nextStatus === ResultPublicationStatus.PUBLISHED ? profile.id : null,
+            publishedAt: nextStatus === ResultPublicationStatus.PUBLISHED ? new Date() : null,
+          },
+        });
+      }
     });
 
     revalidateAdminPages();
+    const statusLabel =
+      nextStatus === ResultPublicationStatus.PUBLISHED
+        ? "published"
+        : nextStatus === ResultPublicationStatus.UNPUBLISHED
+          ? "unpublished"
+          : "set to draft";
+    const skippedCount = parsed.data.studentIds.length - targetStudents.length;
+    const baseMessage =
+      targetStudents.length === 1
+        ? `${targetStudents[0].fullName} result ${statusLabel} for ${term.sessionLabel} ${term.termLabel}.`
+        : `${targetStudents.length} student results ${statusLabel} for ${term.sessionLabel} ${term.termLabel}.`;
     redirectResultsStatus(
       "success",
-      nextStatus === ResultPublicationStatus.PUBLISHED
-        ? `${student.fullName} result published for ${term.sessionLabel} ${term.termLabel}.`
-        : `${student.fullName} result hidden from shared access.`,
+      skippedCount > 0 ? `${baseMessage} ${skippedCount} selected student(s) were skipped because they do not have saved scores yet.` : baseMessage,
       {
         termId: parsed.data.termId,
         classId: parsed.data.classId,
-        studentId: parsed.data.studentId,
+        studentId: targetStudents[0]?.id ?? primaryStudentId,
       },
     );
   } catch (error) {
@@ -1796,7 +1827,7 @@ export async function setResultPublicationStatusAction(formData: FormData) {
     redirectResultsStatus("error", error instanceof Error ? error.message : "Unable to update result publication right now.", {
       termId,
       classId,
-      studentId,
+      studentId: primaryStudentId,
     });
   }
 }

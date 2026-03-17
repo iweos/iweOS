@@ -228,10 +228,10 @@ export const promotionPolicySchema = z
   });
 
 export const resultPublicationSchema = z.object({
-  studentId: z.string().uuid(),
+  studentIds: z.array(z.string().uuid()).min(1, "Select at least one student result."),
   termId: z.string().uuid(),
   classId: z.string().uuid(),
-  status: z.enum(["PUBLISHED", "UNPUBLISHED"]),
+  status: z.enum(["DRAFT", "PUBLISHED", "UNPUBLISHED"]),
 });
 
 export const gradeScaleSchema = z.object({

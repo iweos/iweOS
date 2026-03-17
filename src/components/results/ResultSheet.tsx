@@ -4,6 +4,14 @@ function formatNumber(value: number) {
   return Number.isFinite(value) ? value.toFixed(1) : "-";
 }
 
+function formatStatusLabel(status?: string | null) {
+  if (!status) {
+    return "Draft";
+  }
+
+  return status.charAt(0) + status.slice(1).toLowerCase();
+}
+
 type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
@@ -74,7 +82,7 @@ export default function ResultSheet({ data, mode = "admin" }: ResultSheetProps) 
           </div>
           <div>
             <p className="small text-muted mb-1">Publication</p>
-            <p className="fw-semibold mb-0">{data.publication?.status ?? "Draft"}</p>
+            <p className="fw-semibold mb-0">{formatStatusLabel(data.publication?.status)}</p>
           </div>
         </div>
       </section>
@@ -164,7 +172,7 @@ export default function ResultSheet({ data, mode = "admin" }: ResultSheetProps) 
                 <p className="mb-0">
                   {data.publication?.status === "PUBLISHED"
                     ? `Published${data.publication.publishedAt ? ` on ${data.publication.publishedAt}` : ""}`
-                    : "Not published yet"}
+                    : `${formatStatusLabel(data.publication?.status)} result`}
                 </p>
               </div>
             </div>

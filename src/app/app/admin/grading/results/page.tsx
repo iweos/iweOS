@@ -26,6 +26,20 @@ function formatNumber(value: number) {
   return Number.isFinite(value) ? value.toFixed(1) : "-";
 }
 
+function formatStatusLabel(status?: string | null) {
+  if (!status) {
+    return "Draft";
+  }
+
+  return status.charAt(0) + status.slice(1).toLowerCase();
+}
+
+const RESULT_STATUS_OPTIONS = [
+  { value: "DRAFT", label: "Draft" },
+  { value: "PUBLISHED", label: "Published" },
+  { value: "UNPUBLISHED", label: "Unpublished" },
+] as const;
+
 export default async function AdminGradingResultsPage({
   searchParams,
 }: {
@@ -148,7 +162,7 @@ export default async function AdminGradingResultsPage({
       {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <PageHeader
         title="Results"
-        subtitle="Generate result sheets, publish them, and share a secure link when they are ready."
+        subtitle="Generate result sheets, publish them, and share secure links when they are ready."
         rightActions={
           selectedTermId && selectedClassId && selectedStudentId ? (
             <Link
@@ -222,11 +236,44 @@ export default async function AdminGradingResultsPage({
         </form>
       </Card>
 
-      <Card title="Class Result Directory" subtitle="Use this table to see which students already have a published share link.">
+      <Card
+        title="Class Result Directory"
+        subtitle="Tick a few students or the whole set, then move results between draft, published, and unpublished."
+      >
+        <form
+          id="results-bulk-status-form"
+          action={setResultPublicationStatusAction}
+          className="d-flex flex-wrap align-items-end justify-content-between gap-3"
+        >
+          <input type="hidden" name="termId" value={selectedTermId} />
+          <input type="hidden" name="classId" value={selectedClassId} />
+
+          <div className="d-flex flex-wrap align-items-end gap-2">
+            <label className="d-grid gap-1">
+              <span className="field-label">Bulk status</span>
+              <Select name="status" defaultValue="PUBLISHED">
+                {RESULT_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <button className="btn btn-primary" type="submit" disabled={students.length === 0}>
+              Apply to selected
+            </button>
+          </div>
+        </form>
+
+        <p className="small text-muted mt-3 mb-3">
+          Checked students with saved scores will be updated together. Students without score rows are skipped and called out in the popup.
+        </p>
+
         <TableWrap>
           <Table>
             <thead>
               <tr>
+                <Th>Select</Th>
                 <Th>Student</Th>
                 <Th>Average</Th>
                 <Th>Grade</Th>
@@ -240,17 +287,49 @@ export default async function AdminGradingResultsPage({
                 const score = scoreMap.get(student.id);
                 return (
                   <tr key={student.id}>
-                    <Td>{student.studentCode} - {student.fullName}</Td>
+                    <Td>
+                      <input
+                        form="results-bulk-status-form"
+                        type="checkbox"
+                        name="studentIds"
+                        value={student.id}
+                        defaultChecked={student.id === selectedStudentId}
+                      />
+                    </Td>
+                    <Td>
+                      <Link
+                        href={`/app/admin/grading/results?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${student.id}`}
+                        className="fw-semibold"
+                      >
+                        {student.studentCode} - {student.fullName}
+                      </Link>
+                    </Td>
                     <Td>{formatNumber(score?.average ?? 0)}</Td>
                     <Td>{score?.grade ?? "-"}</Td>
-                    <Td>{publication?.status ?? "DRAFT"}</Td>
+                    <Td>
+                      <form action={setResultPublicationStatusAction} className="d-flex flex-wrap align-items-center gap-2">
+                        <input type="hidden" name="studentIds" value={student.id} />
+                        <input type="hidden" name="termId" value={selectedTermId} />
+                        <input type="hidden" name="classId" value={selectedClassId} />
+                        <Select name="status" defaultValue={publication?.status ?? "DRAFT"}>
+                          {RESULT_STATUS_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </Select>
+                        <button className="btn btn-sm btn-secondary" type="submit">
+                          Save
+                        </button>
+                      </form>
+                    </Td>
                     <Td>
                       {publication?.status === "PUBLISHED" ? (
                         <Link href={buildResultSharePath(publication.shareToken)} target="_blank" className="btn btn-sm btn-secondary">
                           Open link
                         </Link>
                       ) : (
-                        <span className="small text-muted">Not shared</span>
+                        <span className="small text-muted">{formatStatusLabel(publication?.status)} only</span>
                       )}
                     </Td>
                   </tr>
@@ -258,7 +337,7 @@ export default async function AdminGradingResultsPage({
               })}
               {students.length === 0 ? (
                 <tr>
-                  <Td colSpan={5}>No enrolled students found for the selected term and class.</Td>
+                  <Td colSpan={6}>No enrolled students found for the selected term and class.</Td>
                 </tr>
               ) : null}
             </tbody>
@@ -272,30 +351,30 @@ export default async function AdminGradingResultsPage({
         </Card>
       ) : (
         <>
-          <Card title="Share Controls" subtitle="Publish to enable the secure share link, or unpublish to hide it again.">
+          <Card
+            title="Share Controls"
+            subtitle="Use the status dropdown to move this result between draft, published, and unpublished."
+          >
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div>
                 <p className="small text-muted mb-1">Current state</p>
-                <p className="mb-0 fw-semibold">{resultSheet.publication?.status ?? "DRAFT"}</p>
+                <p className="mb-0 fw-semibold">{formatStatusLabel(resultSheet.publication?.status)}</p>
                 {shareLink ? <p className="small text-muted mb-0 mt-2">{shareLink}</p> : null}
               </div>
               <div className="d-flex flex-wrap gap-2">
-                <form action={setResultPublicationStatusAction}>
-                  <input type="hidden" name="studentId" value={resultSheet.student.id} />
+                <form action={setResultPublicationStatusAction} className="d-flex flex-wrap align-items-center gap-2">
+                  <input type="hidden" name="studentIds" value={resultSheet.student.id} />
                   <input type="hidden" name="termId" value={resultSheet.term.id} />
                   <input type="hidden" name="classId" value={resultSheet.class.id} />
-                  <input type="hidden" name="status" value="PUBLISHED" />
+                  <Select name="status" defaultValue={resultSheet.publication?.status ?? "DRAFT"}>
+                    {RESULT_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
                   <button className="btn btn-primary" type="submit">
-                    Publish result
-                  </button>
-                </form>
-                <form action={setResultPublicationStatusAction}>
-                  <input type="hidden" name="studentId" value={resultSheet.student.id} />
-                  <input type="hidden" name="termId" value={resultSheet.term.id} />
-                  <input type="hidden" name="classId" value={resultSheet.class.id} />
-                  <input type="hidden" name="status" value="UNPUBLISHED" />
-                  <button className="btn btn-secondary" type="submit">
-                    Unpublish
+                    Save status
                   </button>
                 </form>
                 {shareLink ? (
