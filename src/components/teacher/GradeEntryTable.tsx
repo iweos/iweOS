@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { saveStudentScoresAction, type SaveStudentScoresInput, type SaveStudentScoresResult } from "@/lib/server/teacher-actions";
 
@@ -58,6 +58,25 @@ export default function GradeEntryTable({
 
   const totalColumns = assessmentTypes.length + 4;
   const rowsByStudentId = useMemo(() => new Map(rows.map((row) => [row.studentId, row])), [rows]);
+
+  useEffect(() => {
+    setRows(initialRows);
+    setRowStatusByStudentId({});
+    requestVersionRef.current = {};
+
+    Object.values(clearTimersRef.current).forEach((timeoutId) => {
+      window.clearTimeout(timeoutId);
+    });
+    clearTimersRef.current = {};
+  }, [initialRows, termId, classId, subjectId]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(clearTimersRef.current).forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+    };
+  }, []);
 
   function setRowStatus(studentId: string, status: RowStatus) {
     setRowStatusByStudentId((current) => ({
