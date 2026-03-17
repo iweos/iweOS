@@ -33,6 +33,16 @@ type StudentTableProps = {
   classes: StudentClassOption[];
 };
 
+function toSentenceCase(value: string | null | undefined, fallback = "-") {
+  const normalized = (value ?? "").trim();
+  if (!normalized) {
+    return fallback;
+  }
+
+  const lower = normalized.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 function EyeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16" aria-hidden="true">
@@ -203,20 +213,20 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
               <Table id="student-directory-datatables" className="display table-striped table-hover">
                 <thead>
                   <tr>
-                    <Th>Code</Th>
-                    <Th>Name</Th>
+                    <Th>Student code</Th>
+                    <Th>Full name</Th>
                     <Th>Class</Th>
-                    <Th>Guardian</Th>
+                    <Th>Guardian name</Th>
                     <Th>Status</Th>
                     <Th>Action</Th>
                   </tr>
                 </thead>
                 <tfoot>
                   <tr>
-                    <Th>Code</Th>
-                    <Th>Name</Th>
+                    <Th>Student code</Th>
+                    <Th>Full name</Th>
                     <Th>Class</Th>
-                    <Th>Guardian</Th>
+                    <Th>Guardian name</Th>
                     <Th>Status</Th>
                     <Th>Action</Th>
                   </tr>
@@ -236,7 +246,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                         <Td>{[fallbackFirstName, fallbackLastName].filter(Boolean).join(" ") || "-"}</Td>
                         <Td>{student.className ?? "-"}</Td>
                         <Td>{student.guardianName ?? "-"}</Td>
-                        <Td>{student.status}</Td>
+                        <Td>{toSentenceCase(student.status)}</Td>
                         <Td className="d-flex flex-wrap gap-1">
                           <Button
                             variant="secondary"
@@ -357,7 +367,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                 <i className={`fas ${isModalEditing ? "fa-user-edit" : "fa-user-graduate"}`} />
               </div>
               <h3 id="student-modal-title" className="swal-title">
-                {isModalEditing ? "Edit Student Record" : "Student Profile"}
+                {isModalEditing ? "Edit student record" : "Student profile"}
               </h3>
               <p className="swal-text mb-0">
                 {activeStudent.fullName} · {activeStudent.studentCode}
@@ -484,8 +494,8 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                           </div>
                           <div className="d-flex flex-wrap gap-2">
                             <span className="badge text-bg-light border">{activeStudent.className ?? "No class"}</span>
-                            <span className="badge text-bg-success text-capitalize">{activeStudent.status}</span>
-                            <span className="badge text-bg-light border text-capitalize">{activeStudent.gender ?? "Unspecified"}</span>
+                            <span className="badge text-bg-success">{toSentenceCase(activeStudent.status)}</span>
+                            <span className="badge text-bg-light border">{toSentenceCase(activeStudent.gender, "Unspecified")}</span>
                           </div>
                         </div>
                       </div>
@@ -493,14 +503,14 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
 
                     <div className="col-md-6">
                       <div className="rounded border bg-white px-3 py-3 h-100">
-                        <p className="field-label mb-2">Student Details</p>
+                        <p className="field-label mb-2">Student details</p>
                         <div className="d-grid gap-2">
                           <div>
-                            <p className="small text-muted mb-1">First Name</p>
+                            <p className="small text-muted mb-1">First name</p>
                             <p className="mb-0">{displayFirstName || "-"}</p>
                           </div>
                           <div>
-                            <p className="small text-muted mb-1">Last Name</p>
+                            <p className="small text-muted mb-1">Last name</p>
                             <p className="mb-0">{displayLastName || "-"}</p>
                           </div>
                           <div>
@@ -513,10 +523,10 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
 
                     <div className="col-md-6">
                       <div className="rounded border bg-white px-3 py-3 h-100">
-                        <p className="field-label mb-2">Guardian Contact</p>
+                        <p className="field-label mb-2">Guardian contact</p>
                         <div className="d-grid gap-2">
                           <div>
-                            <p className="small text-muted mb-1">Parent/Guardian Name</p>
+                            <p className="small text-muted mb-1">Parent/guardian name</p>
                             <p className="mb-0">{activeStudent.guardianName ?? "-"}</p>
                           </div>
                           <div>
