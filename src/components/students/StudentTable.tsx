@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
@@ -53,21 +54,33 @@ function TrashIcon() {
 }
 
 export default function StudentTable({ rows, classes }: StudentTableProps) {
+  const router = useRouter();
   const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
   const [isModalEditing, setIsModalEditing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPending, startTransition] = useTransition();
   const activeStudent = rows.find((row) => row.id === activeStudentId) ?? null;
 
-  function runAction(task: () => Promise<void>) {
+  function runAction(task: () => Promise<void>, options?: { successMessage?: string; onSuccess?: () => void }) {
     startTransition(() => {
-      setErrorMessage(null);
-      void task().catch((error: unknown) => {
-        setErrorMessage(error instanceof Error ? error.message : "Request failed. Please try again.");
-      });
+      setFeedback(null);
+      void task()
+        .then(() => {
+          router.refresh();
+          if (options?.successMessage) {
+            setFeedback({ tone: "success", message: options.successMessage });
+          }
+          options?.onSuccess?.();
+        })
+        .catch((error: unknown) => {
+          setFeedback({
+            tone: "error",
+            message: error instanceof Error ? error.message : "Request failed. Please try again.",
+          });
+        });
     });
   }
 
@@ -128,9 +141,22 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
     return [1, -1, currentPage - 1, currentPage, currentPage + 1, -1, totalPages];
   }, [currentPage, totalPages]);
 
+  const displayFirstName = activeStudent ? activeStudent.firstName ?? activeStudent.fullName.split(/\s+/)[0] ?? "" : "";
+  const displayLastName = activeStudent
+    ? activeStudent.lastName ??
+      activeStudent.fullName
+        .split(/\s+/)
+        .slice(1)
+        .join(" ")
+    : "";
+
   return (
     <>
-      {errorMessage && <p className="small text-danger">{errorMessage}</p>}
+      {feedback ? (
+        <div className={`alert ${feedback.tone === "success" ? "alert-success" : "alert-danger"} py-2`} role="alert">
+          {feedback.message}
+        </div>
+      ) : null}
       <div id="student-directory-datatables_wrapper" className="dataTables_wrapper dt-bootstrap5">
         <div className="row mb-3">
           <div className="col-sm-12 col-md-6">
@@ -230,10 +256,14 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                             action={(formData) => {
                               runAction(async () => {
                                 await deleteStudentAction(formData);
-                                if (activeStudentId === student.id) {
-                                  setActiveStudentId(null);
-                                  setIsModalEditing(false);
-                                }
+                              }, {
+                                successMessage: `${student.fullName} deleted successfully.`,
+                                onSuccess: () => {
+                                  if (activeStudentId === student.id) {
+                                    setActiveStudentId(null);
+                                    setIsModalEditing(false);
+                                  }
+                                },
                               });
                             }}
                           >
@@ -327,9 +357,11 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                 <i className={`fas ${isModalEditing ? "fa-user-edit" : "fa-user-graduate"}`} />
               </div>
               <h3 id="student-modal-title" className="swal-title">
-                {isModalEditing ? "Edit Student Record" : "Student Details"}
+                {isModalEditing ? "Edit Student Record" : "Student Profile"}
               </h3>
-              <p className="swal-text mb-0">{activeStudent.studentCode}</p>
+              <p className="swal-text mb-0">
+                {activeStudent.fullName} · {activeStudent.studentCode}
+              </p>
             </div>
 
             <div className="swal-content">
@@ -338,8 +370,11 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   action={(formData) => {
                     runAction(async () => {
                       await updateStudentAction(formData);
-                      setIsModalEditing(false);
-                      setActiveStudentId(null);
+                    }, {
+                      successMessage: `${activeStudent.fullName} updated successfully.`,
+                      onSuccess: () => {
+                        setIsModalEditing(false);
+                      },
                     });
                   }}
                   className="row g-2"
@@ -348,7 +383,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   <div className="col-md-6">
                     <Input
                       name="firstName"
-                      defaultValue={activeStudent.firstName ?? activeStudent.fullName.split(/\s+/)[0] ?? ""}
+                      defaultValue={displayFirstName}
                       placeholder="First Name"
                       required
                     />
@@ -356,13 +391,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   <div className="col-md-6">
                     <Input
                       name="lastName"
-                      defaultValue={
-                        activeStudent.lastName ??
-                        activeStudent.fullName
-                          .split(/\s+/)
-                          .slice(1)
-                          .join(" ")
-                      }
+                      defaultValue={displayLastName}
                       placeholder="Last Name"
                       required
                     />
@@ -444,49 +473,62 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                 </form>
               ) : (
                 <>
-                  <div className="row g-2 student-swal-details">
-                    <div className="col-md-6">
-                      <p className="field-label">First Name</p>
-                      <p>{activeStudent.firstName ?? activeStudent.fullName.split(/\s+/)[0] ?? "-"}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Last Name</p>
-                      <p>
-                        {(activeStudent.lastName ??
-                          activeStudent.fullName
-                            .split(/\s+/)
-                            .slice(1)
-                            .join(" ")) ||
-                          "-"}
-                      </p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Class</p>
-                      <p>{activeStudent.className ?? "-"}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Status</p>
-                      <p>{activeStudent.status}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Gender</p>
-                      <p>{activeStudent.gender ?? "-"}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Address</p>
-                      <p>{activeStudent.address ?? "-"}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Parent/Guardian Name</p>
-                      <p>{activeStudent.guardianName ?? "-"}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p className="field-label">Parent/Guardian Phone</p>
-                      <p>{activeStudent.guardianPhone ?? "-"}</p>
-                    </div>
+                  <div className="row g-3 student-swal-details">
                     <div className="col-12">
-                      <p className="field-label">Parent/Guardian Email</p>
-                      <p>{activeStudent.guardianEmail ?? "-"}</p>
+                      <div className="rounded border bg-white px-3 py-3">
+                        <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                          <div>
+                            <p className="field-label mb-1">Student</p>
+                            <h4 className="h5 fw-bold mb-1">{activeStudent.fullName}</h4>
+                            <p className="small text-muted mb-0">{activeStudent.studentCode}</p>
+                          </div>
+                          <div className="d-flex flex-wrap gap-2">
+                            <span className="badge text-bg-light border">{activeStudent.className ?? "No class"}</span>
+                            <span className="badge text-bg-success text-capitalize">{activeStudent.status}</span>
+                            <span className="badge text-bg-light border text-capitalize">{activeStudent.gender ?? "Unspecified"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="rounded border bg-white px-3 py-3 h-100">
+                        <p className="field-label mb-2">Student Details</p>
+                        <div className="d-grid gap-2">
+                          <div>
+                            <p className="small text-muted mb-1">First Name</p>
+                            <p className="mb-0">{displayFirstName || "-"}</p>
+                          </div>
+                          <div>
+                            <p className="small text-muted mb-1">Last Name</p>
+                            <p className="mb-0">{displayLastName || "-"}</p>
+                          </div>
+                          <div>
+                            <p className="small text-muted mb-1">Address</p>
+                            <p className="mb-0">{activeStudent.address ?? "-"}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="rounded border bg-white px-3 py-3 h-100">
+                        <p className="field-label mb-2">Guardian Contact</p>
+                        <div className="d-grid gap-2">
+                          <div>
+                            <p className="small text-muted mb-1">Parent/Guardian Name</p>
+                            <p className="mb-0">{activeStudent.guardianName ?? "-"}</p>
+                          </div>
+                          <div>
+                            <p className="small text-muted mb-1">Phone</p>
+                            <p className="mb-0">{activeStudent.guardianPhone ?? "-"}</p>
+                          </div>
+                          <div>
+                            <p className="small text-muted mb-1">Email</p>
+                            <p className="mb-0">{activeStudent.guardianEmail ?? "-"}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="swal-footer mt-3 mb-0">

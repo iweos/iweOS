@@ -990,7 +990,7 @@ export async function updateStudentAction(formData: FormData) {
   const fullName = `${parsed.data.firstName} ${parsed.data.lastName}`.trim();
 
   try {
-    await prisma.student.updateMany({
+    const result = await prisma.student.updateMany({
       where: {
         id: parsed.data.studentId,
         schoolId: profile.schoolId,
@@ -1008,6 +1008,10 @@ export async function updateStudentAction(formData: FormData) {
         gender: parsed.data.gender || null,
       },
     });
+
+    if (result.count === 0) {
+      throw new Error("Student record not found.");
+    }
   } catch (error) {
     if (isLegacyStudentSchemaError(error)) {
       throw studentSchemaSyncError();

@@ -37,9 +37,16 @@ export default async function AdminStudentsManagePage({
   let studentDirectoryRows: Array<{
     id: string;
     studentCode: string;
+    firstName: string | null;
+    lastName: string | null;
     fullName: string;
     className: string | null;
+    address: string | null;
+    guardianName: string | null;
+    guardianPhone: string | null;
+    guardianEmail: string | null;
     status: string;
+    gender: string | null;
   }> = [];
 
   let classes: Array<{ id: string; name: string }> = [];
@@ -52,9 +59,16 @@ export default async function AdminStudentsManagePage({
         select: {
           id: true,
           studentCode: true,
+          firstName: true,
+          lastName: true,
           fullName: true,
           className: true,
+          address: true,
+          guardianName: true,
+          guardianPhone: true,
+          guardianEmail: true,
           status: true,
+          gender: true,
         },
       }),
       prisma.class.findMany({
@@ -77,16 +91,7 @@ export default async function AdminStudentsManagePage({
     throw error;
   }
 
-  const students = studentDirectoryRows.map((student) => ({
-    ...student,
-    firstName: null,
-    lastName: null,
-    address: null,
-    guardianName: null,
-    guardianPhone: null,
-    guardianEmail: null,
-    gender: null,
-  }));
+  const students = studentDirectoryRows;
 
   const activeStudents = students.filter((student) => student.status.toLowerCase() === "active").length;
   const hasFilters = Boolean(classFilter || statusFilter);
