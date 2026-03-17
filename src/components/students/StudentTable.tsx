@@ -292,7 +292,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                               runAction(async () => {
                                 await deleteStudentAction(formData);
                               }, {
-                                successMessage: `${student.fullName} deleted successfully.`,
+                                successMessage: `${toDisplayName(student.fullName, "Student")} deleted successfully.`,
                                 onSuccess: () => {
                                   if (activeStudentId === student.id) {
                                     setActiveStudentId(null);
@@ -406,7 +406,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                     runAction(async () => {
                       await updateStudentAction(formData);
                     }, {
-                      successMessage: `${activeStudent.fullName} updated successfully.`,
+                      successMessage: `${activeStudentFullName || "Student"} updated successfully.`,
                       onSuccess: () => {
                         setIsModalEditing(false);
                       },
@@ -418,16 +418,16 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   <div className="col-md-6">
                     <Input
                       name="firstName"
-                      defaultValue={displayFirstName}
-                      placeholder="First Name"
+                      defaultValue={toDisplayName(displayFirstName, "")}
+                      placeholder="First name"
                       required
                     />
                   </div>
                   <div className="col-md-6">
                     <Input
                       name="lastName"
-                      defaultValue={displayLastName}
-                      placeholder="Last Name"
+                      defaultValue={toDisplayName(displayLastName, "")}
+                      placeholder="Last name"
                       required
                     />
                   </div>
@@ -447,15 +447,15 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   <div className="col-md-6">
                     <Input
                       name="guardianName"
-                      defaultValue={activeStudent.guardianName ?? ""}
-                      placeholder="Parent/Guardian Name"
+                      defaultValue={toDisplayName(activeStudent.guardianName, "")}
+                      placeholder="Parent/guardian name"
                     />
                   </div>
                   <div className="col-md-6">
                     <Input
                       name="guardianPhone"
                       defaultValue={activeStudent.guardianPhone ?? ""}
-                      placeholder="Parent/Guardian Phone"
+                      placeholder="Parent/guardian phone"
                     />
                   </div>
                   <div className="col-md-6">
@@ -463,7 +463,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                       name="guardianEmail"
                       type="email"
                       defaultValue={activeStudent.guardianEmail ?? ""}
-                      placeholder="Parent/Guardian Email"
+                      placeholder="Parent/guardian email"
                     />
                   </div>
                   <div className="col-md-3">
