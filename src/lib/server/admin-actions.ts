@@ -122,6 +122,19 @@ function redirectResultsStatus(
   redirect(`/app/admin/grading/results?${query.toString()}`);
 }
 
+function redirectTeachersStatus(status: "success" | "error", message: string, options?: { editTeacherId?: string }): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+
+  if (options?.editTeacherId) {
+    query.set("editTeacherId", options.editTeacherId);
+  }
+
+  redirect(`/app/admin/teachers?${query.toString()}`);
+}
+
 function revalidateAdminPages() {
   revalidatePath("/app/admin/dashboard");
   revalidatePath("/app/admin/settings");
@@ -614,57 +627,89 @@ export async function deleteTeacherAction(formData: FormData) {
 export async function manualLinkTeacherAccountAction(formData: FormData) {
   const actor = await requireRole("admin");
   const teacherId = formValue(formData, "teacherId");
+  try {
+    const teacher = await prisma.profile.findFirst({
+      where: {
+        id: teacherId,
+        schoolId: actor.schoolId,
+        role: ProfileRole.TEACHER,
+      },
+    });
 
-  const teacher = await prisma.profile.findFirst({
-    where: {
-      id: teacherId,
-      schoolId: actor.schoolId,
-      role: ProfileRole.TEACHER,
-    },
-  });
+    if (!teacher) {
+      throw new Error("Teacher not found.");
+    }
 
-  if (!teacher) {
-    throw new Error("Teacher not found.");
-  }
+    const normalizedEmail = teacher.email.trim().toLowerCase();
+    const client = await clerkClient();
+    const users = await client.users.getUserList({
+      emailAddress: [normalizedEmail],
+      limit: 10,
+    });
 
-  const normalizedEmail = teacher.email.trim().toLowerCase();
-  const client = await clerkClient();
-  const users = await client.users.getUserList({
-    emailAddress: [normalizedEmail],
-    limit: 10,
-  });
+    const clerkUser = users.data.find((user) =>
+      user.emailAddresses.some((entry) => entry.emailAddress.trim().toLowerCase() === normalizedEmail),
+    );
 
-  const clerkUser = users.data.find((user) =>
-    user.emailAddresses.some((entry) => entry.emailAddress.trim().toLowerCase() === normalizedEmail),
-  );
+    if (!clerkUser) {
+      throw new Error("No signed-up account found for this email yet.");
+    }
 
-  if (!clerkUser) {
-    throw new Error("No signed-up account found for this email yet.");
-  }
+    const existingLink = await prisma.profile.findUnique({
+      where: { clerkUserId: clerkUser.id },
+      select: { id: true, schoolId: true, email: true },
+    });
 
-  const existingLink = await prisma.profile.findUnique({
-    where: { clerkUserId: clerkUser.id },
-    select: { id: true, schoolId: true, email: true },
-  });
+    let updated: {
+      clerkUserId: string | null;
+      role: ProfileRole;
+      schoolId: string;
+      fullName: string;
+    };
 
-  if (existingLink && existingLink.id !== teacher.id) {
-    throw new Error(
-      existingLink.schoolId === actor.schoolId
-        ? `This account is already linked to ${existingLink.email} in this school.`
-        : "This account is already linked to another school profile.",
+    if (existingLink && existingLink.id !== teacher.id) {
+      if (existingLink.schoolId !== actor.schoolId) {
+        throw new Error("This account is already linked to another school profile.");
+      }
+
+      if (existingLink.email.trim().toLowerCase() !== normalizedEmail) {
+        throw new Error(`This account is already linked to ${existingLink.email} in this school.`);
+      }
+
+      updated = await prisma.$transaction(async (tx) => {
+        await tx.profile.update({
+          where: { id: existingLink.id },
+          data: { clerkUserId: null },
+        });
+
+        return tx.profile.update({
+          where: { id: teacher.id },
+          data: {
+            clerkUserId: clerkUser.id,
+            isActive: true,
+          },
+        });
+      });
+    } else {
+      updated = await prisma.profile.update({
+        where: { id: teacher.id },
+        data: {
+          clerkUserId: clerkUser.id,
+          isActive: true,
+        },
+      });
+    }
+
+    await syncRoleMetadata(updated.clerkUserId, updated.role, updated.schoolId);
+    revalidateAdminPages();
+    redirectTeachersStatus("success", `${updated.fullName} has been linked successfully.`, { editTeacherId: teacherId });
+  } catch (error) {
+    redirectTeachersStatus(
+      "error",
+      error instanceof Error ? error.message : "Unable to link this teacher account right now.",
+      { editTeacherId: teacherId },
     );
   }
-
-  const updated = await prisma.profile.update({
-    where: { id: teacher.id },
-    data: {
-      clerkUserId: clerkUser.id,
-      isActive: true,
-    },
-  });
-
-  await syncRoleMetadata(updated.clerkUserId, updated.role, updated.schoolId);
-  revalidateAdminPages();
 }
 
 export async function setProfileRoleAction(formData: FormData) {

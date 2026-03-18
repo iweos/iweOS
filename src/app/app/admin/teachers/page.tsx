@@ -6,6 +6,7 @@ import {
   toggleTeacherStatusAction,
   updateTeacherAction,
 } from "@/lib/server/admin-actions";
+import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
@@ -15,6 +16,8 @@ import StatCard from "@/components/admin/ui/StatCard";
 
 type AdminTeachersSearchParams = {
   editTeacherId?: string;
+  status?: string;
+  message?: string;
 };
 
 export default async function AdminTeachersPage({
@@ -24,6 +27,8 @@ export default async function AdminTeachersPage({
 }) {
   const params = await searchParams;
   const profile = await requireRole("admin");
+  const status = params.status === "success" || params.status === "error" ? params.status : null;
+  const message = (params.message ?? "").trim();
 
   const [teachers, admins] = await Promise.all([
     prisma.profile.findMany({
@@ -51,6 +56,7 @@ export default async function AdminTeachersPage({
 
   return (
     <>
+      {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <section className="card card-body d-grid gap-3">
         <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
           <div>
