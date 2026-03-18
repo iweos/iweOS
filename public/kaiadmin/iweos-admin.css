@@ -666,32 +666,49 @@ html.kai-admin .student-rows-input {
 }
 
 @media screen and (max-width: 767.5px) {
+  html.kai-admin .logo-header {
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    align-items: center;
+    column-gap: 0.5rem;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
   html.kai-admin .logo-header .nav-toggle {
     display: none !important;
+  }
+
+  html.kai-admin .logo-header .logo {
+    grid-column: 2;
+    justify-self: center;
+    margin: 0 auto !important;
+    min-width: 0;
   }
 
   html.kai-admin .topbar-mobile-leading {
     display: flex;
     align-items: center;
-    position: absolute;
-    left: 15px !important;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3;
+    justify-content: flex-start;
+    position: static;
+    width: 44px;
+    min-width: 44px;
+    transform: none;
+    z-index: auto;
   }
 
   html.kai-admin .topbar-mobile-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    width: auto;
-    position: absolute;
-    right: 12px !important;
+    width: 44px;
+    min-width: 44px;
+    position: static;
     left: auto !important;
-    top: 50%;
-    transform: translateY(-50%);
+    top: auto;
+    transform: none;
     margin-left: 0;
-    z-index: 3;
+    z-index: auto;
   }
 
   html.kai-admin .topbar-mobile-leading .mobile-menu-trigger,
