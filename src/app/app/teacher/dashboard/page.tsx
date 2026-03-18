@@ -354,7 +354,7 @@ export default async function TeacherDashboardPage({
             subtitle="Expected score rows are based on active-term enrollments multiplied by subjects assigned to each class."
           >
             <TableWrap>
-              <Table>
+              <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
                     <Th>Class</Th>
@@ -370,14 +370,14 @@ export default async function TeacherDashboardPage({
                 <tbody>
                   {classSummaries.map((row) => (
                     <tr key={row.classId}>
-                      <Td>{row.className}</Td>
-                      <Td>{row.studentCount}</Td>
-                      <Td>{row.subjectCount}</Td>
-                      <Td>{row.expectedRows}</Td>
-                      <Td>{row.submittedRows}</Td>
-                      <Td>{row.pendingRows}</Td>
-                      <Td>{row.completionRate.toFixed(0)}%</Td>
-                      <Td>{formatMetric(row.averageTotal)}</Td>
+                      <Td data-label="Class">{row.className}</Td>
+                      <Td data-label="Students">{row.studentCount}</Td>
+                      <Td data-label="Subjects">{row.subjectCount}</Td>
+                      <Td data-label="Expected">{row.expectedRows}</Td>
+                      <Td data-label="Submitted">{row.submittedRows}</Td>
+                      <Td data-label="Pending">{row.pendingRows}</Td>
+                      <Td data-label="Completion">{row.completionRate.toFixed(0)}%</Td>
+                      <Td data-label="Avg Total">{formatMetric(row.averageTotal)}</Td>
                     </tr>
                   ))}
                   {classSummaries.length === 0 && (
@@ -396,7 +396,7 @@ export default async function TeacherDashboardPage({
         <div className="col-12 col-xl-5">
           <Card title="Students Needing Attention" subtitle="Lowest active-term averages in the current teacher view.">
             <TableWrap>
-              <Table>
+              <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
                     <Th>Student</Th>
@@ -409,11 +409,11 @@ export default async function TeacherDashboardPage({
                 <tbody>
                   {studentAttentionRows.map((row) => (
                     <tr key={`${row.studentName}_${row.className}`}>
-                      <Td>{row.studentName}</Td>
-                      <Td>{row.className}</Td>
-                      <Td>{row.subjectsCovered}</Td>
-                      <Td>{formatMetric(row.averageTotal)}</Td>
-                      <Td>{formatMetric(row.lowestTotal)}</Td>
+                      <Td data-label="Student">{row.studentName}</Td>
+                      <Td data-label="Class">{row.className}</Td>
+                      <Td data-label="Subjects">{row.subjectsCovered}</Td>
+                      <Td data-label="Avg Total">{formatMetric(row.averageTotal)}</Td>
+                      <Td data-label="Lowest">{formatMetric(row.lowestTotal)}</Td>
                     </tr>
                   ))}
                   {studentAttentionRows.length === 0 && (
@@ -434,7 +434,7 @@ export default async function TeacherDashboardPage({
         <div className="col-12 col-xl-6">
           <Card title="Subject Performance" subtitle="Average total, floor, and ceiling by subject in the active term.">
             <TableWrap>
-              <Table>
+              <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
                     <Th>Subject</Th>
@@ -447,11 +447,11 @@ export default async function TeacherDashboardPage({
                 <tbody>
                   {subjectPerformance.slice(0, 8).map((row) => (
                     <tr key={row.subjectName}>
-                      <Td>{row.subjectName}</Td>
-                      <Td>{row.rows}</Td>
-                      <Td>{formatMetric(row.averageTotal)}</Td>
-                      <Td>{formatMetric(row.highest)}</Td>
-                      <Td>{formatMetric(row.lowest)}</Td>
+                      <Td data-label="Subject">{row.subjectName}</Td>
+                      <Td data-label="Rows">{row.rows}</Td>
+                      <Td data-label="Average">{formatMetric(row.averageTotal)}</Td>
+                      <Td data-label="Highest">{formatMetric(row.highest)}</Td>
+                      <Td data-label="Lowest">{formatMetric(row.lowest)}</Td>
                     </tr>
                   ))}
                   {subjectPerformance.length === 0 && (
@@ -470,7 +470,7 @@ export default async function TeacherDashboardPage({
         <div className="col-12 col-xl-6">
           <Card title="Recent Score Activity" subtitle="Latest score rows updated in the current teacher view.">
             <TableWrap>
-              <Table>
+              <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
                     <Th>Updated</Th>
@@ -484,12 +484,12 @@ export default async function TeacherDashboardPage({
                 <tbody>
                   {recentActivity.map((row) => (
                     <tr key={row.id}>
-                      <Td>{row.updatedLabel}</Td>
-                      <Td>{row.className}</Td>
-                      <Td>{row.studentName}</Td>
-                      <Td>{row.subjectName}</Td>
-                      <Td>{formatMetric(row.total)}</Td>
-                      <Td>{row.grade}</Td>
+                      <Td data-label="Updated">{row.updatedLabel}</Td>
+                      <Td data-label="Class">{row.className}</Td>
+                      <Td data-label="Student">{row.studentName}</Td>
+                      <Td data-label="Subject">{row.subjectName}</Td>
+                      <Td data-label="Total">{formatMetric(row.total)}</Td>
+                      <Td data-label="Grade">{row.grade}</Td>
                     </tr>
                   ))}
                   {recentActivity.length === 0 && (
@@ -508,7 +508,7 @@ export default async function TeacherDashboardPage({
 
       <Card title="Classes in View">
         <TableWrap>
-          <Table>
+          <Table className="teacher-dashboard-table">
             <thead>
               <tr>
                 <Th>Class</Th>
@@ -517,7 +517,7 @@ export default async function TeacherDashboardPage({
             <tbody>
               {assignments.map((row) => (
                 <tr key={row.id}>
-                  <Td>{row.name}</Td>
+                  <Td data-label="Class">{row.name}</Td>
                 </tr>
               ))}
               {assignments.length === 0 && (

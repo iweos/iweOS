@@ -60,7 +60,7 @@ export default function TeacherDashboardAnalytics({
           {classCompletionData.length === 0 ? (
             <p className="section-subtle mb-0">No class analytics yet for the active term.</p>
           ) : (
-            <div style={{ width: "100%", height: 320 }}>
+            <div className="teacher-dashboard-chart teacher-dashboard-chart-lg">
               <ResponsiveContainer>
                 <BarChart data={classCompletionData} margin={{ top: 10, right: 16, left: -12, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(38, 65, 49, 0.12)" />
@@ -112,7 +112,7 @@ export default function TeacherDashboardAnalytics({
             <p className="section-subtle mb-0">No grade distribution yet. Start entering scores to see the spread.</p>
           ) : (
             <>
-              <div style={{ width: "100%", height: 260 }}>
+              <div className="teacher-dashboard-chart teacher-dashboard-chart-sm">
                 <ResponsiveContainer>
                   <PieChart>
                     <Pie
