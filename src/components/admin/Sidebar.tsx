@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
@@ -106,8 +107,11 @@ export default function Sidebar({
   profileName,
   profileEmail,
 }: SidebarProps) {
+  const { signOut } = useClerk();
+  const { sessionId } = useAuth();
   const pathname = usePathname();
   const [groupOpenMap, setGroupOpenMap] = useState<Record<string, boolean>>({});
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const isTeacherMode = mode === "teacher";
 
   const mainLinks = isTeacherMode ? teacherLinks : primaryLinks;
@@ -123,6 +127,24 @@ export default function Sidebar({
       ...current,
       [group.id]: !(current[group.id] ?? isGroupActive(pathname, group)),
     }));
+  }
+
+  function handleSignOut() {
+    if (isSigningOut) {
+      return;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("iweos:pending-indicator", {
+        detail: { durationMs: 9000 },
+      }),
+    );
+    setIsSigningOut(true);
+    onClose();
+    const signOutPromise = sessionId ? signOut({ sessionId, redirectUrl: "/sign-in" }) : signOut({ redirectUrl: "/sign-in" });
+    void signOutPromise.catch(() => {
+      setIsSigningOut(false);
+    });
   }
 
   return (
@@ -243,6 +265,20 @@ export default function Sidebar({
                 </li>
               );
             })}
+
+            <li className="nav-item">
+              <a
+                href="#signout"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleSignOut();
+                }}
+                aria-disabled={isSigningOut}
+              >
+                <i className="fas fa-sign-out-alt" />
+                <p>{isSigningOut ? "Signing out..." : "Sign out"}</p>
+              </a>
+            </li>
           </ul>
         </div>
       </div>
