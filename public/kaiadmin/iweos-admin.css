@@ -120,7 +120,7 @@ html.kai-admin .topbar-mobile-actions .mobile-header-spacer {
   color: #fff;
 }
 
-html.kai-admin .mobile-sidebar-actions {
+html.kai-admin .mobile-sidebar-footer {
   display: none;
 }
 
@@ -182,6 +182,10 @@ html.kai-admin .sidebar .nav > .nav-item > .nav-collapse {
 
 html.kai-admin .sidebar .nav > .nav-item.submenu > .nav-collapse {
   display: block !important;
+}
+
+html.kai-admin .sidebar-content {
+  min-height: 100%;
 }
 
 /* Buttons */
@@ -727,17 +731,16 @@ html.kai-admin .student-rows-input {
     height: 2rem;
   }
 
-  html.kai-admin .mobile-sidebar-actions {
+  html.kai-admin .sidebar-content {
     display: flex;
-    gap: 0.55rem;
-    margin-top: 0.9rem;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
 
-  html.kai-admin .mobile-sidebar-action {
-    display: inline-flex !important;
-    align-items: center;
-    gap: 0.45rem;
+  html.kai-admin .mobile-sidebar-footer {
+    display: block;
+    margin-top: auto;
+    padding: 1rem 1rem 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   html.kai-admin .page-inner {

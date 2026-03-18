@@ -187,23 +187,6 @@ export default function Sidebar({
                   <span className="user-level">{profileEmail ?? (isTeacherMode ? "teacher@iweos.app" : "admin@iweos.app")}</span>
                 </span>
               </a>
-              <div className="mobile-sidebar-actions">
-                {settingsHref ? (
-                  <Link href={settingsHref} className="btn btn-outline-secondary btn-sm mobile-sidebar-action" onClick={onClose}>
-                    <i className="fas fa-cog" />
-                    <span>Settings</span>
-                  </Link>
-                ) : null}
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm mobile-sidebar-action"
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
-                >
-                  <i className="fas fa-sign-out-alt" />
-                  <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
-                </button>
-              </div>
             </div>
           </div>
 
@@ -297,6 +280,18 @@ export default function Sidebar({
               </a>
             </li>
           </ul>
+
+          <div className="mobile-sidebar-footer">
+            <button
+              type="button"
+              className="btn btn-primary w-100"
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+            >
+              <i className="fas fa-sign-out-alt me-2" />
+              {isSigningOut ? "Signing out..." : "Sign out"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
