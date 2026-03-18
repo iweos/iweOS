@@ -61,17 +61,29 @@ export default function Topbar({
   }
 
   return (
-    <div className="main-header">
+      <div className="main-header">
       <div className="main-header-logo">
         <div className="logo-header" data-background-color="dark">
           <div className="topbar-mobile-leading">
             <button
               type="button"
-              className="btn btn-toggle mobile-header-action mobile-menu-trigger"
-              onClick={onMenuToggle}
-              aria-label="Open menu"
+              className="btn btn-toggle mobile-header-action mobile-signout"
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              disabled={isSigningOut}
             >
-              <i className="fas fa-bars" />
+              <i className="fas fa-sign-out-alt" />
+            </button>
+            <button
+              type="button"
+              className="btn btn-toggle mobile-header-action mobile-overflow-trigger"
+              onClick={() => {
+                setProfileOpen((current) => !current);
+                setNotificationsOpen(false);
+              }}
+              aria-label="Open profile menu"
+            >
+              <i className="gg-more-vertical-alt" />
             </button>
           </div>
           <BrandLogo
@@ -92,20 +104,11 @@ export default function Topbar({
           <div className="topbar-mobile-actions">
             <button
               type="button"
-              className="btn btn-toggle mobile-header-action mobile-signout"
-              onClick={handleSignOut}
-              aria-label="Sign out"
-              disabled={isSigningOut}
-            >
-              <i className="fas fa-sign-out-alt" />
-            </button>
-            <button
-              type="button"
               className="btn btn-toggle mobile-header-action mobile-menu-trigger"
               onClick={onMenuToggle}
               aria-label="Open menu"
             >
-              <i className="gg-more-vertical-alt" />
+              <i className="fas fa-bars" />
             </button>
           </div>
         </div>

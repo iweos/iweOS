@@ -115,7 +115,9 @@ html.kai-admin .topbar-mobile-actions .mobile-header-action {
   font-size: 0.95rem !important;
 }
 
-html.kai-admin .topbar-mobile-actions .mobile-signout {
+html.kai-admin .topbar-mobile-leading .mobile-signout,
+html.kai-admin .topbar-mobile-leading .mobile-overflow-trigger,
+html.kai-admin .topbar-mobile-actions .mobile-menu-trigger {
   color: #fff;
 }
 
@@ -672,6 +674,7 @@ html.kai-admin .student-rows-input {
   html.kai-admin .topbar-mobile-leading {
     display: flex;
     align-items: center;
+    gap: 0.55rem;
     position: absolute;
     left: 15px !important;
     top: 50%;
@@ -683,7 +686,6 @@ html.kai-admin .student-rows-input {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.55rem;
     width: auto;
     position: absolute;
     right: 12px !important;
@@ -694,8 +696,9 @@ html.kai-admin .student-rows-input {
     z-index: 3;
   }
 
-  html.kai-admin .topbar-mobile-actions .mobile-menu-trigger,
-  html.kai-admin .topbar-mobile-actions .mobile-signout {
+  html.kai-admin .topbar-mobile-leading .mobile-signout,
+  html.kai-admin .topbar-mobile-leading .mobile-overflow-trigger,
+  html.kai-admin .topbar-mobile-actions .mobile-menu-trigger {
     position: static !important;
     margin: 0 !important;
   }
