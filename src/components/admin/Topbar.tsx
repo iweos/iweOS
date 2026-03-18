@@ -92,6 +92,15 @@ export default function Topbar({
           <div className="topbar-mobile-actions">
             <button
               type="button"
+              className="btn btn-toggle mobile-header-action mobile-signout"
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              disabled={isSigningOut}
+            >
+              <i className="fas fa-sign-out-alt" />
+            </button>
+            <button
+              type="button"
               className="btn btn-toggle mobile-header-action mobile-overflow-trigger"
               onClick={() => {
                 setProfileOpen((current) => !current);
