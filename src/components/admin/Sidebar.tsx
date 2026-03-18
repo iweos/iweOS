@@ -265,20 +265,6 @@ export default function Sidebar({
                 </li>
               );
             })}
-
-            <li className="nav-item">
-              <a
-                href="#signout"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleSignOut();
-                }}
-                aria-disabled={isSigningOut}
-              >
-                <i className="fas fa-sign-out-alt" />
-                <p>{isSigningOut ? "Signing out..." : "Sign out"}</p>
-              </a>
-            </li>
           </ul>
 
           <div className="mobile-sidebar-footer">
