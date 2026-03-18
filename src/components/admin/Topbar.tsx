@@ -79,9 +79,20 @@ export default function Topbar({
               <i className="gg-menu-left" />
             </button>
           </div>
-          <button type="button" className="topbar-toggler more" onClick={onMenuToggle} aria-label="Open menu">
-            <i className="gg-more-vertical-alt" />
-          </button>
+          <div className="topbar-mobile-actions">
+            <button
+              type="button"
+              className="topbar-toggler mobile-signout"
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              disabled={isSigningOut}
+            >
+              <i className="fas fa-sign-out-alt" />
+            </button>
+            <button type="button" className="topbar-toggler more" onClick={onMenuToggle} aria-label="Open menu">
+              <i className="gg-more-vertical-alt" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -103,18 +114,6 @@ export default function Topbar({
           </nav>
 
           <ul className="navbar-nav topbar-nav ms-md-auto align-items-center">
-            <li className="nav-item topbar-icon hidden-caret d-lg-none">
-              <button
-                type="button"
-                className="nav-link border-0 bg-transparent"
-                onClick={handleSignOut}
-                aria-label="Sign out"
-                disabled={isSigningOut}
-              >
-                <i className="fas fa-sign-out-alt" />
-              </button>
-            </li>
-
             <li className="nav-item topbar-icon dropdown hidden-caret">
               <button
                 type="button"

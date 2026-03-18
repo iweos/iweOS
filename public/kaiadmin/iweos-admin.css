@@ -96,6 +96,22 @@ html.kai-admin .main-header .logo-title {
   color: #fff;
 }
 
+html.kai-admin .topbar-mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+html.kai-admin .topbar-mobile-actions .topbar-toggler {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.kai-admin .topbar-mobile-actions .mobile-signout {
+  color: #fff;
+}
+
 html.kai-admin .admin-profile-avatar i {
   font-size: 1rem;
   line-height: 1;
@@ -642,6 +658,10 @@ html.kai-admin .student-rows-input {
 }
 
 @media screen and (max-width: 767.5px) {
+  html.kai-admin .topbar-mobile-actions {
+    margin-left: auto;
+  }
+
   html.kai-admin .page-inner {
     padding: 1rem 0 0.85rem !important;
   }
