@@ -5,7 +5,7 @@ import BrandLogo from "@/components/BrandLogo";
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#f8f4ee]/95 backdrop-blur">
-      <div className="container flex min-h-16 items-center justify-between gap-3 py-3">
+      <div className="container flex min-h-16 flex-wrap items-center justify-between gap-3 py-3 sm:flex-nowrap">
         <BrandLogo
           href="/"
           variant="dark"
@@ -26,7 +26,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap">
           <Link
             href="/sign-in"
             className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
