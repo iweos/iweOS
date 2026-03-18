@@ -82,14 +82,19 @@ export default function Topbar({
           <div className="topbar-mobile-actions">
             <button
               type="button"
-              className="topbar-toggler mobile-signout"
+              className="btn btn-toggle mobile-header-action mobile-signout"
               onClick={handleSignOut}
               aria-label="Sign out"
               disabled={isSigningOut}
             >
               <i className="fas fa-sign-out-alt" />
             </button>
-            <button type="button" className="topbar-toggler more" onClick={onMenuToggle} aria-label="Open menu">
+            <button
+              type="button"
+              className="btn btn-toggle mobile-header-action"
+              onClick={onMenuToggle}
+              aria-label="Open menu"
+            >
               <i className="gg-more-vertical-alt" />
             </button>
           </div>
