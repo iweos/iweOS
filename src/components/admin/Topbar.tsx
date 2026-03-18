@@ -91,7 +91,7 @@ export default function Topbar({
             </button>
             <button
               type="button"
-              className="btn btn-toggle mobile-header-action"
+              className="btn btn-toggle mobile-header-action mobile-menu-trigger"
               onClick={onMenuToggle}
               aria-label="Open menu"
             >

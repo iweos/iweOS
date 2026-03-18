@@ -663,19 +663,29 @@ html.kai-admin .student-rows-input {
 }
 
 @media screen and (max-width: 767.5px) {
+  html.kai-admin .logo-header .nav-toggle {
+    display: none !important;
+  }
+
   html.kai-admin .topbar-mobile-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 0.55rem;
-    width: 4.75rem;
+    width: auto;
     position: absolute;
-    right: 12px !important;
-    left: auto !important;
+    left: 15px !important;
+    right: auto !important;
     top: 50%;
     transform: translateY(-50%);
     margin-left: 0;
     z-index: 3;
+  }
+
+  html.kai-admin .topbar-mobile-actions .mobile-menu-trigger,
+  html.kai-admin .topbar-mobile-actions .mobile-signout {
+    position: static !important;
+    margin: 0 !important;
   }
 
   html.kai-admin .page-inner {
