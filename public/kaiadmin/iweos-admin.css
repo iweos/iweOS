@@ -734,13 +734,24 @@ html.kai-admin .student-rows-input {
   html.kai-admin .sidebar-content {
     display: flex;
     flex-direction: column;
+    min-height: 100%;
+    padding-bottom: 0 !important;
+  }
+
+  html.kai-admin .sidebar .sidebar-wrapper {
+    height: calc(100dvh - 75px) !important;
+    max-height: calc(100dvh - 75px) !important;
   }
 
   html.kai-admin .mobile-sidebar-footer {
     display: block;
+    position: sticky;
+    bottom: 0;
     margin-top: auto;
-    padding: 1rem 1rem 0.25rem;
+    padding: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: #1d2621 !important;
+    z-index: 2;
   }
 
   html.kai-admin .page-inner {
