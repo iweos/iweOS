@@ -90,26 +90,7 @@ export default function Topbar({
             </button>
           </div>
           <div className="topbar-mobile-actions">
-            <button
-              type="button"
-              className="btn btn-toggle mobile-header-action mobile-signout"
-              onClick={handleSignOut}
-              aria-label="Sign out"
-              disabled={isSigningOut}
-            >
-              <i className="fas fa-sign-out-alt" />
-            </button>
-            <button
-              type="button"
-              className="btn btn-toggle mobile-header-action mobile-overflow-trigger"
-              onClick={() => {
-                setProfileOpen((current) => !current);
-                setNotificationsOpen(false);
-              }}
-              aria-label="Open profile menu"
-            >
-              <i className="gg-more-vertical-alt" />
-            </button>
+            <span className="mobile-header-spacer" aria-hidden="true" />
           </div>
         </div>
       </div>

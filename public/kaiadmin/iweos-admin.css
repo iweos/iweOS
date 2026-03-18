@@ -116,9 +116,12 @@ html.kai-admin .topbar-mobile-actions .mobile-header-action {
 }
 
 html.kai-admin .topbar-mobile-leading .mobile-menu-trigger,
-html.kai-admin .topbar-mobile-actions .mobile-overflow-trigger,
-html.kai-admin .topbar-mobile-actions .mobile-signout {
+html.kai-admin .topbar-mobile-actions .mobile-header-spacer {
   color: #fff;
+}
+
+html.kai-admin .mobile-sidebar-actions {
+  display: none;
 }
 
 html.kai-admin .admin-profile-avatar i {
@@ -669,7 +672,7 @@ html.kai-admin .student-rows-input {
 @media screen and (max-width: 767.5px) {
   html.kai-admin .logo-header {
     display: grid !important;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
     align-items: center;
     column-gap: 0.5rem;
     padding-left: 12px !important;
@@ -702,9 +705,8 @@ html.kai-admin .student-rows-input {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.55rem;
-    width: auto;
-    min-width: 74px;
+    width: 44px;
+    min-width: 44px;
     position: static;
     left: auto !important;
     top: auto;
@@ -714,10 +716,28 @@ html.kai-admin .student-rows-input {
   }
 
   html.kai-admin .topbar-mobile-leading .mobile-menu-trigger,
-  html.kai-admin .topbar-mobile-actions .mobile-overflow-trigger,
-  html.kai-admin .topbar-mobile-actions .mobile-signout {
+  html.kai-admin .topbar-mobile-actions .mobile-header-spacer {
     position: static !important;
     margin: 0 !important;
+  }
+
+  html.kai-admin .topbar-mobile-actions .mobile-header-spacer {
+    display: block;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  html.kai-admin .mobile-sidebar-actions {
+    display: flex;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+    flex-wrap: wrap;
+  }
+
+  html.kai-admin .mobile-sidebar-action {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.45rem;
   }
 
   html.kai-admin .page-inner {
