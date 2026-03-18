@@ -266,18 +266,17 @@ export default function Sidebar({
               );
             })}
           </ul>
-
-          <div className="mobile-sidebar-footer">
-            <button
-              type="button"
-              className="btn btn-primary w-100"
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-            >
-              <i className="fas fa-sign-out-alt me-2" />
-              {isSigningOut ? "Signing out..." : "Sign out"}
-            </button>
-          </div>
+        </div>
+        <div className="mobile-sidebar-footer">
+          <button
+            type="button"
+            className="btn btn-primary w-100"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+          >
+            <i className="fas fa-sign-out-alt me-2" />
+            {isSigningOut ? "Signing out..." : "Sign out"}
+          </button>
         </div>
       </div>
     </div>

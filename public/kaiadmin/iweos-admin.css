@@ -676,11 +676,12 @@ html.kai-admin .student-rows-input {
 @media screen and (max-width: 767.5px) {
   html.kai-admin .logo-header {
     display: grid !important;
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
     align-items: center;
     column-gap: 0.5rem;
     padding-left: 12px !important;
     padding-right: 12px !important;
+    position: relative;
   }
 
   html.kai-admin .logo-header .nav-toggle {
@@ -688,10 +689,13 @@ html.kai-admin .student-rows-input {
   }
 
   html.kai-admin .logo-header .logo {
-    grid-column: 2;
-    justify-self: center;
-    margin: 0 auto !important;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0 !important;
     min-width: 0;
+    z-index: 1;
   }
 
   html.kai-admin .topbar-mobile-leading {
@@ -699,24 +703,24 @@ html.kai-admin .student-rows-input {
     align-items: center;
     justify-content: flex-start;
     position: static;
-    width: 44px;
-    min-width: 44px;
+    width: 48px;
+    min-width: 48px;
     transform: none;
-    z-index: auto;
+    z-index: 2;
   }
 
   html.kai-admin .topbar-mobile-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    width: 44px;
-    min-width: 44px;
+    width: 48px;
+    min-width: 48px;
     position: static;
     left: auto !important;
     top: auto;
     transform: none;
     margin-left: 0;
-    z-index: auto;
+    z-index: 2;
   }
 
   html.kai-admin .topbar-mobile-leading .mobile-menu-trigger,
@@ -727,31 +731,34 @@ html.kai-admin .student-rows-input {
 
   html.kai-admin .topbar-mobile-actions .mobile-header-spacer {
     display: block;
-    width: 2rem;
-    height: 2rem;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   html.kai-admin .sidebar-content {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
     padding-bottom: 0 !important;
   }
 
   html.kai-admin .sidebar .sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 75px) !important;
     height: calc(100dvh - 75px) !important;
+    max-height: calc(100vh - 75px) !important;
     max-height: calc(100dvh - 75px) !important;
+    overflow: hidden;
   }
 
   html.kai-admin .mobile-sidebar-footer {
     display: block;
-    position: sticky;
-    bottom: 0;
-    margin-top: auto;
+    flex-shrink: 0;
     padding: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     background: #1d2621 !important;
-    z-index: 2;
   }
 
   html.kai-admin .page-inner {
