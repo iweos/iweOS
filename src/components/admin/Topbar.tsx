@@ -64,6 +64,16 @@ export default function Topbar({
     <div className="main-header">
       <div className="main-header-logo">
         <div className="logo-header" data-background-color="dark">
+          <div className="topbar-mobile-leading">
+            <button
+              type="button"
+              className="btn btn-toggle mobile-header-action mobile-menu-trigger"
+              onClick={onMenuToggle}
+              aria-label="Open menu"
+            >
+              <i className="fas fa-bars" />
+            </button>
+          </div>
           <BrandLogo
             href={homeHref}
             variant="light"

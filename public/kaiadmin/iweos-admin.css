@@ -96,10 +96,12 @@ html.kai-admin .main-header .logo-title {
   color: #fff;
 }
 
+html.kai-admin .topbar-mobile-leading,
 html.kai-admin .topbar-mobile-actions {
   display: none;
 }
 
+html.kai-admin .topbar-mobile-leading .mobile-header-action,
 html.kai-admin .topbar-mobile-actions .mobile-header-action {
   display: inline-flex;
   align-items: center;
@@ -667,15 +669,25 @@ html.kai-admin .student-rows-input {
     display: none !important;
   }
 
+  html.kai-admin .topbar-mobile-leading {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: 15px !important;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+  }
+
   html.kai-admin .topbar-mobile-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 0.55rem;
     width: auto;
     position: absolute;
-    left: 15px !important;
-    right: auto !important;
+    right: 12px !important;
+    left: auto !important;
     top: 50%;
     transform: translateY(-50%);
     margin-left: 0;
