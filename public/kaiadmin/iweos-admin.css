@@ -664,7 +664,12 @@ html.kai-admin .student-rows-input {
     display: flex;
     align-items: center;
     gap: 0.15rem;
-    margin-left: auto;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0;
+    z-index: 3;
   }
 
   html.kai-admin .page-inner {
