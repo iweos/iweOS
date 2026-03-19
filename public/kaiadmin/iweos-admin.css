@@ -737,28 +737,33 @@ html.kai-admin .student-rows-input {
 
   html.kai-admin .sidebar-content {
     display: block;
-    flex: 1 1 auto;
+    height: 100%;
     min-height: 0;
     overflow-y: auto;
-    padding-bottom: 0 !important;
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   html.kai-admin .sidebar .sidebar-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 75px) !important;
-    height: calc(100dvh - 75px) !important;
-    max-height: calc(100vh - 75px) !important;
-    max-height: calc(100dvh - 75px) !important;
+    position: absolute;
+    top: 75px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: auto !important;
+    max-height: none !important;
     overflow: hidden;
   }
 
   html.kai-admin .mobile-sidebar-footer {
     display: block;
-    flex-shrink: 0;
-    padding: 1rem;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     background: #1d2621 !important;
+    z-index: 3;
   }
 
   html.kai-admin .page-inner {
