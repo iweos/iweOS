@@ -64,7 +64,7 @@ export const heroContent = {
     "Grading, results, and school fees in one simple system for admins, teachers, and parents.",
   trustLine:
     "Built for real school workflows: terms, classes, scores, invoices, receipts.",
-  primaryCta: { label: "Create school", href: "/demo" },
+  primaryCta: { label: "Sign up", href: "/sign-up" },
   secondaryCta: { label: "View product", href: "#product" },
   tertiaryCta: { label: "Pay fees", href: "/pay" },
 };
@@ -272,7 +272,7 @@ export const footerGroups: FooterGroup[] = [
   {
     title: "Company",
     links: [
-      { label: "Create school", href: "/demo" },
+      { label: "Sign up", href: "/sign-up" },
       { label: "Get started", href: "/sign-up" },
       { label: "Sign in", href: "/sign-in" },
     ],

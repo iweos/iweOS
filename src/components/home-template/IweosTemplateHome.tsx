@@ -52,10 +52,10 @@ export default function IweosTemplateHome() {
               Sign in
             </Link>
             <Link
-              href='/demo'
+              href='/sign-up'
               className='rounded-md bg-[#1e3a5f] px-3 py-2 text-sm font-medium !text-white visited:!text-white hover:!text-white hover:bg-[#18314f]'
             >
-              Create school
+              Sign up
             </Link>
           </div>
 
@@ -85,8 +85,8 @@ export default function IweosTemplateHome() {
                 <Link href='/sign-in' className='rounded-md border border-[#cfd8e3] px-3 py-2 text-sm font-semibold text-[#374151]'>
                   Sign in
                 </Link>
-                <Link href='/demo' className='rounded-md bg-[#1e3a5f] px-3 py-2 text-sm font-medium !text-white visited:!text-white hover:!text-white'>
-                  Create school
+                <Link href='/sign-up' className='rounded-md bg-[#1e3a5f] px-3 py-2 text-sm font-medium !text-white visited:!text-white hover:!text-white'>
+                  Sign up
                 </Link>
               </div>
             </div>
@@ -257,8 +257,8 @@ export default function IweosTemplateHome() {
                 Book a walkthrough for grading workflows, payment setup, and reconciliation.
               </p>
               <div className='mt-6 flex flex-wrap items-center justify-center gap-3'>
-                <Link href='/demo' className='rounded-md bg-[#1e3a5f] px-5 py-3 text-sm font-medium !text-white visited:!text-white hover:!text-white hover:bg-[#18314f]'>
-                  Create school
+                <Link href='/sign-up' className='rounded-md bg-[#1e3a5f] px-5 py-3 text-sm font-medium !text-white visited:!text-white hover:!text-white hover:bg-[#18314f]'>
+                  Sign up
                 </Link>
                 <Link href='/pay' className='rounded-md border border-[#cfd8e3] px-5 py-3 text-sm font-semibold text-[#1f2a37] hover:border-[#9aa7bb]'>
                   Pay fees
