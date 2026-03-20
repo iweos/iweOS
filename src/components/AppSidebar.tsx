@@ -24,7 +24,7 @@ export default function AppSidebar({ profileName, profileEmail, roleLabel, nav }
     ["Teachers", navMap.get("Teachers") ?? "/app/admin/teachers"],
     ["Classes", navMap.get("Classes") ?? "/app/admin/classes"],
     ["Subjects", navMap.get("Subjects") ?? "/app/admin/subjects"],
-    ["Terms", navMap.get("Terms") ?? "/app/admin/terms"],
+    ["Session", navMap.get("Terms") ?? "/app/admin/terms"],
     ["Settings", navMap.get("Settings") ?? "/app/admin/settings"],
   ] as const;
 

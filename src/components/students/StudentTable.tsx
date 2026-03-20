@@ -21,6 +21,7 @@ type StudentRow = {
   guardianEmail: string | null;
   status: string;
   gender: string | null;
+  photoUrl: string | null;
 };
 
 type StudentClassOption = {
@@ -446,6 +447,14 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   </div>
                   <div className="col-md-6">
                     <Input
+                      name="photoUrl"
+                      type="url"
+                      defaultValue={activeStudent.photoUrl ?? ""}
+                      placeholder="Student photo URL"
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <Input
                       name="guardianName"
                       defaultValue={toDisplayName(activeStudent.guardianName, "")}
                       placeholder="Parent/guardian name"
@@ -512,10 +521,19 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                     <div className="col-12">
                       <div className="rounded border bg-white px-3 py-3">
                         <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
-                          <div>
-                            <p className="field-label mb-1">Student</p>
-                            <h4 className="h5 fw-bold mb-1">{activeStudentFullName}</h4>
-                            <p className="small text-muted mb-0">{activeStudent.studentCode}</p>
+                          <div className="d-flex align-items-start gap-3">
+                            <div className="student-profile-photo rounded border bg-light d-flex align-items-center justify-content-center overflow-hidden">
+                              {activeStudent.photoUrl ? (
+                                <img src={activeStudent.photoUrl} alt={activeStudentFullName || "Student"} className="student-profile-photo-image" />
+                              ) : (
+                                <i className="fas fa-user-graduate text-muted" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="field-label mb-1">Student</p>
+                              <h4 className="h5 fw-bold mb-1">{activeStudentFullName}</h4>
+                              <p className="small text-muted mb-0">{activeStudent.studentCode}</p>
+                            </div>
                           </div>
                           <div className="d-flex flex-wrap gap-2">
                             <span className="badge text-bg-light border">{activeStudent.className ?? "No class"}</span>
@@ -530,6 +548,10 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                       <div className="rounded border bg-white px-3 py-3 h-100">
                         <p className="field-label mb-2">Student details</p>
                         <div className="d-grid gap-2">
+                          <div>
+                            <p className="field-label mb-1">Student</p>
+                            <p className="mb-0">{activeStudent.studentCode}</p>
+                          </div>
                           <div>
                             <p className="small text-muted mb-1">First name</p>
                             <p className="mb-0">{toDisplayName(displayFirstName)}</p>
@@ -561,6 +583,10 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                           <div>
                             <p className="small text-muted mb-1">Email</p>
                             <p className="mb-0">{activeStudent.guardianEmail ?? "-"}</p>
+                          </div>
+                          <div>
+                            <p className="small text-muted mb-1">Student photo</p>
+                            <p className="mb-0 text-break">{activeStudent.photoUrl ?? "-"}</p>
                           </div>
                         </div>
                       </div>

@@ -47,7 +47,7 @@ const groupedLinks: NavGroup[] = [
     items: [
       { label: "Classes", href: "/app/admin/classes", icon: "fas fa-th-large" },
       { label: "Subjects", href: "/app/admin/subjects", icon: "fas fa-book-open" },
-      { label: "Terms", href: "/app/admin/terms", icon: "fas fa-calendar-alt" },
+      { label: "Session", href: "/app/admin/terms", icon: "fas fa-calendar-alt" },
     ],
   },
   {

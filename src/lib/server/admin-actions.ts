@@ -423,6 +423,7 @@ export async function updateSchoolAction(formData: FormData) {
     postalCode: formValue(formData, "postalCode"),
     phone: formValue(formData, "phone"),
     website: formValue(formData, "website"),
+    resultTemplate: formValue(formData, "resultTemplate") || "classic_report",
   });
 
   if (!parsed.success) {
@@ -443,22 +444,34 @@ export async function updateSchoolAction(formData: FormData) {
     }
   }
 
-  await prisma.school.update({
-    where: { id: profile.schoolId },
-    data: {
-      name: parsed.data.name,
-      code: parsed.data.code?.toUpperCase(),
-      country: parsed.data.country || null,
-      logoUrl: parsed.data.logoUrl || null,
-      addressLine1: parsed.data.addressLine1 || null,
-      addressLine2: parsed.data.addressLine2 || null,
-      city: parsed.data.city || null,
-      state: parsed.data.state || null,
-      postalCode: parsed.data.postalCode || null,
-      phone: parsed.data.phone || null,
-      website: parsed.data.website || null,
-    },
-  });
+  await prisma.$transaction([
+    prisma.school.update({
+      where: { id: profile.schoolId },
+      data: {
+        name: parsed.data.name,
+        code: parsed.data.code?.toUpperCase(),
+        country: parsed.data.country || null,
+        logoUrl: parsed.data.logoUrl || null,
+        addressLine1: parsed.data.addressLine1 || null,
+        addressLine2: parsed.data.addressLine2 || null,
+        city: parsed.data.city || null,
+        state: parsed.data.state || null,
+        postalCode: parsed.data.postalCode || null,
+        phone: parsed.data.phone || null,
+        website: parsed.data.website || null,
+      },
+    }),
+    prisma.gradingSetting.upsert({
+      where: { schoolId: profile.schoolId },
+      create: {
+        schoolId: profile.schoolId,
+        resultTemplate: parsed.data.resultTemplate,
+      },
+      update: {
+        resultTemplate: parsed.data.resultTemplate,
+      },
+    }),
+  ]);
 
   revalidateAdminPages();
 }
@@ -816,6 +829,7 @@ export async function createStudentAction(formData: FormData) {
     guardianEmail: formValue(formData, "guardianEmail"),
     status: formValue(formData, "status") || "active",
     gender: formValue(formData, "gender"),
+    photoUrl: formValue(formData, "photoUrl"),
   });
 
   if (!parsed.success) {
@@ -849,6 +863,7 @@ export async function createStudentAction(formData: FormData) {
         guardianEmail: parsed.data.guardianEmail || null,
         status: parsed.data.status,
         gender: parsed.data.gender || null,
+        photoUrl: parsed.data.photoUrl || null,
       },
     });
   } catch (error) {
@@ -1058,6 +1073,7 @@ export async function updateStudentAction(formData: FormData) {
     guardianEmail: formValue(formData, "guardianEmail"),
     status: formValue(formData, "status") || "active",
     gender: formValue(formData, "gender"),
+    photoUrl: formValue(formData, "photoUrl"),
   });
 
   if (!parsed.success) {
@@ -1083,6 +1099,7 @@ export async function updateStudentAction(formData: FormData) {
         guardianEmail: parsed.data.guardianEmail || null,
         status: parsed.data.status,
         gender: parsed.data.gender || null,
+        photoUrl: parsed.data.photoUrl || null,
       },
     });
 

@@ -164,13 +164,23 @@ export default async function AdminGradingResultsPage({
         title="Results"
         subtitle="Generate result sheets, publish them, and share secure links when they are ready."
         rightActions={
-          selectedTermId && selectedClassId && selectedStudentId ? (
-            <Link
-              href={`/app/admin/grading/results/print?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
-              className="btn btn-secondary"
-            >
-              Open print view
-            </Link>
+          selectedTermId && selectedClassId ? (
+            <>
+              <Link
+                href={`/app/admin/grading/results/print?termId=${selectedTermId}&classId=${selectedClassId}`}
+                className="btn btn-secondary"
+              >
+                Export class result
+              </Link>
+              {selectedStudentId ? (
+                <Link
+                  href={`/app/admin/grading/results/print?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
+                  className="btn btn-outline-secondary"
+                >
+                  Export student result
+                </Link>
+              ) : null}
+            </>
           ) : null
         }
       />
@@ -386,7 +396,7 @@ export default async function AdminGradingResultsPage({
             </div>
           </Card>
 
-          <ResultSheet data={resultSheet} mode="admin" />
+        <ResultSheet data={resultSheet} mode="admin" variant="default" />
         </>
       )}
     </Section>

@@ -1180,7 +1180,34 @@ textarea:focus {
 }
 
 .result-report-student-meta {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
   margin-bottom: 1rem;
+}
+
+.result-report-student-photo-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.result-report-student-photo {
+  width: 92px;
+  height: 110px;
+  border: 1px solid #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.result-report-student-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .result-report-meta-grid {
@@ -1402,10 +1429,28 @@ textarea:focus {
   min-height: 74px;
 }
 
+.result-print-page-break {
+  break-before: page;
+  page-break-before: always;
+}
+
+.student-profile-photo {
+  width: 72px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.student-profile-photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @media (max-width: 991.98px) {
   .result-report-main,
   .result-report-comments,
-  .result-report-meta-grid {
+  .result-report-meta-grid,
+  .result-report-student-meta {
     grid-template-columns: 1fr;
   }
 

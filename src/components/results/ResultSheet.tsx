@@ -238,6 +238,15 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
         </header>
 
         <section className="result-report-student-meta">
+          <div className="result-report-student-photo-wrap">
+            <div className="result-report-student-photo">
+              {data.student.photoUrl ? (
+                <img src={data.student.photoUrl} alt={data.student.fullName} />
+              ) : (
+                <span>{data.student.fullName.slice(0, 2).toUpperCase()}</span>
+              )}
+            </div>
+          </div>
           <div className="result-report-meta-grid">
             <div className="result-report-meta result-report-meta-name">
               <span className="label">Name</span>
@@ -432,8 +441,10 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
   );
 }
 
-export default function ResultSheet({ data, mode = "admin", variant = "default" }: ResultSheetProps) {
-  if (variant === "report-card") {
+export default function ResultSheet({ data, mode = "admin", variant }: ResultSheetProps) {
+  const resolvedVariant = variant ?? (data.resultTemplate === "classic_report" ? "report-card" : "default");
+
+  if (resolvedVariant === "report-card") {
     return <ReportCardResultSheet data={data} mode={mode} />;
   }
 

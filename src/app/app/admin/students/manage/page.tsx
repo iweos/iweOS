@@ -47,6 +47,7 @@ export default async function AdminStudentsManagePage({
     guardianEmail: string | null;
     status: string;
     gender: string | null;
+    photoUrl: string | null;
   }> = [];
 
   let classes: Array<{ id: string; name: string }> = [];
@@ -69,6 +70,7 @@ export default async function AdminStudentsManagePage({
           guardianEmail: true,
           status: true,
           gender: true,
+          photoUrl: true,
         },
       }),
       prisma.class.findMany({

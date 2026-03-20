@@ -12,6 +12,7 @@ export const schoolSchema = z.object({
   postalCode: z.string().trim().max(20).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
   website: z.string().trim().url().max(255).optional().or(z.literal("")),
+  resultTemplate: z.enum(["classic_report", "summary"]).optional().default("classic_report"),
   processingFeePercent: z.coerce.number().int().min(0).max(20).optional(),
   currency: z.string().trim().min(3).max(8).optional(),
   settlementBankName: z.string().trim().max(120).optional().or(z.literal("")),
@@ -39,6 +40,7 @@ export const studentSchema = z.object({
   guardianEmail: z.string().trim().email().max(255).optional().or(z.literal("")),
   status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
+  photoUrl: z.string().trim().url().max(255).optional().or(z.literal("")),
 });
 
 export const studentBulkSchema = z.object({
@@ -60,6 +62,7 @@ export const studentUpdateSchema = z.object({
   guardianEmail: z.string().trim().email().max(255).optional().or(z.literal("")),
   status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
+  photoUrl: z.string().trim().url().max(255).optional().or(z.literal("")),
 });
 
 export const subjectSchema = z.object({

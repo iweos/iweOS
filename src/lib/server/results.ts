@@ -25,6 +25,7 @@ function formatDate(value: Date | null | undefined) {
 }
 
 export type ResultSheetData = {
+  resultTemplate: string;
   school: {
     id: string;
     name: string;
@@ -52,6 +53,7 @@ export type ResultSheetData = {
     fullName: string;
     className: string | null;
     gender: string | null;
+    photoUrl: string | null;
   };
   publication: {
     status: ResultPublicationStatus;
@@ -106,7 +108,7 @@ export async function getStudentResultSheet(params: {
   classId: string;
   studentId: string;
 }): Promise<ResultSheetData | null> {
-  const [school, term, klass, student, gradeScale, publication, assessmentTemplate, studentConducts, allScores] =
+  const [school, term, klass, student, gradeScale, publication, assessmentTemplate, studentConducts, allScores, gradingSettings] =
     await Promise.all([
       prisma.school.findUnique({
         where: { id: params.schoolId },
@@ -139,6 +141,7 @@ export async function getStudentResultSheet(params: {
           fullName: true,
           className: true,
           gender: true,
+          photoUrl: true,
         },
       }),
       prisma.gradeScale.findMany({
@@ -222,6 +225,10 @@ export async function getStudentResultSheet(params: {
             },
           },
         },
+      }),
+      prisma.gradingSetting.findUnique({
+        where: { schoolId: params.schoolId },
+        select: { resultTemplate: true },
       }),
     ]);
 
@@ -328,6 +335,7 @@ export async function getStudentResultSheet(params: {
   }
 
   return {
+    resultTemplate: gradingSettings?.resultTemplate ?? "classic_report",
     school,
     term,
     class: klass,

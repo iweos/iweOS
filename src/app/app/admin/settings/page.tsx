@@ -9,7 +9,10 @@ import { prisma } from "@/lib/server/prisma";
 export default async function AdminSettingsPage() {
   const profile = await requireRole("admin");
 
-  const school = await prisma.school.findUnique({ where: { id: profile.schoolId } });
+  const [school, gradingSettings] = await Promise.all([
+    prisma.school.findUnique({ where: { id: profile.schoolId } }),
+    prisma.gradingSetting.findUnique({ where: { schoolId: profile.schoolId } }),
+  ]);
   if (!school) {
     throw new Error("School not found.");
   }
@@ -34,8 +37,15 @@ export default async function AdminSettingsPage() {
               <input name="country" defaultValue={school.country ?? ""} className="form-control" />
             </label>
             <label className="d-grid gap-1">
-              <span className="field-label">Logo URL</span>
+              <span className="field-label">School Logo URL</span>
               <input name="logoUrl" defaultValue={school.logoUrl ?? ""} className="form-control" placeholder="https://..." />
+            </label>
+            <label className="d-grid gap-1">
+              <span className="field-label">Result Template</span>
+              <select name="resultTemplate" defaultValue={gradingSettings?.resultTemplate ?? "classic_report"} className="form-select">
+                <option value="classic_report">Classic Report Card</option>
+                <option value="summary">Simple Summary Sheet</option>
+              </select>
             </label>
 
             <label className="d-grid gap-1 md:col-span-2">
@@ -88,6 +98,21 @@ export default async function AdminSettingsPage() {
               <Link href="/app/admin/settings/promotion-rules" className="btn btn-primary">
                 Open Promotion Rules
               </Link>
+            </div>
+            <div className="rounded border bg-white px-3 py-3">
+              <h3 className="h6 fw-bold mb-2">Result Template</h3>
+              <p className="small text-muted mb-2">
+                Active template: <strong>{gradingSettings?.resultTemplate === "summary" ? "Simple Summary Sheet" : "Classic Report Card"}</strong>
+              </p>
+              <p className="small text-muted mb-0">School logo and student pictures will appear on templates that support them.</p>
+            </div>
+            <div className="rounded border bg-white px-3 py-3">
+              <h3 className="h6 fw-bold mb-2">School Logo Preview</h3>
+              {school.logoUrl ? (
+                <img src={school.logoUrl} alt={school.name} className="img-fluid rounded border" style={{ maxHeight: 120, objectFit: "contain" }} />
+              ) : (
+                <p className="small text-muted mb-0">No school logo added yet.</p>
+              )}
             </div>
           </div>
         </Card>
