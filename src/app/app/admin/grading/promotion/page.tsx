@@ -10,7 +10,7 @@ import StatCard from "@/components/admin/ui/StatCard";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { promoteStudentsAction } from "@/lib/server/admin-actions";
 import { requireRole } from "@/lib/server/auth";
-import { evaluatePromotionCandidates, resolvePromotionPolicy } from "@/lib/server/promotion";
+import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
 import { prisma } from "@/lib/server/prisma";
 
 type PromotionSearchParams = {
@@ -52,9 +52,11 @@ export default async function AdminGradingPromotionPage({
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.promotionPolicy.findUnique({
-      where: { schoolId: profile.schoolId },
+    prisma.promotionPolicy.findFirst({
+      where: { schoolId: profile.schoolId, isActive: true },
       select: {
+        id: true,
+        name: true,
         minimumPassedSubjects: true,
         minimumAverage: true,
         passGradeId: true,
@@ -141,17 +143,7 @@ export default async function AdminGradingPromotionPage({
       : [];
 
   const effectivePolicy = resolvePromotionPolicy(
-    promotionPolicy
-      ? {
-          minimumPassedSubjects: promotionPolicy.minimumPassedSubjects,
-          minimumAverage: Number(promotionPolicy.minimumAverage),
-          passGradeId: promotionPolicy.passGradeId,
-          requiredCompulsorySubjectsAtGrade: promotionPolicy.requiredCompulsorySubjectsAtGrade,
-          requiredCompulsoryGradeId: promotionPolicy.requiredCompulsoryGradeId,
-          allowManualOverride: promotionPolicy.allowManualOverride,
-          compulsorySubjectIds: promotionPolicy.compulsorySubjects.map((item) => item.subjectId),
-        }
-      : null,
+    mapStoredPromotionPolicy(promotionPolicy),
     gradeScale,
   );
 
@@ -218,7 +210,10 @@ export default async function AdminGradingPromotionPage({
         <StatCard label="Class Annual Avg" value={averageOfAverages.toFixed(1)} icon="fas fa-chart-line" cardVariant="info" />
       </div>
 
-      <Card title="Current Promotion Rule" subtitle="Rules are managed under Settings and applied here automatically.">
+      <Card
+        title={promotionPolicy ? `Current Promotion Rule: ${promotionPolicy.name}` : "Current Promotion Rule"}
+        subtitle="Rules are managed under Settings and the active rule is applied here automatically."
+      >
         <div className="d-grid gap-2">
           <p className="small text-muted mb-0">
             Pass at least <strong>{effectivePolicy.minimumPassedSubjects}</strong> subject{effectivePolicy.minimumPassedSubjects === 1 ? "" : "s"} with grade <strong>{effectivePolicy.passGradeLabel}</strong> or above.

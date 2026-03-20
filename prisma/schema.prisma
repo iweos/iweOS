@@ -82,7 +82,7 @@ model School {
   enrollments             Enrollment[]
   teacherClassAssignments TeacherClassAssignment[]
   gradingSettings         GradingSetting?
-  promotionPolicy         PromotionPolicy?
+  promotionPolicies       PromotionPolicy[]
   promotionPolicySubjects PromotionPolicySubject[]
   assessmentTemplates     AssessmentTemplate[]
   assessmentTypes         AssessmentType[]
@@ -283,7 +283,9 @@ model GradingSetting {
 
 model PromotionPolicy {
   id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  schoolId              String   @unique @map("school_id") @db.Uuid
+  schoolId              String   @map("school_id") @db.Uuid
+  name                  String
+  isActive              Boolean  @default(false) @map("is_active")
   minimumPassedSubjects Int      @default(5) @map("minimum_passed_subjects")
   minimumAverage        Decimal  @default(0) @map("minimum_average") @db.Decimal(10, 2)
   passGradeId           String?  @map("pass_grade_id") @db.Uuid
@@ -298,6 +300,9 @@ model PromotionPolicy {
   requiredCompulsoryGrade GradeScale?          @relation("promotion_policy_required_grade", fields: [requiredCompulsoryGradeId], references: [id], onDelete: SetNull)
   compulsorySubjects    PromotionPolicySubject[]
 
+  @@unique([schoolId, name])
+  @@index([schoolId])
+  @@index([schoolId, isActive])
   @@map("promotion_policies")
 }
 

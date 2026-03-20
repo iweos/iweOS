@@ -204,12 +204,15 @@ export const promotionActionSchema = z.object({
 
 export const promotionPolicySchema = z
   .object({
+    id: z.string().uuid().optional().or(z.literal("")),
+    name: z.string().trim().min(2).max(80),
     minimumPassedSubjects: z.coerce.number().int().min(1).max(50),
     minimumAverage: z.coerce.number().min(0).max(100),
     passGradeId: z.string().uuid().optional().or(z.literal("")),
     requiredCompulsorySubjectsAtGrade: z.coerce.number().int().min(0).max(20),
     requiredCompulsoryGradeId: z.string().uuid().optional().or(z.literal("")),
     allowManualOverride: z.boolean().optional().default(true),
+    setActive: z.boolean().optional().default(false),
     compulsorySubjectIds: z.array(z.string().uuid()).optional().default([]),
   })
   .superRefine((value, ctx) => {
@@ -229,6 +232,10 @@ export const promotionPolicySchema = z
       });
     }
   });
+
+export const promotionPolicySelectionSchema = z.object({
+  policyId: z.string().uuid(),
+});
 
 export const resultPublicationSchema = z.object({
   studentIds: z.array(z.string().uuid()).min(1, "Select at least one student result."),

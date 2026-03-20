@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
-import { evaluatePromotionCandidates, resolvePromotionPolicy } from "@/lib/server/promotion";
+import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
 import { buildResultPublicationPayload } from "@/lib/server/results";
 import {
   assessmentTemplateActivateSchema,
@@ -22,6 +22,7 @@ import {
   enrollmentSchema,
   gradeScaleSchema,
   promotionPolicySchema,
+  promotionPolicySelectionSchema,
   resultPublicationSchema,
   schoolSchema,
   sessionBundleSchema,
@@ -87,11 +88,14 @@ function redirectPromotionStatus(
   redirect(`/app/admin/grading/promotion?${query.toString()}`);
 }
 
-function redirectPromotionRulesStatus(status: "success" | "error", message: string): never {
+function redirectPromotionRulesStatus(status: "success" | "error", message: string, options?: { ruleId?: string }): never {
   const query = new URLSearchParams({
     status,
     message,
   });
+  if (options?.ruleId) {
+    query.set("ruleId", options.ruleId);
+  }
   redirect(`/app/admin/settings/promotion-rules?${query.toString()}`);
 }
 
@@ -1902,12 +1906,15 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
     .filter(Boolean);
 
   const parsed = promotionPolicySchema.safeParse({
+    id: formValue(formData, "id") || undefined,
+    name: formValue(formData, "name"),
     minimumPassedSubjects: formValue(formData, "minimumPassedSubjects"),
     minimumAverage: formValue(formData, "minimumAverage"),
     passGradeId: formValue(formData, "passGradeId") || undefined,
     requiredCompulsorySubjectsAtGrade: formValue(formData, "requiredCompulsorySubjectsAtGrade"),
     requiredCompulsoryGradeId: formValue(formData, "requiredCompulsoryGradeId") || undefined,
     allowManualOverride: formValue(formData, "allowManualOverride") !== "off",
+    setActive: formValue(formData, "setActive") === "on",
     compulsorySubjectIds,
   });
 
@@ -1957,30 +1964,78 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
       throw new Error("One or more compulsory subjects are invalid for this school.");
     }
 
-    await prisma.$transaction(async (tx) => {
-      const policy = await tx.promotionPolicy.upsert({
+    if (parsed.data.id) {
+      const existingPolicy = await prisma.promotionPolicy.findFirst({
         where: {
+          id: parsed.data.id,
           schoolId: profile.schoolId,
-        },
-        update: {
-          minimumPassedSubjects: parsed.data.minimumPassedSubjects,
-          minimumAverage: parsed.data.minimumAverage,
-          passGradeId: parsed.data.passGradeId || null,
-          requiredCompulsorySubjectsAtGrade: parsed.data.requiredCompulsorySubjectsAtGrade,
-          requiredCompulsoryGradeId: parsed.data.requiredCompulsoryGradeId || null,
-          allowManualOverride: parsed.data.allowManualOverride,
-        },
-        create: {
-          schoolId: profile.schoolId,
-          minimumPassedSubjects: parsed.data.minimumPassedSubjects,
-          minimumAverage: parsed.data.minimumAverage,
-          passGradeId: parsed.data.passGradeId || null,
-          requiredCompulsorySubjectsAtGrade: parsed.data.requiredCompulsorySubjectsAtGrade,
-          requiredCompulsoryGradeId: parsed.data.requiredCompulsoryGradeId || null,
-          allowManualOverride: parsed.data.allowManualOverride,
         },
         select: { id: true },
       });
+
+      if (!existingPolicy) {
+        throw new Error("Promotion rule not found.");
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      if (parsed.data.setActive) {
+        await tx.promotionPolicy.updateMany({
+          where: {
+            schoolId: profile.schoolId,
+          },
+          data: {
+            isActive: false,
+          },
+        });
+      }
+
+      const policy = parsed.data.id
+        ? await tx.promotionPolicy.update({
+            where: {
+              id: parsed.data.id,
+            },
+            data: {
+              name: parsed.data.name,
+              isActive: parsed.data.setActive,
+              minimumPassedSubjects: parsed.data.minimumPassedSubjects,
+              minimumAverage: parsed.data.minimumAverage,
+              passGradeId: parsed.data.passGradeId || null,
+              requiredCompulsorySubjectsAtGrade: parsed.data.requiredCompulsorySubjectsAtGrade,
+              requiredCompulsoryGradeId: parsed.data.requiredCompulsoryGradeId || null,
+              allowManualOverride: parsed.data.allowManualOverride,
+            },
+            select: { id: true },
+          })
+        : await tx.promotionPolicy.create({
+            data: {
+              schoolId: profile.schoolId,
+              name: parsed.data.name,
+              isActive: parsed.data.setActive,
+              minimumPassedSubjects: parsed.data.minimumPassedSubjects,
+              minimumAverage: parsed.data.minimumAverage,
+              passGradeId: parsed.data.passGradeId || null,
+              requiredCompulsorySubjectsAtGrade: parsed.data.requiredCompulsorySubjectsAtGrade,
+              requiredCompulsoryGradeId: parsed.data.requiredCompulsoryGradeId || null,
+              allowManualOverride: parsed.data.allowManualOverride,
+            },
+            select: { id: true },
+          });
+
+      if (!parsed.data.setActive) {
+        const hasActive = await tx.promotionPolicy.count({
+          where: {
+            schoolId: profile.schoolId,
+            isActive: true,
+          },
+        });
+        if (hasActive === 0) {
+          await tx.promotionPolicy.update({
+            where: { id: policy.id },
+            data: { isActive: true },
+          });
+        }
+      }
 
       await tx.promotionPolicySubject.deleteMany({
         where: {
@@ -2001,13 +2056,124 @@ export async function upsertPromotionPolicyAction(formData: FormData) {
     });
 
     revalidateAdminPages();
-    redirectPromotionRulesStatus("success", "Promotion rules saved for this school.");
+    redirectPromotionRulesStatus("success", `Promotion rule "${parsed.data.name}" saved.`, { ruleId: parsed.data.id || undefined });
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
       throw studentSchemaSyncError();
     }
 
-    redirectPromotionRulesStatus("error", error instanceof Error ? error.message : "Unable to save promotion rules right now.");
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      redirectPromotionRulesStatus("error", "A promotion rule with this name already exists.", {
+        ruleId: parsed.data.id || undefined,
+      });
+    }
+
+    redirectPromotionRulesStatus("error", error instanceof Error ? error.message : "Unable to save promotion rules right now.", {
+      ruleId: parsed.data.id || undefined,
+    });
+  }
+}
+
+export async function activatePromotionPolicyAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = promotionPolicySelectionSchema.safeParse({
+    policyId: formValue(formData, "policyId"),
+  });
+
+  if (!parsed.success) {
+    redirectPromotionRulesStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion rule selection.");
+  }
+
+  try {
+    const target = await prisma.promotionPolicy.findFirst({
+      where: {
+        id: parsed.data.policyId,
+        schoolId: profile.schoolId,
+      },
+      select: { id: true, name: true },
+    });
+
+    if (!target) {
+      throw new Error("Promotion rule not found.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.promotionPolicy.updateMany({
+        where: { schoolId: profile.schoolId },
+        data: { isActive: false },
+      });
+      await tx.promotionPolicy.update({
+        where: { id: target.id },
+        data: { isActive: true },
+      });
+    });
+
+    revalidateAdminPages();
+    redirectPromotionRulesStatus("success", `"${target.name}" is now the active promotion rule.`, { ruleId: target.id });
+  } catch (error) {
+    redirectPromotionRulesStatus("error", error instanceof Error ? error.message : "Unable to activate this promotion rule.");
+  }
+}
+
+export async function deletePromotionPolicyAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = promotionPolicySelectionSchema.safeParse({
+    policyId: formValue(formData, "policyId"),
+  });
+
+  if (!parsed.success) {
+    redirectPromotionRulesStatus("error", parsed.error.issues[0]?.message ?? "Invalid promotion rule selection.");
+  }
+
+  try {
+    const target = await prisma.promotionPolicy.findFirst({
+      where: {
+        id: parsed.data.policyId,
+        schoolId: profile.schoolId,
+      },
+      select: { id: true, name: true, isActive: true },
+    });
+
+    if (!target) {
+      throw new Error("Promotion rule not found.");
+    }
+
+    const count = await prisma.promotionPolicy.count({
+      where: { schoolId: profile.schoolId },
+    });
+
+    if (count <= 1) {
+      throw new Error("At least one promotion rule must remain.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.promotionPolicySubject.deleteMany({
+        where: { policyId: target.id },
+      });
+      await tx.promotionPolicy.delete({
+        where: { id: target.id },
+      });
+
+      if (target.isActive) {
+        const fallback = await tx.promotionPolicy.findFirst({
+          where: { schoolId: profile.schoolId },
+          orderBy: { createdAt: "asc" },
+          select: { id: true },
+        });
+
+        if (fallback) {
+          await tx.promotionPolicy.update({
+            where: { id: fallback.id },
+            data: { isActive: true },
+          });
+        }
+      }
+    });
+
+    revalidateAdminPages();
+    redirectPromotionRulesStatus("success", `"${target.name}" has been deleted.`);
+  } catch (error) {
+    redirectPromotionRulesStatus("error", error instanceof Error ? error.message : "Unable to delete this promotion rule.");
   }
 }
 
@@ -2114,8 +2280,8 @@ export async function promoteStudentsAction(formData: FormData) {
         where: { schoolId: profile.schoolId },
         orderBy: { orderIndex: "asc" },
       }),
-      prisma.promotionPolicy.findUnique({
-        where: { schoolId: profile.schoolId },
+      prisma.promotionPolicy.findFirst({
+        where: { schoolId: profile.schoolId, isActive: true },
         select: {
           minimumPassedSubjects: true,
           minimumAverage: true,
@@ -2133,17 +2299,7 @@ export async function promoteStudentsAction(formData: FormData) {
     ]);
 
     const effectivePolicy = resolvePromotionPolicy(
-      promotionPolicy
-        ? {
-            minimumPassedSubjects: promotionPolicy.minimumPassedSubjects,
-            minimumAverage: Number(promotionPolicy.minimumAverage),
-            passGradeId: promotionPolicy.passGradeId,
-            requiredCompulsorySubjectsAtGrade: promotionPolicy.requiredCompulsorySubjectsAtGrade,
-            requiredCompulsoryGradeId: promotionPolicy.requiredCompulsoryGradeId,
-            allowManualOverride: promotionPolicy.allowManualOverride,
-            compulsorySubjectIds: promotionPolicy.compulsorySubjects.map((item) => item.subjectId),
-          }
-        : null,
+      mapStoredPromotionPolicy(promotionPolicy),
       gradeScale,
     );
 

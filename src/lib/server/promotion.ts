@@ -62,6 +62,32 @@ export type PromotionCandidateRow = {
   eligibilityReason: string;
 };
 
+export function mapStoredPromotionPolicy<
+  T extends {
+    minimumPassedSubjects: number;
+    minimumAverage: number | { toString(): string };
+    passGradeId: string | null;
+    requiredCompulsorySubjectsAtGrade: number;
+    requiredCompulsoryGradeId: string | null;
+    allowManualOverride: boolean;
+    compulsorySubjects: Array<{ subjectId: string }>;
+  },
+>(policy: T | null | undefined): PromotionPolicyInput | null {
+  if (!policy) {
+    return null;
+  }
+
+  return {
+    minimumPassedSubjects: policy.minimumPassedSubjects,
+    minimumAverage: Number(policy.minimumAverage),
+    passGradeId: policy.passGradeId,
+    requiredCompulsorySubjectsAtGrade: policy.requiredCompulsorySubjectsAtGrade,
+    requiredCompulsoryGradeId: policy.requiredCompulsoryGradeId,
+    allowManualOverride: policy.allowManualOverride,
+    compulsorySubjectIds: policy.compulsorySubjects.map((item) => item.subjectId),
+  };
+}
+
 export function getDefaultPromotionPassGrade(gradeScale: GradeScale[]) {
   const rowCoveringFifty = gradeScale.find((item) => 50 >= item.minScore && 50 <= item.maxScore);
   if (rowCoveringFifty) {
