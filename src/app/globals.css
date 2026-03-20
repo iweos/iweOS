@@ -1105,6 +1105,349 @@ textarea:focus {
   background: rgba(248, 250, 252, 0.7);
 }
 
+.result-report-card {
+  color: #111827;
+}
+
+.result-report-shell {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.08);
+}
+
+.result-report-header {
+  border-bottom: 2px solid #d1d5db;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.result-report-brand {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.result-report-logo {
+  width: 72px;
+  height: 72px;
+  border: 1px solid #111827;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.result-report-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.result-report-school {
+  text-align: center;
+}
+
+.result-report-school h1,
+.result-report-school h2,
+.result-report-school h3,
+.result-report-school p {
+  margin: 0;
+}
+
+.result-report-school h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.result-report-school p {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.result-report-school h2,
+.result-report-school h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+}
+
+.result-report-student-meta {
+  margin-bottom: 1rem;
+}
+
+.result-report-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+}
+
+.result-report-meta {
+  display: grid;
+  gap: 0.15rem;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.result-report-meta-name {
+  grid-column: span 2;
+}
+
+.result-report-meta .label,
+.result-report-overall-remark .label,
+.result-report-comment-box .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.result-report-meta strong,
+.result-report-overall-remark strong {
+  font-size: 1rem;
+}
+
+.result-report-main {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.result-report-side,
+.result-report-academic {
+  min-width: 0;
+}
+
+.result-report-box,
+.result-report-overall-remark,
+.result-report-grade-key,
+.result-report-comment-box {
+  border: 1px solid #111827;
+  background: #fff;
+}
+
+.result-report-box + .result-report-box,
+.result-report-box + .result-report-overall-remark {
+  margin-top: 0.9rem;
+}
+
+.result-report-box-title {
+  border-bottom: 1px solid #111827;
+  padding: 0.4rem 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-align: center;
+  background: #f8fafc;
+}
+
+.result-report-mini-table,
+.result-report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.result-report-mini-table th,
+.result-report-mini-table td,
+.result-report-table th,
+.result-report-table td {
+  border: 1px solid #111827;
+  padding: 0.24rem 0.35rem;
+  vertical-align: top;
+}
+
+.result-report-mini-table th,
+.result-report-table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.result-report-mini-table td,
+.result-report-table td,
+.result-report-table tbody th {
+  font-size: 0.74rem;
+}
+
+.result-report-mini-table td {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.result-report-conduct-list {
+  padding: 0.45rem;
+}
+
+.result-report-conduct-section + .result-report-conduct-section {
+  margin-top: 0.65rem;
+}
+
+.result-report-conduct-heading {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.result-report-empty {
+  padding: 0.7rem;
+  font-size: 0.8rem;
+}
+
+.result-report-table-wrap {
+  overflow: hidden;
+  border: 1px solid #111827;
+  border-top: 0;
+}
+
+.result-report-table th,
+.result-report-table td {
+  text-align: center;
+}
+
+.result-report-table tbody th {
+  text-align: left;
+  font-weight: 700;
+}
+
+.result-report-total-row th,
+.result-report-total-row td {
+  font-weight: 800;
+  background: #f8fafc;
+}
+
+.result-report-rating-key {
+  margin: 0;
+  padding: 0.7rem 0.9rem 0.7rem 1.35rem;
+  font-size: 0.72rem;
+}
+
+.result-report-grade-key {
+  margin-top: 1rem;
+}
+
+.result-report-grade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+}
+
+.result-report-grade-item {
+  border-right: 1px solid #111827;
+  padding: 0.45rem 0.4rem;
+  text-align: center;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.result-report-grade-item:last-child {
+  border-right: 0;
+}
+
+.result-report-grade-item strong {
+  font-size: 0.7rem;
+}
+
+.result-report-grade-item span {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.result-report-grade-item small {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.result-report-comments {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.result-report-comment-box {
+  min-height: 130px;
+  padding: 0.7rem 0.8rem 0.9rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.result-report-comment-box p {
+  margin: 0;
+  min-height: 54px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.signature-line {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #111827;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.result-report-overall-remark {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  min-height: 74px;
+}
+
+@media (max-width: 991.98px) {
+  .result-report-main,
+  .result-report-comments,
+  .result-report-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-report-meta-name {
+    grid-column: span 1;
+  }
+
+  .result-report-brand {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .result-report-school {
+    text-align: center;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .result-report-shell {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .result-report-card {
+    break-inside: avoid;
+  }
+}
+
 .teacher-dashboard-chart {
   width: 100%;
 }

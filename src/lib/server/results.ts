@@ -30,6 +30,12 @@ export type ResultSheetData = {
     name: string;
     code: string;
     logoUrl: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    state: string | null;
+    phone: string | null;
+    website: string | null;
   };
   term: {
     id: string;
@@ -57,10 +63,18 @@ export type ResultSheetData = {
     average: number;
     grade: string;
     position: string;
+    classSize: number;
     classAverage: number;
     highestAverage: number;
     lowestAverage: number;
+    grandTotal: number;
+    overallRemark: string;
   };
+  gradeKey: Array<{
+    letter: string;
+    minScore: number;
+    maxScore: number;
+  }>;
   assessmentColumns: string[];
   rows: Array<{
     subjectId: string;
@@ -68,7 +82,10 @@ export type ResultSheetData = {
     values: Record<string, number>;
     total: number;
     grade: string;
+    remark: string;
     subjectPosition: string;
+    classHighest: number;
+    classLowest: number;
     classAverage: number;
   }>;
   conductSections: Array<{
@@ -93,7 +110,18 @@ export async function getStudentResultSheet(params: {
     await Promise.all([
       prisma.school.findUnique({
         where: { id: params.schoolId },
-        select: { id: true, name: true, code: true, logoUrl: true },
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          logoUrl: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          state: true,
+          phone: true,
+          website: true,
+        },
       }),
       prisma.term.findFirst({
         where: { id: params.termId, schoolId: params.schoolId },
@@ -235,6 +263,7 @@ export async function getStudentResultSheet(params: {
   const classAverage = average(classAverages.map((item) => item.average));
   const highestAverage = classAverages[0]?.average ?? 0;
   const lowestAverage = classAverages[classAverages.length - 1]?.average ?? 0;
+  const classSize = classAverages.length;
 
   const studentRows = (classScoresByStudent.get(student.id) ?? []).map((score) => {
     const subjectScores = allScores
@@ -242,6 +271,10 @@ export async function getStudentResultSheet(params: {
       .sort((a, b) => toNumber(b.total) - toNumber(a.total));
     const subjectPositionIndex = subjectScores.findIndex((item) => item.studentId === student.id);
     const subjectAverage = average(subjectScores.map((item) => toNumber(item.total)));
+    const subjectHighest = subjectScores[0] ? toNumber(subjectScores[0].total) : 0;
+    const subjectLowest = subjectScores[subjectScores.length - 1] ? toNumber(subjectScores[subjectScores.length - 1].total) : 0;
+    const rowTotal = toNumber(score.total);
+    const rowGrade = score.grade ?? (gradeScale.length > 0 ? getGradeForTotal(rowTotal, gradeScale) : "-");
 
     return {
       subjectId: score.subject.id,
@@ -252,12 +285,18 @@ export async function getStudentResultSheet(params: {
           toNumber(score.assessmentValues.find((item) => item.assessmentType.name === column)?.value ?? 0),
         ]),
       ),
-      total: toNumber(score.total),
-      grade: score.grade ?? (gradeScale.length > 0 ? getGradeForTotal(toNumber(score.total), gradeScale) : "-"),
+      total: rowTotal,
+      grade: rowGrade,
+      remark: rowGrade,
       subjectPosition: subjectPositionIndex === -1 ? "-" : `${subjectPositionIndex + 1} / ${subjectScores.length}`,
+      classHighest: subjectHighest,
+      classLowest: subjectLowest,
       classAverage: subjectAverage,
     };
   });
+
+  const grandTotal = studentRows.reduce((sum, row) => sum + row.total, 0);
+  const overallGrade = gradeScale.length > 0 ? getGradeForTotal(selectedStudentAverage, gradeScale) : "-";
 
   const conductSectionMap = new Map<
     string,
@@ -303,12 +342,20 @@ export async function getStudentResultSheet(params: {
     summary: {
       subjectsOffered: studentRows.length,
       average: selectedStudentAverage,
-      grade: gradeScale.length > 0 ? getGradeForTotal(selectedStudentAverage, gradeScale) : "-",
+      grade: overallGrade,
       position,
+      classSize,
       classAverage,
       highestAverage,
       lowestAverage,
+      grandTotal,
+      overallRemark: overallGrade,
     },
+    gradeKey: gradeScale.map((item) => ({
+      letter: item.gradeLetter,
+      minScore: item.minScore,
+      maxScore: item.maxScore,
+    })),
     assessmentColumns,
     rows: studentRows,
     conductSections: Array.from(conductSectionMap.values()),

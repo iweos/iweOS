@@ -49,7 +49,7 @@ export default async function AdminResultPrintPage({
         </Link>
         <PrintButton />
       </div>
-      <ResultSheet data={resultSheet} mode="admin" />
+      <ResultSheet data={resultSheet} mode="admin" variant="report-card" />
     </main>
   );
 }

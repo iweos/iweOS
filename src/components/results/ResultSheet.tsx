@@ -1,7 +1,11 @@
 import type { ResultSheetData } from "@/lib/server/results";
 
-function formatNumber(value: number) {
-  return Number.isFinite(value) ? value.toFixed(1) : "-";
+function formatNumber(value: number, digits = 1) {
+  return Number.isFinite(value) ? value.toFixed(digits) : "-";
+}
+
+function formatInteger(value: number) {
+  return Number.isFinite(value) ? Math.round(value).toString() : "-";
 }
 
 function formatStatusLabel(status?: string | null) {
@@ -12,12 +16,35 @@ function formatStatusLabel(status?: string | null) {
   return status.charAt(0) + status.slice(1).toLowerCase();
 }
 
+function buildSchoolAddress(data: ResultSheetData["school"]) {
+  return [data.addressLine1, data.addressLine2, data.city, data.state].filter(Boolean).join(", ");
+}
+
+function getGradeRemark(grade: string) {
+  const normalized = grade.trim().toUpperCase();
+  const map: Record<string, string> = {
+    A: "Excellent",
+    B: "Very good",
+    C: "Good",
+    D: "Fair",
+    E: "Needs improvement",
+    F: "Poor",
+  };
+
+  return map[normalized] ?? grade;
+}
+
+function getPositionOnly(position: string) {
+  return position.includes("/") ? position.split("/")[0]?.trim() ?? position : position;
+}
+
 type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
+  variant?: "default" | "report-card";
 };
 
-export default function ResultSheet({ data, mode = "admin" }: ResultSheetProps) {
+function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
   return (
     <div className={`d-grid gap-3 ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
       <section className="card card-body">
@@ -181,4 +208,234 @@ export default function ResultSheet({ data, mode = "admin" }: ResultSheetProps) 
       </section>
     </div>
   );
+}
+
+function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
+  const schoolAddress = buildSchoolAddress(data.school);
+
+  return (
+    <div className={`result-report-card ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
+      <section className="result-report-shell">
+        <header className="result-report-header">
+          <div className="result-report-brand">
+            <div className="result-report-logo">
+              {data.school.logoUrl ? <img src={data.school.logoUrl} alt={data.school.name} /> : <span>{data.school.name.slice(0, 2).toUpperCase()}</span>}
+            </div>
+            <div className="result-report-school">
+              <h1>{data.school.name}</h1>
+              {schoolAddress ? <p>{schoolAddress}</p> : null}
+              <p>
+                {data.school.phone ? `Telephone: ${data.school.phone}` : null}
+                {data.school.phone && data.school.website ? " · " : null}
+                {data.school.website ? `Website: ${data.school.website}` : null}
+              </p>
+              <h2>End of term report</h2>
+              <h3>
+                {data.term.sessionLabel} · {data.term.termLabel}
+              </h3>
+            </div>
+          </div>
+        </header>
+
+        <section className="result-report-student-meta">
+          <div className="result-report-meta-grid">
+            <div className="result-report-meta result-report-meta-name">
+              <span className="label">Name</span>
+              <strong>{data.student.fullName}</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">Sex</span>
+              <strong>{data.student.gender ?? "-"}</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">Class</span>
+              <strong>{data.class.name}</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">No in class</span>
+              <strong>{data.summary.classSize}</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">Position</span>
+              <strong>{getPositionOnly(data.summary.position)}</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">Overall percentage</span>
+              <strong>{formatNumber(data.summary.average, 2)}%</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">Class average</span>
+              <strong>{formatNumber(data.summary.classAverage, 2)}%</strong>
+            </div>
+            <div className="result-report-meta">
+              <span className="label">No of subjects recorded</span>
+              <strong>{data.summary.subjectsOffered}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="result-report-main">
+          <aside className="result-report-side">
+            <article className="result-report-box">
+              <div className="result-report-box-title">Attendance record</div>
+              <table className="result-report-mini-table">
+                <tbody>
+                  <tr>
+                    <th>Times school opened</th>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <th>Times present</th>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <th>Times absent</th>
+                    <td>-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <article className="result-report-box">
+              <div className="result-report-box-title">Observations on conduct</div>
+              {data.conductSections.length === 0 ? (
+                <div className="result-report-empty">No conduct scores recorded yet.</div>
+              ) : (
+                <div className="result-report-conduct-list">
+                  {data.conductSections.map((section) => (
+                    <div key={section.sectionId} className="result-report-conduct-section">
+                      <div className="result-report-conduct-heading">{section.sectionName}</div>
+                      <table className="result-report-mini-table">
+                        <tbody>
+                          {section.items.map((item) => (
+                            <tr key={item.categoryId}>
+                              <th>{item.categoryName}</th>
+                              <td>
+                                {formatNumber(item.score)} / {item.maxScore}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+
+            <article className="result-report-box">
+              <div className="result-report-box-title">Rating key</div>
+              <ol className="result-report-rating-key">
+                <li>5: Excellent display of the observed trait</li>
+                <li>4: High level of the observed trait</li>
+                <li>3: Acceptable level of the observed trait</li>
+                <li>2: Minimal level of the observed trait</li>
+                <li>1: Trait not yet demonstrated consistently</li>
+              </ol>
+            </article>
+
+            <article className="result-report-overall-remark">
+              <span className="label">Overall remark</span>
+              <strong>{getGradeRemark(data.summary.overallRemark)}</strong>
+            </article>
+          </aside>
+
+          <section className="result-report-academic">
+            <div className="result-report-box-title">Academic report</div>
+            <div className="result-report-table-wrap">
+              <table className="result-report-table">
+                <thead>
+                  <tr>
+                    <th>Subjects</th>
+                    {data.assessmentColumns.map((column) => (
+                      <th key={column}>{column}</th>
+                    ))}
+                    <th>Total</th>
+                    <th>Class highest</th>
+                    <th>Class lowest</th>
+                    <th>Class average</th>
+                    <th>Position</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.rows.map((row) => (
+                    <tr key={row.subjectId}>
+                      <th>{row.subjectName}</th>
+                      {data.assessmentColumns.map((column) => (
+                        <td key={`${row.subjectId}-${column}`}>{formatNumber(row.values[column] ?? 0, 0)}</td>
+                      ))}
+                      <td>{formatNumber(row.total, 0)}</td>
+                      <td>{formatNumber(row.classHighest, 0)}</td>
+                      <td>{formatNumber(row.classLowest, 0)}</td>
+                      <td>{formatNumber(row.classAverage, 2)}</td>
+                      <td>{row.subjectPosition}</td>
+                      <td>{row.remark}</td>
+                    </tr>
+                  ))}
+                  {data.rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={data.assessmentColumns.length + 7}>No score rows available for this result yet.</td>
+                    </tr>
+                  ) : null}
+                  <tr className="result-report-total-row">
+                    <th>Total</th>
+                    {data.assessmentColumns.map((column) => (
+                      <td key={`total-${column}`} />
+                    ))}
+                    <td>{formatInteger(data.summary.grandTotal)}</td>
+                    <td />
+                    <td />
+                    <td />
+                    <td />
+                    <td />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section className="result-report-grade-key">
+          <div className="result-report-box-title">Grade key</div>
+          <div className="result-report-grade-grid">
+            {data.gradeKey.length > 0 ? (
+              data.gradeKey.map((item) => (
+                <div key={item.letter} className="result-report-grade-item">
+                  <strong>
+                    {item.minScore}-{item.maxScore}
+                  </strong>
+                  <span>{item.letter}</span>
+                  <small>{getGradeRemark(item.letter)}</small>
+                </div>
+              ))
+            ) : (
+              <div className="result-report-empty">No grade scale configured yet.</div>
+            )}
+          </div>
+        </section>
+
+        <section className="result-report-comments">
+          <article className="result-report-comment-box">
+            <span className="label">Class teacher&apos;s comment</span>
+            <p>This student&apos;s report was generated from the scores currently recorded in the system.</p>
+            <div className="signature-line">Signature &amp; date</div>
+          </article>
+          <article className="result-report-comment-box">
+            <span className="label">Principal&apos;s comment</span>
+            <p>Comment space reserved for final review and approval.</p>
+            <div className="signature-line">Signature &amp; date</div>
+          </article>
+        </section>
+      </section>
+    </div>
+  );
+}
+
+export default function ResultSheet({ data, mode = "admin", variant = "default" }: ResultSheetProps) {
+  if (variant === "report-card") {
+    return <ReportCardResultSheet data={data} mode={mode} />;
+  }
+
+  return <DefaultResultSheet data={data} mode={mode} />;
 }
