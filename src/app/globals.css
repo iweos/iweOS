@@ -1434,6 +1434,39 @@ textarea:focus {
   page-break-before: always;
 }
 
+.result-print-preview {
+  overflow-x: auto;
+}
+
+.result-print-preview .result-report-shell {
+  min-width: 920px;
+}
+
+.result-print-preview .result-report-main {
+  grid-template-columns: 260px minmax(0, 1fr);
+}
+
+.result-print-preview .result-report-comments {
+  grid-template-columns: 1fr 1fr;
+}
+
+.result-print-preview .result-report-meta-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.result-print-preview .result-report-student-meta {
+  grid-template-columns: 92px minmax(0, 1fr);
+}
+
+.result-print-preview .result-report-meta-name {
+  grid-column: span 2;
+}
+
+.result-print-preview .result-report-brand {
+  grid-template-columns: 72px minmax(0, 1fr);
+  justify-items: stretch;
+}
+
 .student-profile-photo {
   width: 72px;
   height: 88px;
@@ -1466,6 +1499,39 @@ textarea:focus {
   .result-report-school {
     text-align: center;
   }
+
+  .result-print-preview .result-report-shell {
+    min-width: 920px;
+  }
+
+  .result-print-preview .result-report-main {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .result-print-preview .result-report-comments {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .result-print-preview .result-report-meta-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .result-print-preview .result-report-student-meta {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  .result-print-preview .result-report-meta-name {
+    grid-column: span 2;
+  }
+
+  .result-print-preview .result-report-brand {
+    grid-template-columns: 72px minmax(0, 1fr);
+    justify-items: stretch;
+  }
+
+  .result-print-preview .result-report-school {
+    text-align: center;
+  }
 }
 
 @media print {
@@ -1486,10 +1552,15 @@ textarea:focus {
     border: 0;
     box-shadow: none;
     padding: 0;
+    min-width: 0 !important;
   }
 
   .result-report-card {
     break-inside: avoid;
+  }
+
+  .result-print-preview {
+    overflow: visible;
   }
 }
 

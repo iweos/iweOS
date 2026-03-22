@@ -74,7 +74,10 @@ export default async function AdminResultPrintPage({
         <PrintButton />
       </div>
       {resultSheets.map((resultSheet, index) => (
-        <div key={`${resultSheet.student.id}-${resultSheet.term.id}`} className={index > 0 ? "result-print-page-break" : ""}>
+        <div
+          key={`${resultSheet.student.id}-${resultSheet.term.id}`}
+          className={`result-print-preview ${index > 0 ? "result-print-page-break" : ""}`}
+        >
           <ResultSheet data={resultSheet} mode="admin" />
         </div>
       ))}

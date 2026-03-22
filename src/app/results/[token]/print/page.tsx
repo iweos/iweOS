@@ -27,8 +27,9 @@ export default async function SharedResultPrintPage({
         </Link>
         <PrintButton />
       </div>
-      <ResultSheet data={resultSheet} mode="public" />
+      <div className="result-print-preview">
+        <ResultSheet data={resultSheet} mode="public" />
+      </div>
     </main>
   );
 }
-
