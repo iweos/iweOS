@@ -54,9 +54,8 @@ export default function SharePdfButton({ fileName }: SharePdfButtonProps) {
   }
 
   return (
-    <button type="button" className="btn btn-outline-primary" onClick={handleShare} disabled={isSharing}>
+    <button type="button" className="btn btn-primary" onClick={handleShare} disabled={isSharing}>
       {isSharing ? "Preparing share..." : "Share PDF"}
     </button>
   );
 }
-

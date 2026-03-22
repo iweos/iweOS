@@ -38,19 +38,6 @@ function getPositionOnly(position: string) {
   return position.includes("/") ? position.split("/")[0]?.trim() ?? position : position;
 }
 
-function getScoreTone(value: number) {
-  if (!Number.isFinite(value)) {
-    return "neutral";
-  }
-  if (value >= 70) {
-    return "good";
-  }
-  if (value >= 50) {
-    return "mid";
-  }
-  return "fail";
-}
-
 function getPositionTone(position: string) {
   const [rawRank, rawTotal] = position.split("/").map((item) => Number.parseInt(item?.trim() ?? "", 10));
   if (!Number.isFinite(rawRank) || !Number.isFinite(rawTotal) || rawRank <= 0 || rawTotal <= 0) {
@@ -75,6 +62,20 @@ function getGradeTone(grade: string) {
   return grade.trim().toUpperCase() === "F" ? "fail" : "";
 }
 
+function getGradeBandTone(grade: string) {
+  const normalized = grade.trim().toUpperCase();
+  if (normalized === "F") {
+    return "fail";
+  }
+  if (normalized === "A" || normalized === "B") {
+    return "good";
+  }
+  if (normalized === "C" || normalized === "D" || normalized === "E") {
+    return "mid";
+  }
+  return "neutral";
+}
+
 type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
@@ -82,7 +83,7 @@ type ResultSheetProps = {
 };
 
 function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
-  const averageTone = getScoreTone(data.summary.average);
+  const averageTone = getGradeBandTone(data.summary.grade);
   const positionTone = getPositionTone(data.summary.position);
 
   return (
@@ -182,7 +183,7 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
                     <td key={`${row.subjectId}-${column}`}>{formatNumber(row.values[column] ?? 0)}</td>
                   ))}
                   <td>
-                    <span className={toneClass(getScoreTone(row.total))}>{formatNumber(row.total)}</span>
+                    <span className={toneClass(getGradeBandTone(row.grade))}>{formatNumber(row.total)}</span>
                   </td>
                   <td>
                     <span className={getGradeTone(row.grade) ? toneClass(getGradeTone(row.grade)) : ""}>{row.grade}</span>
@@ -264,7 +265,7 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
 function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
   const schoolAddress = buildSchoolAddress(data.school);
   const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
-  const overallAverageTone = getScoreTone(data.summary.average);
+  const overallAverageTone = getGradeBandTone(data.summary.grade);
   const overallPositionTone = getPositionTone(data.summary.position);
 
   return (
@@ -443,12 +444,18 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
                       {data.assessmentColumns.map((column) => (
                         <td key={`${row.subjectId}-${column}`}>{formatNumber(row.values[column] ?? 0, 0)}</td>
                       ))}
-                      <td className={toneClass(getScoreTone(row.total))}>{formatNumber(row.total, 0)}</td>
+                      <td>
+                        <span className={toneClass(getGradeBandTone(row.grade))}>{formatNumber(row.total, 0)}</span>
+                      </td>
                       <td>{formatNumber(row.classHighest, 0)}</td>
                       <td>{formatNumber(row.classLowest, 0)}</td>
                       <td>{formatNumber(row.classAverage, 2)}</td>
-                      <td className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</td>
-                      <td className={getGradeTone(row.remark) ? toneClass(getGradeTone(row.remark)) : ""}>{row.remark}</td>
+                      <td>
+                        <span className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</span>
+                      </td>
+                      <td>
+                        <span className={getGradeTone(row.remark) ? toneClass(getGradeTone(row.remark)) : ""}>{row.remark}</span>
+                      </td>
                     </tr>
                   ))}
                   {data.rows.length === 0 ? (
