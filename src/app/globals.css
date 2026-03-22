@@ -1106,8 +1106,10 @@ textarea:focus {
 }
 
 .result-tone {
-  display: inline;
+  display: inline-block;
   font-weight: 800;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 
 .result-tone-good {
@@ -1308,7 +1310,8 @@ textarea:focus {
 .result-report-table td {
   border: 1px solid #111827;
   padding: 0.24rem 0.35rem;
-  vertical-align: top;
+  vertical-align: middle;
+  line-height: 1.25;
 }
 
 .result-report-mini-table th,
@@ -1533,7 +1536,7 @@ textarea:focus {
 .result-print-preview .result-report-mini-table td,
 .result-print-preview .result-report-table th,
 .result-print-preview .result-report-table td {
-  padding: 0.16rem 0.18rem;
+  padding: 0.2rem 0.18rem;
 }
 
 .result-print-preview .result-report-mini-table th,
@@ -1545,7 +1548,7 @@ textarea:focus {
 .result-print-preview .result-report-table td,
 .result-print-preview .result-report-table tbody th {
   font-size: 0.58rem;
-  line-height: 1.15;
+  line-height: 1.3;
 }
 
 .result-print-preview .result-report-table tbody th {
@@ -1736,7 +1739,7 @@ textarea:focus {
   .result-print-preview .result-report-mini-table td,
   .result-print-preview .result-report-table th,
   .result-print-preview .result-report-table td {
-    padding: 0.14rem 0.16rem;
+    padding: 0.18rem 0.16rem;
   }
 
   .result-print-preview .result-report-mini-table th,
@@ -1748,7 +1751,7 @@ textarea:focus {
   .result-print-preview .result-report-table td,
   .result-print-preview .result-report-table tbody th {
     font-size: 0.54rem;
-    line-height: 1.1;
+    line-height: 1.28;
   }
 
   .result-print-preview .result-tone {
