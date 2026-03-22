@@ -413,9 +413,11 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                       },
                     });
                   }}
+                  encType="multipart/form-data"
                   className="row g-2"
                 >
                   <input type="hidden" name="studentId" value={activeStudent.id} />
+                  <input type="hidden" name="currentPhotoUrl" value={activeStudent.photoUrl ?? ""} />
                   <div className="col-md-6">
                     <Input
                       name="firstName"
@@ -446,11 +448,17 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                     <Input name="address" defaultValue={activeStudent.address ?? ""} placeholder="Address" />
                   </div>
                   <div className="col-md-6">
+                    <label className="d-grid gap-1">
+                      <span className="field-label">Upload student photo</span>
+                      <input name="photoFile" type="file" accept="image/*" className="form-control" />
+                    </label>
+                  </div>
+                  <div className="col-md-6">
                     <Input
                       name="photoUrl"
-                      type="url"
+                      type="text"
                       defaultValue={activeStudent.photoUrl ?? ""}
-                      placeholder="Student photo URL"
+                      placeholder="Student photo URL (optional)"
                     />
                   </div>
                   <div className="col-md-6">

@@ -9,6 +9,7 @@ import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/pri
 import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
 import { buildResultPublicationPayload } from "@/lib/server/results";
+import { storeUploadedImage } from "@/lib/server/uploads";
 import {
   assessmentTemplateActivateSchema,
   assessmentTemplateSchema,
@@ -39,6 +40,33 @@ import {
 
 function formValue(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
+}
+
+async function resolveUploadedImage(
+  formData: FormData,
+  options: {
+    fileKey: string;
+    valueKey: string;
+    currentValue?: string;
+    folder: string[];
+    fileStem: string;
+  },
+) {
+  const uploadedFile = formData.get(options.fileKey);
+  if (uploadedFile instanceof File && uploadedFile.size > 0) {
+    return storeUploadedImage({
+      file: uploadedFile,
+      folder: options.folder,
+      fileStem: options.fileStem,
+    });
+  }
+
+  const directValue = formValue(formData, options.valueKey);
+  if (directValue) {
+    return directValue;
+  }
+
+  return options.currentValue ?? "";
 }
 
 function redirectSubjectsStatus(status: "success" | "error", message: string): never {
@@ -415,11 +443,19 @@ function parseStudentGender(value: string) {
 
 export async function updateSchoolAction(formData: FormData) {
   const profile = await requireRole("admin");
+  const resolvedLogoUrl = await resolveUploadedImage(formData, {
+    fileKey: "logoFile",
+    valueKey: "logoUrl",
+    currentValue: formValue(formData, "currentLogoUrl"),
+    folder: ["schools", profile.schoolId],
+    fileStem: "school-logo",
+  });
+
   const parsed = schoolSchema.safeParse({
     name: formValue(formData, "name"),
     code: formValue(formData, "code") || undefined,
     country: formValue(formData, "country"),
-    logoUrl: formValue(formData, "logoUrl"),
+    logoUrl: resolvedLogoUrl,
     addressLine1: formValue(formData, "addressLine1"),
     addressLine2: formValue(formData, "addressLine2"),
     city: formValue(formData, "city"),
@@ -821,6 +857,12 @@ export async function deleteClassAction(formData: FormData) {
 
 export async function createStudentAction(formData: FormData) {
   const profile = await requireRole("admin");
+  const resolvedPhotoUrl = await resolveUploadedImage(formData, {
+    fileKey: "photoFile",
+    valueKey: "photoUrl",
+    folder: ["students", profile.schoolId],
+    fileStem: `student-${formValue(formData, "studentCode") || "new"}`,
+  });
 
   const parsed = studentSchema.safeParse({
     studentCode: formValue(formData, "studentCode"),
@@ -833,7 +875,7 @@ export async function createStudentAction(formData: FormData) {
     guardianEmail: formValue(formData, "guardianEmail"),
     status: formValue(formData, "status") || "active",
     gender: formValue(formData, "gender"),
-    photoUrl: formValue(formData, "photoUrl"),
+    photoUrl: resolvedPhotoUrl,
   });
 
   if (!parsed.success) {
@@ -1065,9 +1107,17 @@ export async function deleteStudentAction(formData: FormData) {
 
 export async function updateStudentAction(formData: FormData) {
   const profile = await requireRole("admin");
+  const studentId = formValue(formData, "studentId");
+  const resolvedPhotoUrl = await resolveUploadedImage(formData, {
+    fileKey: "photoFile",
+    valueKey: "photoUrl",
+    currentValue: formValue(formData, "currentPhotoUrl"),
+    folder: ["students", profile.schoolId],
+    fileStem: `student-${studentId || "record"}`,
+  });
 
   const parsed = studentUpdateSchema.safeParse({
-    studentId: formValue(formData, "studentId"),
+    studentId,
     firstName: formValue(formData, "firstName"),
     lastName: formValue(formData, "lastName"),
     className: formValue(formData, "className"),
@@ -1077,7 +1127,7 @@ export async function updateStudentAction(formData: FormData) {
     guardianEmail: formValue(formData, "guardianEmail"),
     status: formValue(formData, "status") || "active",
     gender: formValue(formData, "gender"),
-    photoUrl: formValue(formData, "photoUrl"),
+    photoUrl: resolvedPhotoUrl,
   });
 
   if (!parsed.success) {

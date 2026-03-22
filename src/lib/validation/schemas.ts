@@ -1,10 +1,20 @@
 import { z } from "zod";
 
+const imageAssetSchema = z
+  .string()
+  .trim()
+  .max(255)
+  .refine((value) => !value || value.startsWith("/uploads/") || /^https?:\/\//i.test(value), {
+    message: "Use a valid image URL or upload an image file.",
+  })
+  .optional()
+  .or(z.literal(""));
+
 export const schoolSchema = z.object({
   name: z.string().trim().min(2).max(120),
   code: z.string().trim().min(2).max(24).regex(/^[A-Za-z0-9-]+$/, "Use letters, numbers, and hyphens only.").optional(),
   country: z.string().trim().max(120).optional().or(z.literal("")),
-  logoUrl: z.string().trim().url().max(255).optional().or(z.literal("")),
+  logoUrl: imageAssetSchema,
   addressLine1: z.string().trim().max(180).optional().or(z.literal("")),
   addressLine2: z.string().trim().max(180).optional().or(z.literal("")),
   city: z.string().trim().max(80).optional().or(z.literal("")),
@@ -40,7 +50,7 @@ export const studentSchema = z.object({
   guardianEmail: z.string().trim().email().max(255).optional().or(z.literal("")),
   status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
-  photoUrl: z.string().trim().url().max(255).optional().or(z.literal("")),
+  photoUrl: imageAssetSchema,
 });
 
 export const studentBulkSchema = z.object({
@@ -62,7 +72,7 @@ export const studentUpdateSchema = z.object({
   guardianEmail: z.string().trim().email().max(255).optional().or(z.literal("")),
   status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
-  photoUrl: z.string().trim().url().max(255).optional().or(z.literal("")),
+  photoUrl: imageAssetSchema,
 });
 
 export const subjectSchema = z.object({

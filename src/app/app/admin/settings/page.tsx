@@ -55,8 +55,9 @@ export default async function AdminSettingsPage({
 
         <div className="card-body">
           {activeTab === "school" ? (
-            <form action={updateSchoolAction} className="grid gap-3 md:grid-cols-2">
+            <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
               <input type="hidden" name="resultTemplate" value={gradingSettings?.resultTemplate ?? "classic_report"} />
+              <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
               <label className="d-grid gap-1">
                 <span className="field-label">School Name</span>
                 <input name="name" defaultValue={school.name} className="form-control" required />
@@ -70,8 +71,12 @@ export default async function AdminSettingsPage({
                 <input name="country" defaultValue={school.country ?? ""} className="form-control" />
               </label>
               <label className="d-grid gap-1">
-                <span className="field-label">School Logo URL</span>
-                <input name="logoUrl" defaultValue={school.logoUrl ?? ""} className="form-control" placeholder="https://..." />
+                <span className="field-label">Upload School Logo</span>
+                <input name="logoFile" type="file" accept="image/*" className="form-control" />
+              </label>
+              <label className="d-grid gap-1">
+                <span className="field-label">School Logo URL (Optional)</span>
+                <input name="logoUrl" defaultValue={school.logoUrl ?? ""} className="form-control" placeholder="https://... or leave blank if you upload above" />
               </label>
 
               <label className="d-grid gap-1 md:col-span-2">
@@ -113,11 +118,11 @@ export default async function AdminSettingsPage({
           {activeTab === "results" ? (
             <div className="grid gap-3 lg:grid-cols-[1.4fr_0.9fr]">
               <Card title="Result Branding" subtitle="Choose the report template and school branding used for exports.">
-                <form action={updateSchoolAction} className="grid gap-3 md:grid-cols-2">
+                <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
                   <input type="hidden" name="name" value={school.name} />
                   <input type="hidden" name="code" value={school.code} />
                   <input type="hidden" name="country" value={school.country ?? ""} />
-                  <input type="hidden" name="logoUrl" value={school.logoUrl ?? ""} />
+                  <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
                   <input type="hidden" name="addressLine1" value={school.addressLine1 ?? ""} />
                   <input type="hidden" name="addressLine2" value={school.addressLine2 ?? ""} />
                   <input type="hidden" name="city" value={school.city ?? ""} />
@@ -134,7 +139,22 @@ export default async function AdminSettingsPage({
                     </select>
                   </label>
 
-                  <div className="d-flex align-items-end">
+                  <label className="d-grid gap-1">
+                    <span className="field-label">Upload School Logo</span>
+                    <input name="logoFile" type="file" accept="image/*" className="form-control" />
+                  </label>
+
+                  <label className="d-grid gap-1 md:col-span-2">
+                    <span className="field-label">School Logo URL (Optional)</span>
+                    <input
+                      name="logoUrl"
+                      defaultValue={school.logoUrl ?? ""}
+                      className="form-control"
+                      placeholder="https://... or leave blank if you upload above"
+                    />
+                  </label>
+
+                  <div className="d-flex align-items-end md:col-span-2">
                     <button className="btn btn-primary" type="submit">
                       Save Result Settings
                     </button>

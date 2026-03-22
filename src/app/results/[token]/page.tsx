@@ -1,5 +1,4 @@
 import ResultSheet from "@/components/results/ResultSheet";
-import PrintButton from "@/components/results/PrintButton";
 import { getPublishedResultSheetByToken } from "@/lib/server/results";
 
 export default async function SharedResultPage({
@@ -42,7 +41,9 @@ export default async function SharedResultPage({
                 </p>
               </div>
               <div className="d-flex flex-wrap gap-2">
-                <PrintButton />
+                <a href={`/results/${token}/print`} className="btn btn-primary">
+                  Print / Save PDF
+                </a>
                 <a href="/" className="btn btn-secondary">
                   Open iweOS
                 </a>
