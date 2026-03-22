@@ -212,6 +212,7 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
 
 function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
   const schoolAddress = buildSchoolAddress(data.school);
+  const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
 
   return (
     <div className={`result-report-card ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
@@ -353,6 +354,18 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
             <div className="result-report-box-title">Academic report</div>
             <div className="result-report-table-wrap">
               <table className="result-report-table">
+                <colgroup>
+                  <col style={{ width: "26%" }} />
+                  {data.assessmentColumns.map((column) => (
+                    <col key={`col-${column}`} style={{ width: `${assessmentColumnWidth}%` }} />
+                  ))}
+                  <col style={{ width: "7%" }} />
+                  <col style={{ width: "7%" }} />
+                  <col style={{ width: "7%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "7%" }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th>Subjects</th>
