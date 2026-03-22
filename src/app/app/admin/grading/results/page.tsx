@@ -167,15 +167,19 @@ export default async function AdminGradingResultsPage({
           selectedTermId && selectedClassId ? (
             <>
               <Link
-                href={`/app/admin/grading/results/print?termId=${selectedTermId}&classId=${selectedClassId}`}
+                href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}`}
                 className="btn btn-secondary"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 Export class result
               </Link>
               {selectedStudentId ? (
                 <Link
-                  href={`/app/admin/grading/results/print?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
+                  href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
                   className="btn btn-outline-secondary"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Export student result
                 </Link>

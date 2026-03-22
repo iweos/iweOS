@@ -191,6 +191,7 @@ function revalidateAdminPages() {
   revalidatePath("/app/admin/grading/promotion");
   revalidatePath("/app/admin/grading/results");
   revalidatePath("/app/admin/grading/results/print");
+  revalidatePath("/app/print/results");
   revalidatePath("/app/admin/grading-settings");
   revalidatePath("/app/admin/payments");
   revalidatePath("/app/admin/payments/invoices");
