@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DownloadPdfButton from "@/components/results/DownloadPdfButton";
 import PrintButton from "@/components/results/PrintButton";
 import ResultSheet from "@/components/results/ResultSheet";
 import { requireRole } from "@/lib/server/auth";
@@ -62,27 +63,43 @@ export default async function AdminResultExportPage({
     );
   }
 
+  const exportTitle =
+    resultSheets.length === 1
+      ? `${resultSheets[0].student.fullName} ${resultSheets[0].term.termLabel} result`
+      : `${resultSheets[0]?.class.name ?? "class"} ${resultSheets[0]?.term.termLabel ?? "result"} reports`;
+
   return (
-    <main className="container py-4 d-grid gap-3">
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 print-hidden">
-        <div className="d-flex flex-column gap-1">
-          <p className="fw-semibold mb-0">Export-ready result</p>
-          <p className="small text-muted mb-0">Use the browser print dialog to print or save this report to your device as PDF.</p>
+    <main className="container py-4 py-md-5 d-grid gap-4">
+      <section className="shared-result-shell admin-page-wrap">
+        <div className="card border-0 shadow-sm shared-result-hero print-hidden">
+          <div className="card-body p-4 p-md-5">
+            <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
+              <div>
+                <p className="section-kicker">Result export</p>
+                <h1 className="section-title mb-2">{resultSheets[0]?.school.name}</h1>
+                <p className="section-subtle mb-0">
+                  {exportTitle}. Download a real PDF file or print this clean document view.
+                </p>
+              </div>
+              <div className="d-flex flex-wrap gap-2">
+                <Link
+                  href={`/app/admin/grading/results?termId=${params.termId}&classId=${params.classId}${params.studentId ? `&studentId=${params.studentId}` : ""}`}
+                  className="btn btn-secondary"
+                >
+                  Back to results
+                </Link>
+                <DownloadPdfButton fileName={exportTitle} />
+                <PrintButton />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="d-flex flex-wrap gap-2">
-          <Link
-            href={`/app/admin/grading/results?termId=${params.termId}&classId=${params.classId}${params.studentId ? `&studentId=${params.studentId}` : ""}`}
-            className="btn btn-secondary"
-          >
-            Back to results
-          </Link>
-          <PrintButton />
-        </div>
-      </div>
+      </section>
       {resultSheets.map((resultSheet, index) => (
         <div
           key={`${resultSheet.student.id}-${resultSheet.term.id}`}
           className={`result-print-preview ${index > 0 ? "result-print-page-break" : ""}`}
+          data-result-export-page="true"
         >
           <ResultSheet data={resultSheet} mode="admin" />
         </div>
@@ -90,4 +107,3 @@ export default async function AdminResultExportPage({
     </main>
   );
 }
-
