@@ -71,6 +71,10 @@ function toneClass(tone: string) {
   return `result-tone result-tone-${tone}`;
 }
 
+function getGradeTone(grade: string) {
+  return grade.trim().toUpperCase() === "F" ? "fail" : "";
+}
+
 type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
@@ -82,7 +86,10 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
   const positionTone = getPositionTone(data.summary.position);
 
   return (
-    <div className={`d-grid gap-3 ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
+    <div
+      className={`d-grid gap-3 ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}
+      data-result-export-page="true"
+    >
       <section className="card card-body">
         <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
           <div>
@@ -112,7 +119,9 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
         <div className="col-12 col-md-6 col-xl-3">
           <article className="card card-body h-100">
             <p className="small text-muted mb-1">Grade</p>
-            <p className="h3 fw-bold mb-0">{data.summary.grade}</p>
+            <p className={`h3 fw-bold mb-0 ${getGradeTone(data.summary.grade) ? toneClass(getGradeTone(data.summary.grade)) : ""}`}>
+              {data.summary.grade}
+            </p>
           </article>
         </div>
         <div className="col-12 col-md-6 col-xl-3">
@@ -175,7 +184,9 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
                   <td>
                     <span className={toneClass(getScoreTone(row.total))}>{formatNumber(row.total)}</span>
                   </td>
-                  <td>{row.grade}</td>
+                  <td>
+                    <span className={getGradeTone(row.grade) ? toneClass(getGradeTone(row.grade)) : ""}>{row.grade}</span>
+                  </td>
                   <td>
                     <span className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</span>
                   </td>
@@ -257,7 +268,10 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
   const overallPositionTone = getPositionTone(data.summary.position);
 
   return (
-    <div className={`result-report-card ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
+    <div
+      className={`result-report-card ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}
+      data-result-export-page="true"
+    >
       <section className="result-report-shell">
         <header className="result-report-header">
           <div className="result-report-brand">
@@ -434,7 +448,7 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
                       <td>{formatNumber(row.classLowest, 0)}</td>
                       <td>{formatNumber(row.classAverage, 2)}</td>
                       <td className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</td>
-                      <td>{row.remark}</td>
+                      <td className={getGradeTone(row.remark) ? toneClass(getGradeTone(row.remark)) : ""}>{row.remark}</td>
                     </tr>
                   ))}
                   {data.rows.length === 0 ? (
@@ -465,7 +479,7 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
           <div className="result-report-grade-grid">
             {data.gradeKey.length > 0 ? (
               data.gradeKey.map((item) => (
-                <div key={item.letter} className="result-report-grade-item">
+                <div key={item.letter} className={`result-report-grade-item ${item.letter.trim().toUpperCase() === "F" ? toneClass("fail") : ""}`}>
                   <strong>
                     {item.minScore}-{item.maxScore}
                   </strong>

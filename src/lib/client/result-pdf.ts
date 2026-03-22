@@ -29,7 +29,11 @@ function chunkCanvas(sourceCanvas: HTMLCanvasElement, sliceHeight: number) {
 }
 
 export async function buildResultPdfBlob(fileName: string) {
-  const pageNodes = Array.from(document.querySelectorAll<HTMLElement>("[data-result-export-page='true']"));
+  const pageNodes = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      ".result-report-card[data-result-export-page='true'], .result-sheet-admin[data-result-export-page='true'], .result-sheet-public[data-result-export-page='true']",
+    ),
+  );
   if (pageNodes.length === 0) {
     throw new Error("No result pages are available to export.");
   }
@@ -46,7 +50,8 @@ export async function buildResultPdfBlob(fileName: string) {
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
-      windowWidth: Math.max(node.scrollWidth, 900),
+      width: node.scrollWidth,
+      windowWidth: node.scrollWidth,
     });
 
     const sliceHeightPx = Math.floor((canvas.width * pdfHeight) / pdfWidth);
@@ -82,4 +87,3 @@ export function triggerPdfDownload(blob: Blob, fileName: string) {
   anchor.remove();
   URL.revokeObjectURL(url);
 }
-

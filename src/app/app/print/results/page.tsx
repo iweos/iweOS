@@ -101,7 +101,6 @@ export default async function AdminResultExportPage({
         <div
           key={`${resultSheet.student.id}-${resultSheet.term.id}`}
           className={`result-print-preview ${index > 0 ? "result-print-page-break" : ""}`}
-          data-result-export-page="true"
         >
           <ResultSheet data={resultSheet} mode="admin" />
         </div>
