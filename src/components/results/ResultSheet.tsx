@@ -38,6 +38,39 @@ function getPositionOnly(position: string) {
   return position.includes("/") ? position.split("/")[0]?.trim() ?? position : position;
 }
 
+function getScoreTone(value: number) {
+  if (!Number.isFinite(value)) {
+    return "neutral";
+  }
+  if (value >= 70) {
+    return "good";
+  }
+  if (value >= 50) {
+    return "mid";
+  }
+  return "fail";
+}
+
+function getPositionTone(position: string) {
+  const [rawRank, rawTotal] = position.split("/").map((item) => Number.parseInt(item?.trim() ?? "", 10));
+  if (!Number.isFinite(rawRank) || !Number.isFinite(rawTotal) || rawRank <= 0 || rawTotal <= 0) {
+    return "neutral";
+  }
+
+  const percentile = rawRank / rawTotal;
+  if (percentile <= 0.33) {
+    return "good";
+  }
+  if (percentile <= 0.66) {
+    return "mid";
+  }
+  return "fail";
+}
+
+function toneClass(tone: string) {
+  return `result-tone result-tone-${tone}`;
+}
+
 type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
@@ -45,6 +78,9 @@ type ResultSheetProps = {
 };
 
 function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
+  const averageTone = getScoreTone(data.summary.average);
+  const positionTone = getPositionTone(data.summary.position);
+
   return (
     <div className={`d-grid gap-3 ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
       <section className="card card-body">
@@ -70,7 +106,7 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
         <div className="col-12 col-md-6 col-xl-3">
           <article className="card card-body h-100">
             <p className="small text-muted mb-1">Average</p>
-            <p className="h3 fw-bold mb-0">{formatNumber(data.summary.average)}</p>
+            <p className={`h3 fw-bold mb-0 ${toneClass(averageTone)}`}>{formatNumber(data.summary.average)}</p>
           </article>
         </div>
         <div className="col-12 col-md-6 col-xl-3">
@@ -82,7 +118,7 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
         <div className="col-12 col-md-6 col-xl-3">
           <article className="card card-body h-100">
             <p className="small text-muted mb-1">Position</p>
-            <p className="h3 fw-bold mb-0">{data.summary.position}</p>
+            <p className={`h3 fw-bold mb-0 ${toneClass(positionTone)}`}>{data.summary.position}</p>
           </article>
         </div>
         <div className="col-12 col-md-6 col-xl-3">
@@ -136,9 +172,13 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
                   {data.assessmentColumns.map((column) => (
                     <td key={`${row.subjectId}-${column}`}>{formatNumber(row.values[column] ?? 0)}</td>
                   ))}
-                  <td>{formatNumber(row.total)}</td>
+                  <td>
+                    <span className={toneClass(getScoreTone(row.total))}>{formatNumber(row.total)}</span>
+                  </td>
                   <td>{row.grade}</td>
-                  <td>{row.subjectPosition}</td>
+                  <td>
+                    <span className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</span>
+                  </td>
                   <td>{formatNumber(row.classAverage)}</td>
                 </tr>
               ))}
@@ -213,6 +253,8 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
 function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
   const schoolAddress = buildSchoolAddress(data.school);
   const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
+  const overallAverageTone = getScoreTone(data.summary.average);
+  const overallPositionTone = getPositionTone(data.summary.position);
 
   return (
     <div className={`result-report-card ${mode === "public" ? "result-sheet-public" : "result-sheet-admin"}`}>
@@ -267,11 +309,11 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
             </div>
             <div className="result-report-meta">
               <span className="label">Position</span>
-              <strong>{getPositionOnly(data.summary.position)}</strong>
+              <strong className={toneClass(overallPositionTone)}>{getPositionOnly(data.summary.position)}</strong>
             </div>
             <div className="result-report-meta">
               <span className="label">Overall percentage</span>
-              <strong>{formatNumber(data.summary.average, 2)}%</strong>
+              <strong className={toneClass(overallAverageTone)}>{formatNumber(data.summary.average, 2)}%</strong>
             </div>
             <div className="result-report-meta">
               <span className="label">Class average</span>
@@ -387,11 +429,11 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
                       {data.assessmentColumns.map((column) => (
                         <td key={`${row.subjectId}-${column}`}>{formatNumber(row.values[column] ?? 0, 0)}</td>
                       ))}
-                      <td>{formatNumber(row.total, 0)}</td>
+                      <td className={toneClass(getScoreTone(row.total))}>{formatNumber(row.total, 0)}</td>
                       <td>{formatNumber(row.classHighest, 0)}</td>
                       <td>{formatNumber(row.classLowest, 0)}</td>
                       <td>{formatNumber(row.classAverage, 2)}</td>
-                      <td>{row.subjectPosition}</td>
+                      <td className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</td>
                       <td>{row.remark}</td>
                     </tr>
                   ))}
