@@ -2,6 +2,7 @@ import Link from "next/link";
 import DownloadPdfButton from "@/components/results/DownloadPdfButton";
 import PrintButton from "@/components/results/PrintButton";
 import ResultSheet from "@/components/results/ResultSheet";
+import SharePdfButton from "@/components/results/SharePdfButton";
 import { getPublishedResultSheetByToken } from "@/lib/server/results";
 
 export default async function SharedResultPrintPage({
@@ -37,6 +38,7 @@ export default async function SharedResultPrintPage({
                 <Link href={`/results/${token}`} className="btn btn-secondary">
                   Back to result
                 </Link>
+                <SharePdfButton fileName={`${resultSheet.student.fullName} ${resultSheet.term.termLabel} result`} />
                 <DownloadPdfButton fileName={`${resultSheet.student.fullName} ${resultSheet.term.termLabel} result`} />
                 <PrintButton />
               </div>

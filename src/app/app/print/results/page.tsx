@@ -2,6 +2,7 @@ import Link from "next/link";
 import DownloadPdfButton from "@/components/results/DownloadPdfButton";
 import PrintButton from "@/components/results/PrintButton";
 import ResultSheet from "@/components/results/ResultSheet";
+import SharePdfButton from "@/components/results/SharePdfButton";
 import { requireRole } from "@/lib/server/auth";
 import { getStudentResultSheet } from "@/lib/server/results";
 import { prisma } from "@/lib/server/prisma";
@@ -88,6 +89,7 @@ export default async function AdminResultExportPage({
                 >
                   Back to results
                 </Link>
+                <SharePdfButton fileName={exportTitle} />
                 <DownloadPdfButton fileName={exportTitle} />
                 <PrintButton />
               </div>
