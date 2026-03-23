@@ -240,11 +240,11 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
             <div className="d-grid gap-4">
               <div>
                 <p className="small text-muted mb-3">Class teacher comment</p>
-                <div className="border-top pt-4" />
+                <p className="mb-0">{data.comments.teacherComment ?? "No class teacher comment added yet."}</p>
               </div>
               <div>
                 <p className="small text-muted mb-3">Admin / principal comment</p>
-                <div className="border-top pt-4" />
+                <p className="mb-0">{data.comments.principalComment ?? "No admin comment added yet."}</p>
               </div>
               <div>
                 <p className="small text-muted mb-1">Shared access</p>
@@ -349,15 +349,15 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
                 <tbody>
                   <tr>
                     <th>Times school opened</th>
-                    <td>-</td>
+                    <td>{formatInteger(data.attendance.timesSchoolOpened)}</td>
                   </tr>
                   <tr>
                     <th>Times present</th>
-                    <td>-</td>
+                    <td>{formatInteger(data.attendance.timesPresent)}</td>
                   </tr>
                   <tr>
                     <th>Times absent</th>
-                    <td>-</td>
+                    <td>{formatInteger(data.attendance.timesAbsent)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -486,7 +486,7 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
           <div className="result-report-grade-grid">
             {data.gradeKey.length > 0 ? (
               data.gradeKey.map((item) => (
-                <div key={item.letter} className={`result-report-grade-item ${item.letter.trim().toUpperCase() === "F" ? toneClass("fail") : ""}`}>
+                <div key={item.letter} className="result-report-grade-item">
                   <strong>
                     {item.minScore}-{item.maxScore}
                   </strong>
@@ -503,12 +503,12 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
         <section className="result-report-comments">
           <article className="result-report-comment-box">
             <span className="label">Class teacher&apos;s comment</span>
-            <p>This student&apos;s report was generated from the scores currently recorded in the system.</p>
+            <p>{data.comments.teacherComment ?? "No class teacher comment added yet."}</p>
             <div className="signature-line">Signature &amp; date</div>
           </article>
           <article className="result-report-comment-box">
             <span className="label">Principal&apos;s comment</span>
-            <p>Comment space reserved for final review and approval.</p>
+            <p>{data.comments.principalComment ?? "No admin comment added yet."}</p>
             <div className="signature-line">Signature &amp; date</div>
           </article>
         </section>

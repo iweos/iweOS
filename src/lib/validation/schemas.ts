@@ -254,6 +254,40 @@ export const resultPublicationSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "UNPUBLISHED"]),
 });
 
+export const studentAttendanceSchema = z
+  .object({
+    studentId: z.string().uuid(),
+    termId: z.string().uuid(),
+    classId: z.string().uuid(),
+    timesSchoolOpened: z.coerce.number().int().min(0).max(366),
+    timesPresent: z.coerce.number().int().min(0).max(366),
+    timesAbsent: z.coerce.number().int().min(0).max(366),
+  })
+  .superRefine((value, ctx) => {
+    if (value.timesPresent > value.timesSchoolOpened) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timesPresent"],
+        message: "Times present cannot be greater than times school opened.",
+      });
+    }
+
+    if (value.timesAbsent > value.timesSchoolOpened) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timesAbsent"],
+        message: "Times absent cannot be greater than times school opened.",
+      });
+    }
+  });
+
+export const studentCommentSchema = z.object({
+  studentId: z.string().uuid(),
+  termId: z.string().uuid(),
+  classId: z.string().uuid(),
+  comment: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+
 export const gradeScaleSchema = z.object({
   id: z.string().uuid().optional(),
   gradeLetter: z.string().trim().min(1).max(2),

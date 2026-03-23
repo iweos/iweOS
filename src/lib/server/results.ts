@@ -55,6 +55,15 @@ export type ResultSheetData = {
     gender: string | null;
     photoUrl: string | null;
   };
+  attendance: {
+    timesSchoolOpened: number;
+    timesPresent: number;
+    timesAbsent: number;
+  };
+  comments: {
+    teacherComment: string | null;
+    principalComment: string | null;
+  };
   publication: {
     status: ResultPublicationStatus;
     shareToken: string | null;
@@ -108,7 +117,7 @@ export async function getStudentResultSheet(params: {
   classId: string;
   studentId: string;
 }): Promise<ResultSheetData | null> {
-  const [school, term, klass, student, gradeScale, publication, assessmentTemplate, studentConducts, allScores, gradingSettings] =
+  const [school, term, klass, student, gradeScale, publication, assessmentTemplate, studentConducts, allScores, gradingSettings, attendance, comment] =
     await Promise.all([
       prisma.school.findUnique({
         where: { id: params.schoolId },
@@ -230,6 +239,30 @@ export async function getStudentResultSheet(params: {
         where: { schoolId: params.schoolId },
         select: { resultTemplate: true },
       }),
+      prisma.studentAttendance.findUnique({
+        where: {
+          studentId_termId: {
+            studentId: params.studentId,
+            termId: params.termId,
+          },
+        },
+        select: {
+          timesSchoolOpened: true,
+          timesPresent: true,
+          timesAbsent: true,
+        },
+      }),
+      prisma.studentComment.findUnique({
+        where: {
+          studentId_termId: {
+            studentId: params.studentId,
+            termId: params.termId,
+          },
+        },
+        select: {
+          comment: true,
+        },
+      }),
     ]);
 
   if (!school || !term || !klass || !student) {
@@ -340,6 +373,15 @@ export async function getStudentResultSheet(params: {
     term,
     class: klass,
     student,
+    attendance: {
+      timesSchoolOpened: attendance?.timesSchoolOpened ?? 0,
+      timesPresent: attendance?.timesPresent ?? 0,
+      timesAbsent: attendance?.timesAbsent ?? 0,
+    },
+    comments: {
+      teacherComment: null,
+      principalComment: comment?.comment?.trim() ? comment.comment.trim() : null,
+    },
     publication: publication
       ? {
           status: publication.status,

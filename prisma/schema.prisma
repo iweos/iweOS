@@ -91,6 +91,8 @@ model School {
   gradeScale              GradeScale[]
   scores                  Score[]
   studentConducts         StudentConduct[]
+  studentAttendances      StudentAttendance[]
+  studentComments         StudentComment[]
   scoreAssessmentValues   ScoreAssessmentValue[]
   resultPublications      ResultPublication[]
   feeItemCatalogs         FeeItemCatalog[]
@@ -139,6 +141,8 @@ model Class {
   enrollments              Enrollment[]
   teacherClassAssignments  TeacherClassAssignment[]
   studentConducts          StudentConduct[]
+  studentAttendances       StudentAttendance[]
+  studentComments          StudentComment[]
   scores                   Score[]
   resultPublications       ResultPublication[]
 
@@ -159,6 +163,8 @@ model Term {
   assessmentTemplate AssessmentTemplate?
   enrollments  Enrollment[]
   studentConducts StudentConduct[]
+  studentAttendances StudentAttendance[]
+  studentComments StudentComment[]
   scores       Score[]
   resultPublications ResultPublication[]
 
@@ -188,6 +194,8 @@ model Student {
   school           School             @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   enrollments      Enrollment[]
   studentConducts  StudentConduct[]
+  studentAttendances StudentAttendance[]
+  studentComments  StudentComment[]
   scores           Score[]
   resultPublications ResultPublication[]
   invoiceLineItems InvoiceLineItem[]
@@ -480,6 +488,52 @@ model StudentConduct {
   @@index([teacherProfileId])
   @@index([conductCategoryId])
   @@map("student_conducts")
+}
+
+model StudentAttendance {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId          String   @map("school_id") @db.Uuid
+  termId            String   @map("term_id") @db.Uuid
+  classId           String   @map("class_id") @db.Uuid
+  studentId         String   @map("student_id") @db.Uuid
+  timesSchoolOpened Int      @default(0) @map("times_school_opened")
+  timesPresent      Int      @default(0) @map("times_present")
+  timesAbsent       Int      @default(0) @map("times_absent")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school            School   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  term              Term     @relation(fields: [termId], references: [id], onDelete: Restrict)
+  class             Class    @relation(fields: [classId], references: [id], onDelete: Restrict)
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, termId])
+  @@index([schoolId])
+  @@index([termId])
+  @@index([classId])
+  @@map("student_attendances")
+}
+
+model StudentComment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId   String   @map("school_id") @db.Uuid
+  termId     String   @map("term_id") @db.Uuid
+  classId    String   @map("class_id") @db.Uuid
+  studentId  String   @map("student_id") @db.Uuid
+  comment    String   @default("")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  term       Term     @relation(fields: [termId], references: [id], onDelete: Restrict)
+  class      Class    @relation(fields: [classId], references: [id], onDelete: Restrict)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, termId])
+  @@index([schoolId])
+  @@index([termId])
+  @@index([classId])
+  @@map("student_comments")
 }
 
 model ScoreAssessmentValue {

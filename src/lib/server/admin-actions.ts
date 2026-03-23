@@ -27,7 +27,9 @@ import {
   resultPublicationSchema,
   schoolSchema,
   sessionBundleSchema,
+  studentAttendanceSchema,
   studentBulkSchema,
+  studentCommentSchema,
   studentSchema,
   studentUpdateSchema,
   subjectSchema,
@@ -154,6 +156,42 @@ function redirectResultsStatus(
   redirect(`/app/admin/grading/results?${query.toString()}`);
 }
 
+function redirectAttendanceStatus(
+  status: "success" | "error",
+  message: string,
+  options?: {
+    termId?: string;
+    classId?: string;
+  },
+): never {
+  const query = new URLSearchParams({ status, message });
+  if (options?.termId) {
+    query.set("termId", options.termId);
+  }
+  if (options?.classId) {
+    query.set("classId", options.classId);
+  }
+  redirect(`/app/admin/grading/attendance?${query.toString()}`);
+}
+
+function redirectCommentStatus(
+  status: "success" | "error",
+  message: string,
+  options?: {
+    termId?: string;
+    classId?: string;
+  },
+): never {
+  const query = new URLSearchParams({ status, message });
+  if (options?.termId) {
+    query.set("termId", options.termId);
+  }
+  if (options?.classId) {
+    query.set("classId", options.classId);
+  }
+  redirect(`/app/admin/grading/comment?${query.toString()}`);
+}
+
 function redirectTeachersStatus(status: "success" | "error", message: string, options?: { editTeacherId?: string }): never {
   const query = new URLSearchParams({
     status,
@@ -187,6 +225,8 @@ function revalidateAdminPages() {
   revalidatePath("/app/admin/grading/assessment-types");
   revalidatePath("/app/admin/grading/grade-entry");
   revalidatePath("/app/admin/grading/conduct");
+  revalidatePath("/app/admin/grading/attendance");
+  revalidatePath("/app/admin/grading/comment");
   revalidatePath("/app/admin/grading/grades");
   revalidatePath("/app/admin/grading/promotion");
   revalidatePath("/app/admin/grading/results");
@@ -247,6 +287,14 @@ function assessmentSchemaSyncError() {
 
 function conductSchemaSyncError() {
   return new Error(schemaSyncMessage("Conduct"));
+}
+
+function attendanceSchemaSyncError() {
+  return new Error(schemaSyncMessage("Attendance"));
+}
+
+function commentSchemaSyncError() {
+  return new Error(schemaSyncMessage("Comment"));
 }
 
 const TERM_BUNDLE_LABELS = {
@@ -1946,6 +1994,160 @@ export async function setResultPublicationStatusAction(formData: FormData) {
       classId,
       studentId: primaryStudentId,
     });
+  }
+}
+
+export async function upsertStudentAttendanceAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const termId = formValue(formData, "termId");
+  const classId = formValue(formData, "classId");
+  const studentId = formValue(formData, "studentId");
+
+  const parsed = studentAttendanceSchema.safeParse({
+    studentId,
+    termId,
+    classId,
+    timesSchoolOpened: formValue(formData, "timesSchoolOpened"),
+    timesPresent: formValue(formData, "timesPresent"),
+    timesAbsent: formValue(formData, "timesAbsent"),
+  });
+
+  if (!parsed.success) {
+    redirectAttendanceStatus("error", parsed.error.issues[0]?.message ?? "Invalid attendance record.", { termId, classId });
+  }
+
+  try {
+    const [student, term, klass] = await Promise.all([
+      prisma.student.findFirst({
+        where: { id: parsed.data.studentId, schoolId: profile.schoolId },
+        select: { id: true, fullName: true },
+      }),
+      prisma.term.findFirst({
+        where: { id: parsed.data.termId, schoolId: profile.schoolId },
+        select: { id: true, sessionLabel: true, termLabel: true },
+      }),
+      prisma.class.findFirst({
+        where: { id: parsed.data.classId, schoolId: profile.schoolId },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    if (!student || !term || !klass) {
+      throw new Error("The selected student, term, or class could not be found.");
+    }
+
+    await prisma.studentAttendance.upsert({
+      where: {
+        studentId_termId: {
+          studentId: parsed.data.studentId,
+          termId: parsed.data.termId,
+        },
+      },
+      update: {
+        classId: parsed.data.classId,
+        timesSchoolOpened: parsed.data.timesSchoolOpened,
+        timesPresent: parsed.data.timesPresent,
+        timesAbsent: parsed.data.timesAbsent,
+      },
+      create: {
+        schoolId: profile.schoolId,
+        studentId: parsed.data.studentId,
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+        timesSchoolOpened: parsed.data.timesSchoolOpened,
+        timesPresent: parsed.data.timesPresent,
+        timesAbsent: parsed.data.timesAbsent,
+      },
+    });
+
+    revalidateAdminPages();
+    redirectAttendanceStatus(
+      "success",
+      `Attendance updated for ${student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
+      { termId: parsed.data.termId, classId: parsed.data.classId },
+    );
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw attendanceSchemaSyncError();
+    }
+
+    redirectAttendanceStatus(
+      "error",
+      error instanceof Error ? error.message : "Unable to save attendance right now.",
+      { termId, classId },
+    );
+  }
+}
+
+export async function upsertStudentCommentAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const termId = formValue(formData, "termId");
+  const classId = formValue(formData, "classId");
+  const studentId = formValue(formData, "studentId");
+
+  const parsed = studentCommentSchema.safeParse({
+    studentId,
+    termId,
+    classId,
+    comment: formValue(formData, "comment"),
+  });
+
+  if (!parsed.success) {
+    redirectCommentStatus("error", parsed.error.issues[0]?.message ?? "Invalid comment.", { termId, classId });
+  }
+
+  try {
+    const [student, term] = await Promise.all([
+      prisma.student.findFirst({
+        where: { id: parsed.data.studentId, schoolId: profile.schoolId },
+        select: { id: true, fullName: true },
+      }),
+      prisma.term.findFirst({
+        where: { id: parsed.data.termId, schoolId: profile.schoolId },
+        select: { id: true, sessionLabel: true, termLabel: true },
+      }),
+    ]);
+
+    if (!student || !term) {
+      throw new Error("The selected student or term could not be found.");
+    }
+
+    await prisma.studentComment.upsert({
+      where: {
+        studentId_termId: {
+          studentId: parsed.data.studentId,
+          termId: parsed.data.termId,
+        },
+      },
+      update: {
+        classId: parsed.data.classId,
+        comment: parsed.data.comment ?? "",
+      },
+      create: {
+        schoolId: profile.schoolId,
+        studentId: parsed.data.studentId,
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+        comment: parsed.data.comment ?? "",
+      },
+    });
+
+    revalidateAdminPages();
+    redirectCommentStatus(
+      "success",
+      `Comment updated for ${student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
+      { termId: parsed.data.termId, classId: parsed.data.classId },
+    );
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      throw commentSchemaSyncError();
+    }
+
+    redirectCommentStatus(
+      "error",
+      error instanceof Error ? error.message : "Unable to save comment right now.",
+      { termId, classId },
+    );
   }
 }
 
