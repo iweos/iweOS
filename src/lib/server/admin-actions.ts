@@ -2098,6 +2098,102 @@ export async function upsertStudentAttendanceAction(formData: FormData) {
   }
 }
 
+export type SaveStudentAttendanceInput = {
+  termId: string;
+  classId: string;
+  studentId: string;
+  timesSchoolOpened: string;
+  timesPresent: string;
+  timesAbsent: string;
+};
+
+export type SaveStudentAttendanceResult = {
+  ok: boolean;
+  message: string;
+  record?: {
+    timesSchoolOpened: number;
+    timesPresent: number;
+    timesAbsent: number;
+  };
+};
+
+export async function saveStudentAttendanceAdminAction(input: SaveStudentAttendanceInput): Promise<SaveStudentAttendanceResult> {
+  try {
+    const profile = await requireRole("admin");
+    const parsed = studentAttendanceSchema.safeParse(input);
+
+    if (!parsed.success) {
+      return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid attendance record." };
+    }
+
+    const [student, term, klass] = await Promise.all([
+      prisma.student.findFirst({
+        where: { id: parsed.data.studentId, schoolId: profile.schoolId, status: "active" },
+        select: { id: true, fullName: true },
+      }),
+      prisma.term.findFirst({
+        where: { id: parsed.data.termId, schoolId: profile.schoolId },
+        select: { id: true, sessionLabel: true, termLabel: true },
+      }),
+      prisma.class.findFirst({
+        where: { id: parsed.data.classId, schoolId: profile.schoolId },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    if (!student || !term || !klass) {
+      return { ok: false, message: "The selected active student, term, or class could not be found." };
+    }
+
+    await prisma.studentAttendance.upsert({
+      where: {
+        studentId_termId: {
+          studentId: parsed.data.studentId,
+          termId: parsed.data.termId,
+        },
+      },
+      update: {
+        classId: parsed.data.classId,
+        timesSchoolOpened: parsed.data.timesSchoolOpened,
+        timesPresent: parsed.data.timesPresent,
+        timesAbsent: parsed.data.timesAbsent,
+      },
+      create: {
+        schoolId: profile.schoolId,
+        studentId: parsed.data.studentId,
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+        timesSchoolOpened: parsed.data.timesSchoolOpened,
+        timesPresent: parsed.data.timesPresent,
+        timesAbsent: parsed.data.timesAbsent,
+      },
+    });
+
+    revalidateAdminPages();
+    return {
+      ok: true,
+      message: `Attendance updated for ${student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
+      record: {
+        timesSchoolOpened: parsed.data.timesSchoolOpened,
+        timesPresent: parsed.data.timesPresent,
+        timesAbsent: parsed.data.timesAbsent,
+      },
+    };
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return {
+        ok: false,
+        message: "Attendance setup is not yet available in production. Run the latest Prisma migration on the production database, then redeploy.",
+      };
+    }
+
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to save attendance right now.",
+    };
+  }
+}
+
 export async function upsertStudentCommentAction(formData: FormData) {
   const profile = await requireRole("admin");
   const termId = formValue(formData, "termId");
@@ -2167,6 +2263,84 @@ export async function upsertStudentCommentAction(formData: FormData) {
       error instanceof Error ? error.message : "Unable to save comment right now.",
       { termId, classId },
     );
+  }
+}
+
+export type SaveStudentCommentInput = {
+  termId: string;
+  classId: string;
+  studentId: string;
+  comment: string;
+};
+
+export type SaveStudentCommentResult = {
+  ok: boolean;
+  message: string;
+  comment?: string;
+};
+
+export async function saveStudentCommentAdminAction(input: SaveStudentCommentInput): Promise<SaveStudentCommentResult> {
+  try {
+    const profile = await requireRole("admin");
+    const parsed = studentCommentSchema.safeParse(input);
+
+    if (!parsed.success) {
+      return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid comment." };
+    }
+
+    const [student, term] = await Promise.all([
+      prisma.student.findFirst({
+        where: { id: parsed.data.studentId, schoolId: profile.schoolId, status: "active" },
+        select: { id: true, fullName: true },
+      }),
+      prisma.term.findFirst({
+        where: { id: parsed.data.termId, schoolId: profile.schoolId },
+        select: { id: true, sessionLabel: true, termLabel: true },
+      }),
+    ]);
+
+    if (!student || !term) {
+      return { ok: false, message: "The selected active student or term could not be found." };
+    }
+
+    await prisma.studentComment.upsert({
+      where: {
+        studentId_termId: {
+          studentId: parsed.data.studentId,
+          termId: parsed.data.termId,
+        },
+      },
+      update: {
+        classId: parsed.data.classId,
+        comment: parsed.data.comment ?? "",
+      },
+      create: {
+        schoolId: profile.schoolId,
+        studentId: parsed.data.studentId,
+        termId: parsed.data.termId,
+        classId: parsed.data.classId,
+        comment: parsed.data.comment ?? "",
+      },
+    });
+
+    revalidateAdminPages();
+    return {
+      ok: true,
+      message: `Comment updated for ${student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
+      comment: parsed.data.comment ?? "",
+    };
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return {
+        ok: false,
+        message: "Comment setup is not yet available in production. Run the latest Prisma migration on the production database, then redeploy.",
+      };
+    }
+
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to save comment right now.",
+    };
   }
 }
 

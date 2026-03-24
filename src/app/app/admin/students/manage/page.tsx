@@ -14,7 +14,7 @@ type ManageStudentsSearchParams = {
   status?: string;
 };
 
-const allowedStatuses = new Set(["active", "inactive", "graduated", "suspended"]);
+const allowedStatuses = new Set(["active", "inactive", "graduated", "suspended", "withdrawn"]);
 
 export default async function AdminStudentsManagePage({
   searchParams,
@@ -144,6 +144,7 @@ export default async function AdminStudentsManagePage({
               <option value="inactive">Inactive</option>
               <option value="graduated">Graduated</option>
               <option value="suspended">Suspended</option>
+              <option value="withdrawn">Withdrawn</option>
             </Select>
           </label>
 

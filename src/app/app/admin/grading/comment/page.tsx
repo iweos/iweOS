@@ -7,7 +7,7 @@ import StatCard from "@/components/admin/ui/StatCard";
 import StudentCommentTable from "@/components/grading/StudentCommentTable";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
-import { upsertStudentCommentAction } from "@/lib/server/admin-actions";
+import { saveStudentCommentAdminAction } from "@/lib/server/admin-actions";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 
@@ -167,8 +167,8 @@ export default async function AdminGradingCommentPage({
         </form>
       </Card>
 
-      <Card title="Student Comments" subtitle="Sort the table by code, name, or comment content, then save each student’s final comment.">
-        <StudentCommentTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={upsertStudentCommentAction} />
+      <Card title="Student Comments" subtitle="Sort the table by code, name, or comment content, then let each comment save automatically on blur.">
+        <StudentCommentTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentCommentAdminAction} />
       </Card>
     </Section>
   );

@@ -509,6 +509,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                       <option value="inactive">Inactive</option>
                       <option value="graduated">Graduated</option>
                       <option value="suspended">Suspended</option>
+                      <option value="withdrawn">Withdrawn</option>
                     </Select>
                   </div>
                   <div className="col-md-3">

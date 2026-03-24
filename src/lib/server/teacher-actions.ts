@@ -56,6 +56,50 @@ export type SaveStudentConductResult =
       message: string;
     };
 
+export type SaveStudentAttendanceInput = {
+  teacherProfileId?: string;
+  termId: string;
+  classId: string;
+  studentId: string;
+  timesSchoolOpened: string;
+  timesPresent: string;
+  timesAbsent: string;
+};
+
+export type SaveStudentAttendanceResult =
+  | {
+      ok: true;
+      message: string;
+      record: {
+        timesSchoolOpened: number;
+        timesPresent: number;
+        timesAbsent: number;
+      };
+    }
+  | {
+      ok: false;
+      message: string;
+    };
+
+export type SaveStudentCommentInput = {
+  teacherProfileId?: string;
+  termId: string;
+  classId: string;
+  studentId: string;
+  comment: string;
+};
+
+export type SaveStudentCommentResult =
+  | {
+      ok: true;
+      message: string;
+      comment: string;
+    }
+  | {
+      ok: false;
+      message: string;
+    };
+
 function formValue(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
@@ -347,26 +391,22 @@ export async function saveStudentConductAction(input: SaveStudentConductInput): 
   }
 }
 
-export async function saveStudentAttendanceAction(formData: FormData) {
-  const requestedTeacherId = formValue(formData, "teacherProfileId") || undefined;
-  const termId = formValue(formData, "termId");
-  const classId = formValue(formData, "classId");
-  const studentId = formValue(formData, "studentId");
-
-  const parsed = studentAttendanceSchema.safeParse({
-    studentId,
-    termId,
-    classId,
-    timesSchoolOpened: formValue(formData, "timesSchoolOpened"),
-    timesPresent: formValue(formData, "timesPresent"),
-    timesAbsent: formValue(formData, "timesAbsent"),
-  });
-
-  if (!parsed.success) {
-    redirect(buildAttendanceRedirectPath(requestedTeacherId, termId, classId, "error", parsed.error.issues[0]?.message ?? "Invalid attendance record."));
-  }
-
+export async function saveStudentAttendanceAction(input: SaveStudentAttendanceInput): Promise<SaveStudentAttendanceResult> {
   try {
+    const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
+    const parsed = studentAttendanceSchema.safeParse({
+      studentId: input.studentId,
+      termId: input.termId,
+      classId: input.classId,
+      timesSchoolOpened: input.timesSchoolOpened,
+      timesPresent: input.timesPresent,
+      timesAbsent: input.timesAbsent,
+    });
+
+    if (!parsed.success) {
+      return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid attendance record." };
+    }
+
     const context = await requireTeacherPortalContext(requestedTeacherId);
     const actorProfile = context.actorProfile;
 
@@ -414,13 +454,13 @@ export async function saveStudentAttendanceAction(formData: FormData) {
     ]);
 
     if (!assignment) {
-      throw new Error("Selected teacher is not assigned to this class.");
+      return { ok: false, message: "Selected teacher is not assigned to this class." };
     }
     if (!term) {
-      throw new Error("Selected term does not belong to your school.");
+      return { ok: false, message: "Selected term does not belong to your school." };
     }
     if (!enrollment) {
-      throw new Error("This student is not active in the selected class and term.");
+      return { ok: false, message: "This student is not active in the selected class and term." };
     }
 
     await prisma.studentAttendance.upsert({
@@ -453,59 +493,43 @@ export async function saveStudentAttendanceAction(formData: FormData) {
     revalidatePath("/app/admin/grading/results");
     revalidatePath("/app/print/results");
     revalidatePath("/results");
-
-    redirect(
-      buildAttendanceRedirectPath(
-        requestedTeacherId,
-        parsed.data.termId,
-        parsed.data.classId,
-        "success",
-        `Attendance updated for ${enrollment.student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
-      ),
-    );
+    return {
+      ok: true,
+      message: `Attendance updated for ${enrollment.student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
+      record: {
+        timesSchoolOpened: parsed.data.timesSchoolOpened,
+        timesPresent: parsed.data.timesPresent,
+        timesAbsent: parsed.data.timesAbsent,
+      },
+    };
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
-      redirect(
-        buildAttendanceRedirectPath(
-          requestedTeacherId,
-          termId,
-          classId,
-          "error",
-          "Attendance setup is not yet available in production. Run the latest Prisma migration on the production database, then redeploy.",
-        ),
-      );
+      return {
+        ok: false,
+        message: "Attendance setup is not yet available in production. Run the latest Prisma migration on the production database, then redeploy.",
+      };
     }
-
-    redirect(
-      buildAttendanceRedirectPath(
-        requestedTeacherId,
-        termId,
-        classId,
-        "error",
-        error instanceof Error ? error.message : "Unable to save attendance right now.",
-      ),
-    );
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to save attendance right now.",
+    };
   }
 }
 
-export async function saveStudentCommentAction(formData: FormData) {
-  const requestedTeacherId = formValue(formData, "teacherProfileId") || undefined;
-  const termId = formValue(formData, "termId");
-  const classId = formValue(formData, "classId");
-  const studentId = formValue(formData, "studentId");
-
-  const parsed = studentCommentSchema.safeParse({
-    studentId,
-    termId,
-    classId,
-    comment: formValue(formData, "comment"),
-  });
-
-  if (!parsed.success) {
-    redirect(buildCommentRedirectPath(requestedTeacherId, termId, classId, "error", parsed.error.issues[0]?.message ?? "Invalid comment."));
-  }
-
+export async function saveStudentCommentAction(input: SaveStudentCommentInput): Promise<SaveStudentCommentResult> {
   try {
+    const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
+    const parsed = studentCommentSchema.safeParse({
+      studentId: input.studentId,
+      termId: input.termId,
+      classId: input.classId,
+      comment: input.comment,
+    });
+
+    if (!parsed.success) {
+      return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid comment." };
+    }
+
     const context = await requireTeacherPortalContext(requestedTeacherId);
     const actorProfile = context.actorProfile;
 
@@ -553,13 +577,13 @@ export async function saveStudentCommentAction(formData: FormData) {
     ]);
 
     if (!assignment) {
-      throw new Error("Selected teacher is not assigned to this class.");
+      return { ok: false, message: "Selected teacher is not assigned to this class." };
     }
     if (!term) {
-      throw new Error("Selected term does not belong to your school.");
+      return { ok: false, message: "Selected term does not belong to your school." };
     }
     if (!enrollment) {
-      throw new Error("This student is not active in the selected class and term.");
+      return { ok: false, message: "This student is not active in the selected class and term." };
     }
 
     await prisma.studentComment.upsert({
@@ -587,38 +611,22 @@ export async function saveStudentCommentAction(formData: FormData) {
     revalidatePath("/app/admin/grading/results");
     revalidatePath("/app/print/results");
     revalidatePath("/results");
-
-    redirect(
-      buildCommentRedirectPath(
-        requestedTeacherId,
-        parsed.data.termId,
-        parsed.data.classId,
-        "success",
-        `Comment updated for ${enrollment.student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
-      ),
-    );
+    return {
+      ok: true,
+      message: `Comment updated for ${enrollment.student.fullName} in ${term.sessionLabel} ${term.termLabel}.`,
+      comment: parsed.data.comment ?? "",
+    };
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
-      redirect(
-        buildCommentRedirectPath(
-          requestedTeacherId,
-          termId,
-          classId,
-          "error",
-          "Comment setup is not yet available in production. Run the latest Prisma migration on the production database, then redeploy.",
-        ),
-      );
+      return {
+        ok: false,
+        message: "Comment setup is not yet available in production. Run the latest Prisma migration on the production database, then redeploy.",
+      };
     }
-
-    redirect(
-      buildCommentRedirectPath(
-        requestedTeacherId,
-        termId,
-        classId,
-        "error",
-        error instanceof Error ? error.message : "Unable to save comment right now.",
-      ),
-    );
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to save comment right now.",
+    };
   }
 }
 

@@ -49,7 +49,7 @@ export const studentSchema = z.object({
   guardianName: z.string().trim().max(120).optional().or(z.literal("")),
   guardianPhone: z.string().trim().max(30).optional().or(z.literal("")),
   guardianEmail: z.string().trim().email().max(255).optional().or(z.literal("")),
-  status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
+  status: z.enum(["active", "inactive", "graduated", "suspended", "withdrawn"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
   photoUrl: imageAssetSchema,
 });
@@ -58,7 +58,7 @@ export const studentBulkSchema = z.object({
   studentRows: z.string().trim().optional().or(z.literal("")),
   enrollmentYear: z.coerce.number().int().min(2000).max(2100),
   className: z.string().trim().max(80).optional().or(z.literal("")),
-  status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
+  status: z.enum(["active", "inactive", "graduated", "suspended", "withdrawn"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
 });
 
@@ -71,7 +71,7 @@ export const studentUpdateSchema = z.object({
   guardianName: z.string().trim().max(120).optional().or(z.literal("")),
   guardianPhone: z.string().trim().max(30).optional().or(z.literal("")),
   guardianEmail: z.string().trim().email().max(255).optional().or(z.literal("")),
-  status: z.enum(["active", "inactive", "graduated", "suspended"]).optional().default("active"),
+  status: z.enum(["active", "inactive", "graduated", "suspended", "withdrawn"]).optional().default("active"),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
   photoUrl: imageAssetSchema,
 });

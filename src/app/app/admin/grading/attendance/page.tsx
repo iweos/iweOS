@@ -7,7 +7,7 @@ import StatCard from "@/components/admin/ui/StatCard";
 import StudentAttendanceTable from "@/components/grading/StudentAttendanceTable";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
-import { upsertStudentAttendanceAction } from "@/lib/server/admin-actions";
+import { saveStudentAttendanceAdminAction } from "@/lib/server/admin-actions";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 
@@ -181,8 +181,8 @@ export default async function AdminGradingAttendancePage({
         </form>
       </Card>
 
-      <Card title="Student Attendance" subtitle="Edit each row and save the attendance values you want on the result sheet.">
-        <StudentAttendanceTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={upsertStudentAttendanceAction} />
+      <Card title="Student Attendance" subtitle="Attendance saves automatically when you leave a field.">
+        <StudentAttendanceTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentAttendanceAdminAction} />
       </Card>
     </Section>
   );

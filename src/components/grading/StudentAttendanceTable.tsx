@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
-import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
+import type { SaveStudentAttendanceInput, SaveStudentAttendanceResult } from "@/lib/server/admin-actions";
 
 type StudentAttendanceRow = {
   studentId: string;
@@ -16,12 +16,19 @@ type StudentAttendanceRow = {
 
 type SortKey = "studentCode" | "fullName" | "timesSchoolOpened" | "timesPresent" | "timesAbsent";
 
+type RowStatus = {
+  tone: "idle" | "saving" | "saved" | "error";
+  message: string;
+};
+
 type StudentAttendanceTableProps = {
   rows: StudentAttendanceRow[];
   termId: string;
   classId: string;
-  saveAction: (formData: FormData) => void | Promise<void>;
+  saveAction: (input: SaveStudentAttendanceInput) => Promise<SaveStudentAttendanceResult>;
 };
+
+const IDLE_STATUS: RowStatus = { tone: "idle", message: "" };
 
 function compareValues(a: StudentAttendanceRow, b: StudentAttendanceRow, key: SortKey) {
   if (key === "studentCode" || key === "fullName") {
@@ -30,14 +37,28 @@ function compareValues(a: StudentAttendanceRow, b: StudentAttendanceRow, key: So
   return a[key] - b[key];
 }
 
-export default function StudentAttendanceTable({
-  rows,
-  termId,
-  classId,
-  saveAction,
-}: StudentAttendanceTableProps) {
+export default function StudentAttendanceTable({ rows: initialRows, termId, classId, saveAction }: StudentAttendanceTableProps) {
+  const [rows, setRows] = useState(initialRows);
   const [sortKey, setSortKey] = useState<SortKey>("fullName");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [rowStatusByStudentId, setRowStatusByStudentId] = useState<Record<string, RowStatus>>({});
+  const [, startTransition] = useTransition();
+  const clearTimersRef = useRef<Record<string, number>>({});
+  const requestVersionRef = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    setRows(initialRows);
+    setRowStatusByStudentId({});
+    requestVersionRef.current = {};
+    Object.values(clearTimersRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+    clearTimersRef.current = {};
+  }, [initialRows, termId, classId]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(clearTimersRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, []);
 
   const sortedRows = useMemo(() => {
     return [...rows].sort((left, right) => {
@@ -45,6 +66,8 @@ export default function StudentAttendanceTable({
       return sortDirection === "asc" ? comparison : -comparison;
     });
   }, [rows, sortDirection, sortKey]);
+
+  const rowsByStudentId = useMemo(() => new Map(rows.map((row) => [row.studentId, row])), [rows]);
 
   function updateSort(nextKey: SortKey) {
     if (nextKey === sortKey) {
@@ -60,6 +83,97 @@ export default function StudentAttendanceTable({
       return "fas fa-sort text-muted";
     }
     return sortDirection === "asc" ? "fas fa-sort-up" : "fas fa-sort-down";
+  }
+
+  function setRowStatus(studentId: string, status: RowStatus) {
+    setRowStatusByStudentId((current) => ({ ...current, [studentId]: status }));
+  }
+
+  function clearStatusTimer(studentId: string) {
+    const timeoutId = clearTimersRef.current[studentId];
+    if (!timeoutId) {
+      return;
+    }
+    window.clearTimeout(timeoutId);
+    delete clearTimersRef.current[studentId];
+  }
+
+  function scheduleStatusClear(studentId: string) {
+    clearStatusTimer(studentId);
+    clearTimersRef.current[studentId] = window.setTimeout(() => {
+      setRowStatus(studentId, IDLE_STATUS);
+      delete clearTimersRef.current[studentId];
+    }, 2200);
+  }
+
+  function handleValueChange(studentId: string, key: "timesSchoolOpened" | "timesPresent" | "timesAbsent", nextValue: string) {
+    setRows((current) =>
+      current.map((row) =>
+        row.studentId === studentId
+          ? {
+              ...row,
+              [key]: Number.parseInt(nextValue || "0", 10) || 0,
+            }
+          : row,
+      ),
+    );
+  }
+
+  function saveRow(studentId: string) {
+    const row = rowsByStudentId.get(studentId);
+    if (!row) {
+      return;
+    }
+
+    const requestVersion = (requestVersionRef.current[studentId] ?? 0) + 1;
+    requestVersionRef.current[studentId] = requestVersion;
+    clearStatusTimer(studentId);
+    setRowStatus(studentId, { tone: "saving", message: "Saving..." });
+
+    startTransition(() => {
+      void saveAction({
+        studentId,
+        termId,
+        classId,
+        timesSchoolOpened: row.timesSchoolOpened.toString(),
+        timesPresent: row.timesPresent.toString(),
+        timesAbsent: row.timesAbsent.toString(),
+      })
+        .then((result) => {
+          if (requestVersionRef.current[studentId] !== requestVersion) {
+            return;
+          }
+
+          if (!result.ok) {
+            setRowStatus(studentId, { tone: "error", message: result.message });
+            return;
+          }
+
+          setRows((current) =>
+            current.map((currentRow) =>
+              currentRow.studentId === studentId && result.record
+                ? {
+                    ...currentRow,
+                    timesSchoolOpened: result.record.timesSchoolOpened,
+                    timesPresent: result.record.timesPresent,
+                    timesAbsent: result.record.timesAbsent,
+                  }
+                : currentRow,
+            ),
+          );
+          setRowStatus(studentId, { tone: "saved", message: "Saved" });
+          scheduleStatusClear(studentId);
+        })
+        .catch((error: unknown) => {
+          if (requestVersionRef.current[studentId] !== requestVersion) {
+            return;
+          }
+          setRowStatus(studentId, {
+            tone: "error",
+            message: error instanceof Error ? error.message : "Unable to save this row right now.",
+          });
+        });
+    });
   }
 
   return (
@@ -92,59 +206,80 @@ export default function StudentAttendanceTable({
                 Times absent <i className={sortIcon("timesAbsent")} />
               </button>
             </Th>
-            <Th className="text-end">Action</Th>
+            <Th>Status</Th>
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map((row) => (
-            <tr key={row.studentId}>
-              <Td>{row.studentCode}</Td>
-              <Td>{row.fullName}</Td>
-              <Td>
-                <Input
-                  form={`attendance-row-${row.studentId}`}
-                  name="timesSchoolOpened"
-                  type="number"
-                  min={0}
-                  max={366}
-                  defaultValue={row.timesSchoolOpened}
-                  className="min-w-[88px]"
-                />
-              </Td>
-              <Td>
-                <Input
-                  form={`attendance-row-${row.studentId}`}
-                  name="timesPresent"
-                  type="number"
-                  min={0}
-                  max={366}
-                  defaultValue={row.timesPresent}
-                  className="min-w-[88px]"
-                />
-              </Td>
-              <Td>
-                <Input
-                  form={`attendance-row-${row.studentId}`}
-                  name="timesAbsent"
-                  type="number"
-                  min={0}
-                  max={366}
-                  defaultValue={row.timesAbsent}
-                  className="min-w-[88px]"
-                />
-              </Td>
-              <Td className="text-end">
-                <form id={`attendance-row-${row.studentId}`} action={saveAction} className="d-inline">
-                  <input type="hidden" name="studentId" value={row.studentId} />
-                  <input type="hidden" name="termId" value={termId} />
-                  <input type="hidden" name="classId" value={classId} />
-                  <Button type="submit" variant="primary" size="sm">
-                    Save
-                  </Button>
-                </form>
-              </Td>
-            </tr>
-          ))}
+          {sortedRows.map((row) => {
+            const rowStatus = rowStatusByStudentId[row.studentId] ?? IDLE_STATUS;
+            return (
+              <tr key={row.studentId}>
+                <Td>{row.studentCode}</Td>
+                <Td>{row.fullName}</Td>
+                <Td>
+                  <Input
+                    name={`timesSchoolOpened-${row.studentId}`}
+                    type="number"
+                    min={0}
+                    max={366}
+                    value={row.timesSchoolOpened}
+                    onChange={(event) => handleValueChange(row.studentId, "timesSchoolOpened", event.target.value)}
+                    onBlur={() => saveRow(row.studentId)}
+                    className="min-w-[88px]"
+                  />
+                </Td>
+                <Td>
+                  <Input
+                    name={`timesPresent-${row.studentId}`}
+                    type="number"
+                    min={0}
+                    max={366}
+                    value={row.timesPresent}
+                    onChange={(event) => handleValueChange(row.studentId, "timesPresent", event.target.value)}
+                    onBlur={() => saveRow(row.studentId)}
+                    className="min-w-[88px]"
+                  />
+                </Td>
+                <Td>
+                  <Input
+                    name={`timesAbsent-${row.studentId}`}
+                    type="number"
+                    min={0}
+                    max={366}
+                    value={row.timesAbsent}
+                    onChange={(event) => handleValueChange(row.studentId, "timesAbsent", event.target.value)}
+                    onBlur={() => saveRow(row.studentId)}
+                    className="min-w-[88px]"
+                  />
+                </Td>
+                <Td>
+                  {rowStatus.tone === "saving" ? (
+                    <span className="inline-flex items-center gap-2 text-xs text-[var(--muted)]">
+                      <span className="global-pending-bird inline-bird-loader" aria-hidden="true">
+                        <i className="fas fa-dove bird-base" />
+                        <span className="bird-fill-mask">
+                          <i className="fas fa-dove bird-fill" />
+                        </span>
+                      </span>
+                      <span>{rowStatus.message}</span>
+                    </span>
+                  ) : (
+                    <span
+                      className={
+                        rowStatus.tone === "error"
+                          ? "text-danger text-xs"
+                          : rowStatus.tone === "saved"
+                            ? "text-success text-xs"
+                            : "text-[var(--muted)] text-xs"
+                      }
+                    >
+                      {rowStatus.message || "Ready"}
+                    </span>
+                  )}
+                </Td>
+              </tr>
+            );
+          })}
           {sortedRows.length === 0 ? (
             <tr>
               <Td colSpan={6}>No enrolled students found for this class and session.</Td>
