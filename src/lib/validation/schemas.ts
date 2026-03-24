@@ -15,6 +15,7 @@ export const schoolSchema = z.object({
   code: z.string().trim().min(2).max(24).regex(/^[A-Za-z0-9-]+$/, "Use letters, numbers, and hyphens only.").optional(),
   country: z.string().trim().max(120).optional().or(z.literal("")),
   logoUrl: imageAssetSchema,
+  principalSignatureUrl: imageAssetSchema,
   addressLine1: z.string().trim().max(180).optional().or(z.literal("")),
   addressLine2: z.string().trim().max(180).optional().or(z.literal("")),
   city: z.string().trim().max(80).optional().or(z.literal("")),

@@ -8,9 +8,6 @@ import StatCard from "@/components/admin/ui/StatCard";
 export default async function AdminDashboardPage() {
   const profile = await requireRole("admin");
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
   let school: Awaited<ReturnType<typeof prisma.school.findUnique>> = null;
   let teacherCount = 0;
   let classCount = 0;
@@ -44,56 +41,11 @@ export default async function AdminDashboardPage() {
     throw new Error("School not found.");
   }
 
-  let totalExpected = 0;
-  let totalCollected = 0;
-  let todayCollected = 0;
-
-  const paymentClient = prisma as unknown as {
-    invoice?: { aggregate: (args: unknown) => Promise<{ _sum: { total: number | null } }> };
-    payment?: { aggregate: (args: unknown) => Promise<{ _sum: { amount: number | null } }> };
-  };
-
-  if (paymentClient.invoice && paymentClient.payment) {
-    const [invoiceAgg, collectionAgg, todayAgg] = await Promise.all([
-      paymentClient.invoice.aggregate({
-        where: { schoolId: profile.schoolId },
-        _sum: { total: true },
-      }),
-      paymentClient.payment.aggregate({
-        where: {
-          schoolId: profile.schoolId,
-          status: "SUCCESS",
-        },
-        _sum: { amount: true },
-      }),
-      paymentClient.payment.aggregate({
-        where: {
-          schoolId: profile.schoolId,
-          status: "SUCCESS",
-          createdAt: { gte: startOfDay },
-        },
-        _sum: { amount: true },
-      }),
-    ]);
-
-    totalExpected = Number(invoiceAgg._sum.total ?? 0);
-    totalCollected = Number(collectionAgg._sum.amount ?? 0);
-    todayCollected = Number(todayAgg._sum.amount ?? 0);
-  }
-
-  const totalOutstanding = Math.max(0, totalExpected - totalCollected);
-  const collectionRate = totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0;
-
   const cards = [
     { label: "Teachers", value: teacherCount, icon: "fas fa-chalkboard-teacher", variant: "secondary" as const },
     { label: "Classes", value: classCount, icon: "fas fa-th-large", variant: "info" as const },
     { label: "Students", value: studentCount, icon: "fas fa-user-graduate", variant: "success" as const },
     { label: "Subjects", value: subjectCount, icon: "fas fa-book-open", variant: "warning" as const },
-    { label: "Payments Expected", value: totalExpected.toFixed(2), icon: "fas fa-wallet", variant: "primary" as const },
-    { label: "Payments Collected", value: totalCollected.toFixed(2), icon: "fas fa-money-check-alt", variant: "success" as const },
-    { label: "Payments Outstanding", value: totalOutstanding.toFixed(2), icon: "fas fa-exclamation-circle", variant: "danger" as const },
-    { label: "Collection Rate", value: `${collectionRate.toFixed(1)}%`, icon: "fas fa-percentage", variant: "info" as const },
-    { label: "Today's Collections", value: todayCollected.toFixed(2), icon: "fas fa-calendar-day", variant: "secondary" as const },
   ];
 
   return (
@@ -145,9 +97,6 @@ export default async function AdminDashboardPage() {
             </Link>
             <Link className="btn btn-secondary" href="/app/admin/terms">
               Manage Terms
-            </Link>
-            <Link className="btn btn-secondary" href="/app/admin/payments">
-              Manage Payments
             </Link>
           </div>
         </div>

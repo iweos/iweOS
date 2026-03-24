@@ -247,6 +247,8 @@ function revalidateAdminPages() {
   revalidatePath("/app/admin/payments/settings");
   revalidatePath("/pay");
   revalidatePath("/app/teacher/dashboard");
+  revalidatePath("/app/teacher/attendance");
+  revalidatePath("/app/teacher/comment");
   revalidatePath("/app/teacher/conduct");
   revalidatePath("/app/teacher/grade-entry");
   revalidatePath("/app/teacher/results");
@@ -505,12 +507,21 @@ export async function updateSchoolAction(formData: FormData) {
     folder: ["schools", profile.schoolId],
     fileStem: "school-logo",
   });
+  const resolvedPrincipalSignatureUrl = await resolveUploadedImage(formData, {
+    fileKey: "principalSignatureFile",
+    valueKey: "principalSignatureUrl",
+    removeKey: "removePrincipalSignature",
+    currentValue: formValue(formData, "currentPrincipalSignatureUrl"),
+    folder: ["schools", profile.schoolId],
+    fileStem: "principal-signature",
+  });
 
   const parsed = schoolSchema.safeParse({
     name: formValue(formData, "name"),
     code: formValue(formData, "code") || undefined,
     country: formValue(formData, "country"),
     logoUrl: resolvedLogoUrl,
+    principalSignatureUrl: resolvedPrincipalSignatureUrl,
     addressLine1: formValue(formData, "addressLine1"),
     addressLine2: formValue(formData, "addressLine2"),
     city: formValue(formData, "city"),
@@ -547,6 +558,7 @@ export async function updateSchoolAction(formData: FormData) {
         code: parsed.data.code?.toUpperCase(),
         country: parsed.data.country || null,
         logoUrl: parsed.data.logoUrl || null,
+        principalSignatureUrl: parsed.data.principalSignatureUrl || null,
         addressLine1: parsed.data.addressLine1 || null,
         addressLine2: parsed.data.addressLine2 || null,
         city: parsed.data.city || null,

@@ -59,6 +59,7 @@ model School {
   code                    String
   country                 String?
   logoUrl                 String?   @map("logo_url")
+  principalSignatureUrl   String?   @map("principal_signature_url")
   addressLine1            String?   @map("address_line_1")
   addressLine2            String?   @map("address_line_2")
   city                    String?

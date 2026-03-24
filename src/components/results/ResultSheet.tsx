@@ -241,10 +241,17 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
               <div>
                 <p className="small text-muted mb-3">Class teacher comment</p>
                 <p className="mb-0">{data.comments.teacherComment ?? "No class teacher comment added yet."}</p>
+                <p className="small text-muted mt-3 mb-0">Date: {data.comments.issuedDate ?? "-"}</p>
               </div>
               <div>
                 <p className="small text-muted mb-3">Admin / principal comment</p>
                 <p className="mb-0">{data.comments.principalComment ?? "No admin comment added yet."}</p>
+                {data.school.principalSignatureUrl ? (
+                  <div className="mt-3">
+                    <img src={data.school.principalSignatureUrl} alt="Principal signature" className="result-principal-signature" />
+                  </div>
+                ) : null}
+                <p className="small text-muted mt-3 mb-0">Date: {data.comments.issuedDate ?? "-"}</p>
               </div>
               <div>
                 <p className="small text-muted mb-1">Shared access</p>
@@ -504,12 +511,17 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
           <article className="result-report-comment-box">
             <span className="label">Class teacher&apos;s comment</span>
             <p>{data.comments.teacherComment ?? "No class teacher comment added yet."}</p>
-            <div className="signature-line">Signature &amp; date</div>
+            <div className="signature-line">Date: {data.comments.issuedDate ?? "-"}</div>
           </article>
           <article className="result-report-comment-box">
             <span className="label">Principal&apos;s comment</span>
             <p>{data.comments.principalComment ?? "No admin comment added yet."}</p>
-            <div className="signature-line">Signature &amp; date</div>
+            {data.school.principalSignatureUrl ? (
+              <div className="result-report-principal-signature">
+                <img src={data.school.principalSignatureUrl} alt="Principal signature" />
+              </div>
+            ) : null}
+            <div className="signature-line">Date: {data.comments.issuedDate ?? "-"}</div>
           </article>
         </section>
       </section>

@@ -1460,6 +1460,22 @@ textarea:focus {
   line-height: 1.45;
 }
 
+.result-principal-signature,
+.result-report-principal-signature img {
+  display: block;
+  max-height: 48px;
+  max-width: 180px;
+  width: auto;
+  object-fit: contain;
+}
+
+.result-report-principal-signature {
+  margin-top: 0.35rem;
+  min-height: 48px;
+  display: flex;
+  align-items: flex-end;
+}
+
 .signature-line {
   margin-top: auto;
   padding-top: 1rem;

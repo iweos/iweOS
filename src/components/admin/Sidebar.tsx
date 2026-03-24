@@ -35,7 +35,6 @@ type NavGroup = {
 
 const primaryLinks: NavLink[] = [
   { label: "Dashboard", href: "/app/admin/dashboard", icon: "fas fa-home" },
-  { label: "Payment", href: "/app/admin/payments", icon: "fas fa-money-check-alt" },
   { label: "Teachers", href: "/app/admin/teachers", icon: "fas fa-chalkboard-teacher" },
   { label: "Students", href: "/app/admin/students/manage", icon: "fas fa-user-graduate" },
   { label: "Teacher Portal", href: "/app/teacher/dashboard", icon: "fas fa-user-shield" },
@@ -74,6 +73,12 @@ const groupedLinks: NavGroup[] = [
       { label: "Promotions", href: "/app/admin/grading/promotion", icon: "fas fa-level-up-alt" },
     ],
   },
+  {
+    id: "management",
+    label: "Management",
+    icon: "fas fa-briefcase",
+    items: [{ label: "Payment", href: "/app/admin/payments", icon: "fas fa-money-check-alt" }],
+  },
 ];
 
 const trailingLinks: NavLink[] = [{ label: "Settings", href: "/app/admin/settings", icon: "fas fa-cog" }];
@@ -81,9 +86,9 @@ const trailingLinks: NavLink[] = [{ label: "Settings", href: "/app/admin/setting
 const teacherLinks: NavLink[] = [
   { label: "Dashboard", href: "/app/teacher/dashboard", icon: "fas fa-home" },
   { label: "Students", href: "/app/teacher/students", icon: "fas fa-user-graduate" },
+  { label: "Attendance", href: "/app/teacher/attendance", icon: "fas fa-calendar-check" },
   { label: "Grade Entry", href: "/app/teacher/grade-entry", icon: "fas fa-clipboard-check" },
   { label: "Conduct", href: "/app/teacher/conduct", icon: "fas fa-star" },
-  { label: "Attendance", href: "/app/teacher/attendance", icon: "fas fa-calendar-check" },
   { label: "Comment", href: "/app/teacher/comment", icon: "fas fa-comment-dots" },
   { label: "Results", href: "/app/teacher/results", icon: "fas fa-book-reader" },
 ];

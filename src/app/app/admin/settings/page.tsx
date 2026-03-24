@@ -34,6 +34,7 @@ export default async function AdminSettingsPage({
 
   const activeTab = settingTabs.some((tab) => tab.id === params.tab) ? params.tab! : "school";
   const logoInputValue = school.logoUrl?.startsWith("data:image/") ? "" : school.logoUrl ?? "";
+  const principalSignatureInputValue = school.principalSignatureUrl?.startsWith("data:image/") ? "" : school.principalSignatureUrl ?? "";
 
   return (
     <Section>
@@ -59,6 +60,7 @@ export default async function AdminSettingsPage({
             <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
               <input type="hidden" name="resultTemplate" value={gradingSettings?.resultTemplate ?? "classic_report"} />
               <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
+              <input type="hidden" name="currentPrincipalSignatureUrl" value={school.principalSignatureUrl ?? ""} />
               <label className="d-grid gap-1">
                 <span className="field-label">School Name</span>
                 <input name="name" defaultValue={school.name} className="form-control" required />
@@ -95,6 +97,41 @@ export default async function AdminSettingsPage({
               <label className="d-grid gap-1">
                 <span className="field-label">School Logo URL (Optional)</span>
                 <input name="logoUrl" defaultValue={logoInputValue} className="form-control" placeholder="https://... or leave blank if you upload above" />
+              </label>
+              <label className="d-grid gap-1">
+                <span className="field-label">Upload Principal Signature</span>
+                <input name="principalSignatureFile" type="file" accept="image/*" className="form-control" />
+              </label>
+              <div className="d-grid gap-2">
+                <span className="field-label">Current principal signature</span>
+                {school.principalSignatureUrl ? (
+                  <>
+                    <div className="rounded border bg-white px-3 py-3 d-inline-flex align-items-center justify-content-center" style={{ minHeight: 96 }}>
+                      <img
+                        src={school.principalSignatureUrl}
+                        alt="Principal signature"
+                        className="img-fluid"
+                        style={{ maxHeight: 72, objectFit: "contain" }}
+                      />
+                    </div>
+                    <label className="form-check">
+                      <input name="removePrincipalSignature" type="checkbox" value="on" className="form-check-input" />
+                      <span className="form-check-label">Remove current principal signature</span>
+                    </label>
+                    <p className="small text-muted mb-0">Upload a new file to replace the current principal signature, or tick remove to clear it.</p>
+                  </>
+                ) : (
+                  <p className="small text-muted mb-0">No principal signature uploaded yet.</p>
+                )}
+              </div>
+              <label className="d-grid gap-1 md:col-span-2">
+                <span className="field-label">Principal Signature URL (Optional)</span>
+                <input
+                  name="principalSignatureUrl"
+                  defaultValue={principalSignatureInputValue}
+                  className="form-control"
+                  placeholder="https://... or leave blank if you upload above"
+                />
               </label>
 
               <label className="d-grid gap-1 md:col-span-2">
@@ -141,6 +178,7 @@ export default async function AdminSettingsPage({
                   <input type="hidden" name="code" value={school.code} />
                   <input type="hidden" name="country" value={school.country ?? ""} />
                   <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
+                  <input type="hidden" name="currentPrincipalSignatureUrl" value={school.principalSignatureUrl ?? ""} />
                   <input type="hidden" name="addressLine1" value={school.addressLine1 ?? ""} />
                   <input type="hidden" name="addressLine2" value={school.addressLine2 ?? ""} />
                   <input type="hidden" name="city" value={school.city ?? ""} />
@@ -161,6 +199,10 @@ export default async function AdminSettingsPage({
                     <span className="field-label">Upload School Logo</span>
                     <input name="logoFile" type="file" accept="image/*" className="form-control" />
                   </label>
+                  <label className="d-grid gap-1">
+                    <span className="field-label">Upload Principal Signature</span>
+                    <input name="principalSignatureFile" type="file" accept="image/*" className="form-control" />
+                  </label>
 
                   <div className="d-grid gap-2">
                     <span className="field-label">Current logo</span>
@@ -179,12 +221,43 @@ export default async function AdminSettingsPage({
                       <p className="small text-muted mb-0">No school logo uploaded yet.</p>
                     )}
                   </div>
+                  <div className="d-grid gap-2">
+                    <span className="field-label">Current principal signature</span>
+                    {school.principalSignatureUrl ? (
+                      <>
+                        <div className="rounded border bg-white px-3 py-3 d-inline-flex align-items-center justify-content-center" style={{ minHeight: 96 }}>
+                          <img
+                            src={school.principalSignatureUrl}
+                            alt="Principal signature"
+                            className="img-fluid"
+                            style={{ maxHeight: 72, objectFit: "contain" }}
+                          />
+                        </div>
+                        <label className="form-check">
+                          <input name="removePrincipalSignature" type="checkbox" value="on" className="form-check-input" />
+                          <span className="form-check-label">Remove current principal signature</span>
+                        </label>
+                        <p className="small text-muted mb-0">Upload a new file to replace the current principal signature, or tick remove to clear it.</p>
+                      </>
+                    ) : (
+                      <p className="small text-muted mb-0">No principal signature uploaded yet.</p>
+                    )}
+                  </div>
 
                   <label className="d-grid gap-1 md:col-span-2">
                     <span className="field-label">School Logo URL (Optional)</span>
                     <input
                       name="logoUrl"
                       defaultValue={logoInputValue}
+                      className="form-control"
+                      placeholder="https://... or leave blank if you upload above"
+                    />
+                  </label>
+                  <label className="d-grid gap-1 md:col-span-2">
+                    <span className="field-label">Principal Signature URL (Optional)</span>
+                    <input
+                      name="principalSignatureUrl"
+                      defaultValue={principalSignatureInputValue}
                       className="form-control"
                       placeholder="https://... or leave blank if you upload above"
                     />
@@ -212,6 +285,14 @@ export default async function AdminSettingsPage({
                       <img src={school.logoUrl} alt={school.name} className="img-fluid rounded border" style={{ maxHeight: 140, objectFit: "contain" }} />
                     ) : (
                       <p className="small text-muted mb-0">No school logo added yet.</p>
+                    )}
+                  </div>
+                  <div className="rounded border bg-white px-3 py-3">
+                    <p className="field-label mb-2">Principal Signature</p>
+                    {school.principalSignatureUrl ? (
+                      <img src={school.principalSignatureUrl} alt="Principal signature" className="img-fluid" style={{ maxHeight: 100, objectFit: "contain" }} />
+                    ) : (
+                      <p className="small text-muted mb-0">No principal signature added yet.</p>
                     )}
                   </div>
                   <div className="rounded border bg-white px-3 py-3">

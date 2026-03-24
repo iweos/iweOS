@@ -31,6 +31,7 @@ export type ResultSheetData = {
     name: string;
     code: string;
     logoUrl: string | null;
+    principalSignatureUrl: string | null;
     addressLine1: string | null;
     addressLine2: string | null;
     city: string | null;
@@ -63,6 +64,7 @@ export type ResultSheetData = {
   comments: {
     teacherComment: string | null;
     principalComment: string | null;
+    issuedDate: string | null;
   };
   publication: {
     status: ResultPublicationStatus;
@@ -126,6 +128,7 @@ export async function getStudentResultSheet(params: {
           name: true,
           code: true,
           logoUrl: true,
+          principalSignatureUrl: true,
           addressLine1: true,
           addressLine2: true,
           city: true,
@@ -381,6 +384,7 @@ export async function getStudentResultSheet(params: {
     comments: {
       teacherComment: comment?.comment?.trim() ? comment.comment.trim() : null,
       principalComment: null,
+      issuedDate: formatDate(publication?.publishedAt ?? new Date()),
     },
     publication: publication
       ? {
