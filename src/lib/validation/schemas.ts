@@ -3,8 +3,8 @@ import { z } from "zod";
 const imageAssetSchema = z
   .string()
   .trim()
-  .max(255)
-  .refine((value) => !value || value.startsWith("/uploads/") || /^https?:\/\//i.test(value), {
+  .max(8_000_000)
+  .refine((value) => !value || value.startsWith("/uploads/") || /^https?:\/\//i.test(value) || /^data:image\/[a-z0-9.+-]+;base64,/i.test(value), {
     message: "Use a valid image URL or upload an image file.",
   })
   .optional()

@@ -185,6 +185,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
     : "";
   const activeStudentFullName = activeStudent ? toDisplayName(activeStudent.fullName, "") : "";
   const activeGuardianName = activeStudent ? toDisplayName(activeStudent.guardianName) : "-";
+  const visiblePhotoUrl = activeStudent?.photoUrl?.startsWith("data:image/") ? "" : activeStudent?.photoUrl ?? "";
 
   return (
     <>
@@ -457,7 +458,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                     <Input
                       name="photoUrl"
                       type="text"
-                      defaultValue={activeStudent.photoUrl ?? ""}
+                      defaultValue={visiblePhotoUrl}
                       placeholder="Student photo URL (optional)"
                     />
                   </div>

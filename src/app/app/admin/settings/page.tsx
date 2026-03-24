@@ -33,6 +33,7 @@ export default async function AdminSettingsPage({
   }
 
   const activeTab = settingTabs.some((tab) => tab.id === params.tab) ? params.tab! : "school";
+  const logoInputValue = school.logoUrl?.startsWith("data:image/") ? "" : school.logoUrl ?? "";
 
   return (
     <Section>
@@ -76,7 +77,7 @@ export default async function AdminSettingsPage({
               </label>
               <label className="d-grid gap-1">
                 <span className="field-label">School Logo URL (Optional)</span>
-                <input name="logoUrl" defaultValue={school.logoUrl ?? ""} className="form-control" placeholder="https://... or leave blank if you upload above" />
+                <input name="logoUrl" defaultValue={logoInputValue} className="form-control" placeholder="https://... or leave blank if you upload above" />
               </label>
 
               <label className="d-grid gap-1 md:col-span-2">
@@ -148,7 +149,7 @@ export default async function AdminSettingsPage({
                     <span className="field-label">School Logo URL (Optional)</span>
                     <input
                       name="logoUrl"
-                      defaultValue={school.logoUrl ?? ""}
+                      defaultValue={logoInputValue}
                       className="form-control"
                       placeholder="https://... or leave blank if you upload above"
                     />

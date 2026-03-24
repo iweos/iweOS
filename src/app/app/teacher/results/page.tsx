@@ -1,5 +1,6 @@
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
+import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import { ProfileRole } from "@prisma/client";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { prisma } from "@/lib/server/prisma";
@@ -73,22 +74,25 @@ export default async function TeacherResultsPage({
           </p>
           <p className="section-subtle mb-0">Formula: Total = sum of active assessment item scores, then grade is applied.</p>
         </div>
-        {context.actorProfile.role === ProfileRole.ADMIN && (
-          <form method="get" className="flex items-end gap-2">
-            <label className="space-y-1">
-              <span className="field-label">View As</span>
-              <select name="teacherProfileId" className="select" defaultValue={params.teacherProfileId ?? ""}>
-                <option value="">Admin Override</option>
-                {context.teacherOptions.map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.fullName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <AutoSubmitFilters />
-          </form>
-        )}
+        <div className="flex flex-wrap items-end gap-2">
+          <AdminTeacherWorkspaceActions mode={context.mode} />
+          {context.actorProfile.role === ProfileRole.ADMIN && (
+            <form method="get" className="flex items-end gap-2">
+              <label className="space-y-1">
+                <span className="field-label">View As</span>
+                <select name="teacherProfileId" className="select" defaultValue={params.teacherProfileId ?? ""}>
+                  <option value="">Admin Override</option>
+                  {context.teacherOptions.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.fullName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <AutoSubmitFilters />
+            </form>
+          )}
+        </div>
       </div>
 
       <TableWrap>

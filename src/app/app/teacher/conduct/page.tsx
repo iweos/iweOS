@@ -1,4 +1,5 @@
 import { ProfileRole } from "@prisma/client";
+import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import TeacherConductTable from "@/components/teacher/TeacherConductTable";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
@@ -110,6 +111,11 @@ export default async function TeacherConductPage({
               schoolId: context.actorProfile.schoolId,
               classId: selectedClassId,
               termId: selectedTermId,
+              student: {
+                is: {
+                  status: "active",
+                },
+              },
             },
             include: {
               student: {
@@ -185,6 +191,7 @@ export default async function TeacherConductPage({
                 : `Working as: ${context.effectiveTeacherProfile.fullName}`}
             </p>
           </div>
+          <AdminTeacherWorkspaceActions mode={context.mode} />
         </div>
 
         <form method="get" className="grid gap-2 md:grid-cols-5">

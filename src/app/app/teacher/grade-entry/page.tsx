@@ -1,6 +1,7 @@
 import { ProfileRole } from "@prisma/client";
 import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
+import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import GradeEntryTable from "@/components/teacher/GradeEntryTable";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
@@ -216,6 +217,11 @@ export default async function TeacherGradeEntryPage({
               schoolId: context.actorProfile.schoolId,
               classId: selectedClassId,
               termId: selectedTermId,
+              student: {
+                is: {
+                  status: "active",
+                },
+              },
             },
             include: {
               student: true,
@@ -295,10 +301,11 @@ export default async function TeacherGradeEntryPage({
             <h1 className="section-title">Grade Entry</h1>
             <p className="section-subtle">
               {context.mode === "admin_override"
-                ? "Admin override: submit adjustments across all classes"
+                ? "Opened from Admin -> Grading -> Grade Entry. You are editing scores in admin override mode."
                 : `Working as: ${context.effectiveTeacherProfile.fullName}`}
             </p>
           </div>
+          <AdminTeacherWorkspaceActions mode={context.mode} backHref="/app/admin/grading" sourceLabel="Opened from Admin -> Grading -> Grade Entry" />
         </div>
 
         <form method="get" className="grid gap-2 md:grid-cols-5">

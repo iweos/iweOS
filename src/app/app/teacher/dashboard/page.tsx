@@ -5,6 +5,7 @@ import Card from "@/components/admin/Card";
 import PageHeader from "@/components/admin/PageHeader";
 import StatCard from "@/components/admin/ui/StatCard";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
+import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import TeacherDashboardAnalytics from "@/components/teacher/TeacherDashboardAnalytics";
 
 type TeacherDashboardSearchParams = {
@@ -70,6 +71,11 @@ export default async function TeacherDashboardPage({
               schoolId: context.actorProfile.schoolId,
               termId: activeTerm.id,
               classId: { in: classIds },
+              student: {
+                is: {
+                  status: "active",
+                },
+              },
             },
             include: {
               class: true,
@@ -282,24 +288,27 @@ export default async function TeacherDashboardPage({
         title="Teacher Dashboard"
         subtitle={`Active Term: ${activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "Not configured"}`}
         rightActions={
-          context.actorProfile.role === ProfileRole.ADMIN ? (
-            <form method="get" className="d-flex flex-wrap align-items-end gap-2">
-              <label className="d-grid gap-1">
-                <span className="field-label">View As</span>
-                <select name="teacherProfileId" className="form-select form-select-sm" defaultValue={params.teacherProfileId ?? ""}>
-                  <option value="">Admin Override (All classes)</option>
-                  {context.teacherOptions.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.fullName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button className="btn btn-primary" type="submit">
-                Apply
-              </button>
-            </form>
-          ) : null
+          <div className="d-flex flex-wrap align-items-end gap-2">
+            <AdminTeacherWorkspaceActions mode={context.mode} />
+            {context.actorProfile.role === ProfileRole.ADMIN ? (
+              <form method="get" className="d-flex flex-wrap align-items-end gap-2">
+                <label className="d-grid gap-1">
+                  <span className="field-label">View As</span>
+                  <select name="teacherProfileId" className="form-select form-select-sm" defaultValue={params.teacherProfileId ?? ""}>
+                    <option value="">Admin Override (All classes)</option>
+                    {context.teacherOptions.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.fullName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button className="btn btn-primary" type="submit">
+                  Apply
+                </button>
+              </form>
+            ) : null}
+          </div>
         }
       />
 

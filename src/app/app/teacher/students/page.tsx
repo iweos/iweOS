@@ -3,6 +3,7 @@ import Card from "@/components/admin/Card";
 import PageHeader from "@/components/admin/PageHeader";
 import StatCard from "@/components/admin/ui/StatCard";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
+import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { getGradeForTotal } from "@/lib/server/grading";
@@ -79,6 +80,11 @@ export default async function TeacherStudentsPage({
               schoolId: context.actorProfile.schoolId,
               classId: selectedClassId,
               termId: selectedTermId,
+              student: {
+                is: {
+                  status: "active",
+                },
+              },
             },
             select: {
               studentId: true,
@@ -229,6 +235,7 @@ export default async function TeacherStudentsPage({
               ? "Admin override: view student academic analytics across classes."
               : `Working as: ${context.effectiveTeacherProfile.fullName}`
           }
+          rightActions={<AdminTeacherWorkspaceActions mode={context.mode} />}
         />
 
         <form method="get" className="grid gap-2 md:grid-cols-5">

@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 
 const PUBLIC_ROOT = path.join(process.cwd(), "public");
 const UPLOAD_ROOT = path.join(PUBLIC_ROOT, "uploads");
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function sanitizeSegment(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "file";
@@ -37,9 +38,12 @@ export async function storeUploadedImage(params: {
     throw new Error("Upload a valid image file.");
   }
 
-  if (file.size > 5 * 1024 * 1024) {
+  if (file.size > MAX_IMAGE_BYTES) {
     throw new Error("Image upload must be 5MB or smaller.");
   }
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const mimeType = file.type || "image/png";
 
   const safeFolder = folder.map(sanitizeSegment);
   const safeStem = sanitizeSegment(fileStem);
@@ -48,9 +52,14 @@ export async function storeUploadedImage(params: {
   const absoluteDir = path.join(UPLOAD_ROOT, ...safeFolder);
   const absolutePath = path.join(absoluteDir, fileName);
 
-  await mkdir(absoluteDir, { recursive: true });
-  await writeFile(absolutePath, Buffer.from(await file.arrayBuffer()));
+  try {
+    await mkdir(absoluteDir, { recursive: true });
+    await writeFile(absolutePath, bytes);
 
-  return `/uploads/${safeFolder.join("/")}/${fileName}`;
+    return `/uploads/${safeFolder.join("/")}/${fileName}`;
+  } catch {
+    // Production file systems may be read-only. Fall back to a data URL so
+    // school logos and student photos still save and render reliably.
+    return `data:${mimeType};base64,${bytes.toString("base64")}`;
+  }
 }
-

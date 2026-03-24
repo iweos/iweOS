@@ -200,6 +200,11 @@ export async function saveStudentConductAction(input: SaveStudentConductInput): 
           termId,
           classId,
           studentId,
+          student: {
+            is: {
+              status: "active",
+            },
+          },
         },
         select: { id: true },
       }),
@@ -348,6 +353,11 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
           studentId,
           classId,
           termId,
+          student: {
+            is: {
+              status: "active",
+            },
+          },
         },
         select: { id: true },
       }),
@@ -566,6 +576,11 @@ export async function saveScoresAction(formData: FormData) {
         schoolId: actorProfile.schoolId,
         classId,
         termId,
+        student: {
+          is: {
+            status: "active",
+          },
+        },
       },
       select: {
         studentId: true,
