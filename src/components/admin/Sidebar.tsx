@@ -74,10 +74,18 @@ const groupedLinks: NavGroup[] = [
     ],
   },
   {
-    id: "management",
-    label: "Management",
-    icon: "fas fa-briefcase",
-    items: [{ label: "Payment", href: "/app/admin/payments", icon: "fas fa-money-check-alt" }],
+    id: "payment",
+    label: "Payment",
+    icon: "fas fa-money-check-alt",
+    items: [
+      { label: "Overview", href: "/app/admin/payments", icon: "fas fa-wallet" },
+      { label: "Invoices", href: "/app/admin/payments/invoices", icon: "fas fa-file-invoice-dollar" },
+      { label: "Transactions", href: "/app/admin/payments/transactions", icon: "fas fa-receipt" },
+      { label: "Reconciliation", href: "/app/admin/payments/reconciliation", icon: "fas fa-balance-scale" },
+      { label: "Reports", href: "/app/admin/payments/reports", icon: "fas fa-chart-bar" },
+      { label: "Settings", href: "/app/admin/payments/settings", icon: "fas fa-cogs" },
+      { label: "Imports", href: "/app/admin/payments/imports", icon: "fas fa-file-import" },
+    ],
   },
 ];
 
