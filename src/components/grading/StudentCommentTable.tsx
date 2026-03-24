@@ -18,6 +18,7 @@ type StudentCommentTableProps = {
   termId: string;
   classId: string;
   saveAction: (formData: FormData) => void | Promise<void>;
+  placeholder?: string;
 };
 
 function compareValues(a: StudentCommentRow, b: StudentCommentRow, key: SortKey) {
@@ -29,6 +30,7 @@ export default function StudentCommentTable({
   termId,
   classId,
   saveAction,
+  placeholder = "Enter comment",
 }: StudentCommentTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("fullName");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -91,7 +93,7 @@ export default function StudentCommentTable({
                   defaultValue={row.comment}
                   className="form-control"
                   rows={3}
-                  placeholder="Enter admin / principal comment"
+                  placeholder={placeholder}
                 />
               </Td>
               <Td className="text-end">

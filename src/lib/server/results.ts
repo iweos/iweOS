@@ -379,8 +379,8 @@ export async function getStudentResultSheet(params: {
       timesAbsent: attendance?.timesAbsent ?? 0,
     },
     comments: {
-      teacherComment: null,
-      principalComment: comment?.comment?.trim() ? comment.comment.trim() : null,
+      teacherComment: comment?.comment?.trim() ? comment.comment.trim() : null,
+      principalComment: null,
     },
     publication: publication
       ? {
