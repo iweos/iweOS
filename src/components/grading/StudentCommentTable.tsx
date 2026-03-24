@@ -179,17 +179,17 @@ export default function StudentCommentTable({
         <thead>
           <tr>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("studentCode")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("studentCode")}>
                 Student code <i className={sortIcon("studentCode")} />
               </button>
             </Th>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("fullName")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("fullName")}>
                 Student <i className={sortIcon("fullName")} />
               </button>
             </Th>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("comment")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("comment")}>
                 Comment <i className={sortIcon("comment")} />
               </button>
             </Th>

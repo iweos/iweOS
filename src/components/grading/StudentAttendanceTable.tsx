@@ -182,27 +182,27 @@ export default function StudentAttendanceTable({ rows: initialRows, termId, clas
         <thead>
           <tr>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("studentCode")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("studentCode")}>
                 Student code <i className={sortIcon("studentCode")} />
               </button>
             </Th>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("fullName")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("fullName")}>
                 Student <i className={sortIcon("fullName")} />
               </button>
             </Th>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("timesSchoolOpened")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("timesSchoolOpened")}>
                 Times school open <i className={sortIcon("timesSchoolOpened")} />
               </button>
             </Th>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("timesPresent")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("timesPresent")}>
                 Times present <i className={sortIcon("timesPresent")} />
               </button>
             </Th>
             <Th>
-              <button type="button" className="btn btn-link p-0 text-decoration-none fw-semibold" onClick={() => updateSort("timesAbsent")}>
+              <button type="button" className="iwe-table-sort-button" onClick={() => updateSort("timesAbsent")}>
                 Times absent <i className={sortIcon("timesAbsent")} />
               </button>
             </Th>
