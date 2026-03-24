@@ -12,6 +12,7 @@ type AdminShellProps = {
   settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
+  teacherPortalAdmin?: boolean;
 };
 
 export default function AdminShell({
@@ -21,6 +22,7 @@ export default function AdminShell({
   settingsHref,
   profileName,
   profileEmail,
+  teacherPortalAdmin = false,
 }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
@@ -61,6 +63,7 @@ export default function AdminShell({
         settingsHref={resolvedSettingsHref}
         profileName={profileName}
         profileEmail={profileEmail}
+        teacherPortalAdmin={teacherPortalAdmin}
       />
       <div className="main-panel">
         <Topbar

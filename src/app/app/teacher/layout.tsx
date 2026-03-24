@@ -19,6 +19,7 @@ export default async function TeacherAreaLayout({ children }: { children: React.
         settingsHref={settingsHref}
         profileName={profile.fullName}
         profileEmail={profile.email}
+        teacherPortalAdmin={profile.role === ProfileRole.ADMIN}
       >
         {children}
       </AdminShell>

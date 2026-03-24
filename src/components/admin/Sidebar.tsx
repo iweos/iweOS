@@ -17,6 +17,7 @@ type SidebarProps = {
   settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
+  teacherPortalAdmin?: boolean;
 };
 
 type NavLink = {
@@ -34,6 +35,7 @@ type NavGroup = {
 
 const primaryLinks: NavLink[] = [
   { label: "Dashboard", href: "/app/admin/dashboard", icon: "fas fa-home" },
+  { label: "Teacher Portal", href: "/app/teacher/dashboard", icon: "fas fa-user-shield" },
   { label: "Payment", href: "/app/admin/payments", icon: "fas fa-money-check-alt" },
   { label: "Teachers", href: "/app/admin/teachers", icon: "fas fa-chalkboard-teacher" },
   { label: "Students", href: "/app/admin/students/manage", icon: "fas fa-user-graduate" },
@@ -108,6 +110,7 @@ export default function Sidebar({
   settingsHref,
   profileName,
   profileEmail,
+  teacherPortalAdmin = false,
 }: SidebarProps) {
   const { signOut } = useClerk();
   const { sessionId } = useAuth();
@@ -116,7 +119,12 @@ export default function Sidebar({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const isTeacherMode = mode === "teacher";
 
-  const mainLinks = isTeacherMode ? teacherLinks : primaryLinks;
+  const mainLinks =
+    isTeacherMode && teacherPortalAdmin
+      ? [{ label: "Back to Administration", href: "/app/admin/dashboard", icon: "fas fa-arrow-left" }, ...teacherLinks]
+      : isTeacherMode
+        ? teacherLinks
+        : primaryLinks;
   const menuGroups = isTeacherMode ? [] : groupedLinks;
   const footerLinks = isTeacherMode ? (settingsHref ? [{ label: "Settings", href: settingsHref, icon: "fas fa-cog" }] : []) : trailingLinks;
 
