@@ -455,10 +455,11 @@ html.kai-admin table {
 
 html.kai-admin .table > :not(caption) > * > th,
 html.kai-admin table th {
-  color: #6c798f;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.72rem;
+  color: #111827;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.9rem;
+  font-family: var(--font-ui), Inter, "Segoe UI", sans-serif;
   font-weight: 700;
   background: #f8fafc;
   border-color: #edf1f4;

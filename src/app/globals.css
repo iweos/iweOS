@@ -172,8 +172,9 @@ td {
 }
 
 th {
-  color: var(--muted);
-  font-size: 0.8rem;
+  color: #111827;
+  font-family: var(--font-ui), Inter, "Segoe UI", sans-serif;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
