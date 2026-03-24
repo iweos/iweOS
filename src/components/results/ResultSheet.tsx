@@ -1,4 +1,5 @@
 import type { ResultSheetData } from "@/lib/server/results";
+import ResultPerformanceLineChart from "@/components/results/ResultPerformanceLineChart";
 
 function formatNumber(value: number, digits = 1) {
   return Number.isFinite(value) ? value.toFixed(digits) : "-";
@@ -74,117 +75,6 @@ function getGradeBandTone(grade: string) {
     return "mid";
   }
   return "neutral";
-}
-
-function shortenSubjectName(value: string, maxLength = 18) {
-  if (value.length <= maxLength) {
-    return value;
-  }
-
-  return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
-}
-
-function ResultPerformanceChart({ data, compact = false }: { data: ResultSheetData; compact?: boolean }) {
-  if (data.rows.length === 0) {
-    return (
-      <div className="result-performance-empty">
-        No score rows available yet to compare student performance against class average.
-      </div>
-    );
-  }
-
-  const chartRows = data.rows.map((row) => ({
-    subjectId: row.subjectId,
-    label: shortenSubjectName(row.subjectName, compact ? 14 : 20),
-    fullLabel: row.subjectName,
-    studentTotal: row.total,
-    classAverage: row.classAverage,
-  }));
-  const chartWidth = compact ? 700 : 820;
-  const labelWidth = compact ? 130 : 170;
-  const barAreaWidth = compact ? 430 : 520;
-  const valueGap = compact ? 24 : 28;
-  const valueColumnWidth = compact ? 58 : 64;
-  const topPadding = compact ? 38 : 44;
-  const rowGap = compact ? 28 : 34;
-  const chartHeight = topPadding + chartRows.length * rowGap + 16;
-  const maxValue = Math.max(
-    100,
-    ...chartRows.flatMap((row) => [row.studentTotal, row.classAverage]),
-  );
-
-  return (
-    <div className={`result-performance-card ${compact ? "is-compact" : ""}`}>
-      <div className="result-performance-header">
-        <div>
-          <p className="section-heading mb-1">Performance vs class average</p>
-          <p className="section-subtle mb-0">Subject-by-subject comparison for this result.</p>
-        </div>
-        <div className="result-performance-legend" aria-hidden="true">
-          <span className="result-performance-legend-item">
-            <span className="result-performance-swatch is-student" />
-            Student
-          </span>
-          <span className="result-performance-legend-item">
-            <span className="result-performance-swatch is-class" />
-            Class average
-          </span>
-        </div>
-      </div>
-
-      <div className="result-performance-chart-wrap">
-        <svg
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          className="result-performance-chart"
-          role="img"
-          aria-label="Student performance against class average by subject"
-        >
-          <line x1={labelWidth} y1={22} x2={labelWidth + barAreaWidth} y2={22} className="result-performance-axis" />
-          {[0, 25, 50, 75, 100].map((tick) => {
-            const x = labelWidth + (tick / maxValue) * barAreaWidth;
-
-            return (
-              <g key={tick}>
-                <line x1={x} y1={22} x2={x} y2={chartHeight - 8} className="result-performance-grid" />
-                <text x={x} y={14} textAnchor="middle" className="result-performance-tick">
-                  {tick}
-                </text>
-              </g>
-            );
-          })}
-
-          {chartRows.map((row, index) => {
-            const baseY = topPadding + index * rowGap;
-            const studentWidth = (row.studentTotal / maxValue) * barAreaWidth;
-            const classWidth = (row.classAverage / maxValue) * barAreaWidth;
-            const studentY = baseY - 8;
-            const classY = baseY + 6;
-            const studentValueX = labelWidth + barAreaWidth + valueGap;
-            const classValueX = studentValueX + valueColumnWidth;
-
-            return (
-              <g key={row.subjectId}>
-                <text x={labelWidth - 10} y={baseY + 4} textAnchor="end" className="result-performance-label">
-                  <title>{row.fullLabel}</title>
-                  {row.label}
-                </text>
-                <rect x={labelWidth} y={studentY} width={barAreaWidth} height={8} rx={4} className="result-performance-track" />
-                <rect x={labelWidth} y={classY} width={barAreaWidth} height={8} rx={4} className="result-performance-track is-light" />
-                <rect x={labelWidth} y={studentY} width={Math.max(studentWidth, 2)} height={8} rx={4} className="result-performance-bar is-student" />
-                <rect x={labelWidth} y={classY} width={Math.max(classWidth, 2)} height={8} rx={4} className="result-performance-bar is-class" />
-                <text x={studentValueX} y={baseY - 1} className="result-performance-value is-student">
-                  {formatNumber(row.studentTotal, 1)}
-                </text>
-                <text x={classValueX} y={baseY - 1} className="result-performance-value is-class">
-                  {formatNumber(row.classAverage, 1)}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    </div>
-  );
 }
 
 type ResultSheetProps = {
@@ -272,7 +162,7 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
       </section>
 
       <section className="card card-body">
-        <ResultPerformanceChart data={data} />
+        <ResultPerformanceLineChart rows={data.rows} />
       </section>
 
       <section className="card card-body">
@@ -604,7 +494,7 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
         </section>
 
         <section className="result-report-performance">
-          <ResultPerformanceChart data={data} compact />
+          <ResultPerformanceLineChart rows={data.rows} compact />
         </section>
 
         <section className="result-report-grade-key">
