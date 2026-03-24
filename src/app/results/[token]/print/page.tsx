@@ -47,7 +47,7 @@ export default async function SharedResultPrintPage({
         </div>
       </section>
       <div className="result-print-preview">
-        <ResultSheet data={resultSheet} mode="public" />
+        <ResultSheet data={resultSheet} mode="public" chartMode="print" />
       </div>
     </main>
   );

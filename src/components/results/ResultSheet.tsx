@@ -81,11 +81,30 @@ type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
   variant?: "default" | "report-card";
+  chartMode?: "interactive" | "print";
 };
 
-function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
+function getFirstName(fullName: string) {
+  const trimmed = fullName.trim();
+  if (!trimmed) {
+    return "Student";
+  }
+
+  return trimmed.split(/\s+/)[0] ?? "Student";
+}
+
+function DefaultResultSheet({
+  data,
+  mode,
+  chartMode,
+}: {
+  data: ResultSheetData;
+  mode: "admin" | "public";
+  chartMode: "interactive" | "print";
+}) {
   const averageTone = getGradeBandTone(data.summary.grade);
   const positionTone = getPositionTone(data.summary.position);
+  const studentFirstName = getFirstName(data.student.fullName);
 
   return (
     <div
@@ -162,7 +181,18 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
       </section>
 
       <section className="card card-body">
-        <ResultPerformanceLineChart rows={data.rows} />
+        <ResultPerformanceLineChart
+          studentFirstName={studentFirstName}
+          rows={data.rows.map((row) => ({
+            subjectId: row.subjectId,
+            subjectName: row.subjectName,
+            total: row.total,
+            classAverage: row.classAverage,
+            classHighest: row.classHighest,
+            classLowest: row.classLowest,
+          }))}
+          showExtendedBenchmarks={chartMode !== "print"}
+        />
       </section>
 
       <section className="card card-body">
@@ -274,11 +304,20 @@ function DefaultResultSheet({ data, mode }: { data: ResultSheetData; mode: "admi
   );
 }
 
-function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "admin" | "public" }) {
+function ReportCardResultSheet({
+  data,
+  mode,
+  chartMode,
+}: {
+  data: ResultSheetData;
+  mode: "admin" | "public";
+  chartMode: "interactive" | "print";
+}) {
   const schoolAddress = buildSchoolAddress(data.school);
   const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
   const overallAverageTone = getGradeBandTone(data.summary.grade);
   const overallPositionTone = getPositionTone(data.summary.position);
+  const studentFirstName = getFirstName(data.student.fullName);
 
   return (
     <div
@@ -494,7 +533,19 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
         </section>
 
         <section className="result-report-performance">
-          <ResultPerformanceLineChart rows={data.rows} compact />
+          <ResultPerformanceLineChart
+            studentFirstName={studentFirstName}
+            rows={data.rows.map((row) => ({
+              subjectId: row.subjectId,
+              subjectName: row.subjectName,
+              total: row.total,
+              classAverage: row.classAverage,
+              classHighest: row.classHighest,
+              classLowest: row.classLowest,
+            }))}
+            compact
+            showExtendedBenchmarks={chartMode !== "print"}
+          />
         </section>
 
         <section className="result-report-grade-key">
@@ -538,12 +589,12 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
   );
 }
 
-export default function ResultSheet({ data, mode = "admin", variant }: ResultSheetProps) {
+export default function ResultSheet({ data, mode = "admin", variant, chartMode = "interactive" }: ResultSheetProps) {
   const resolvedVariant = variant ?? (data.resultTemplate === "classic_report" ? "report-card" : "default");
 
   if (resolvedVariant === "report-card") {
-    return <ReportCardResultSheet data={data} mode={mode} />;
+    return <ReportCardResultSheet data={data} mode={mode} chartMode={chartMode} />;
   }
 
-  return <DefaultResultSheet data={data} mode={mode} />;
+  return <DefaultResultSheet data={data} mode={mode} chartMode={chartMode} />;
 }
