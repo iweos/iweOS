@@ -276,7 +276,7 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
       <section className="result-report-shell">
         <header className="result-report-header">
           <div className="result-report-brand">
-            <div className="result-report-logo">
+            <div className={`result-report-logo ${data.school.logoUrl ? "has-image" : "is-empty"}`}>
               {data.school.logoUrl ? <img src={data.school.logoUrl} alt={data.school.name} /> : <span>{data.school.name.slice(0, 2).toUpperCase()}</span>}
             </div>
             <div className="result-report-school">
@@ -297,7 +297,7 @@ function ReportCardResultSheet({ data, mode }: { data: ResultSheetData; mode: "a
 
         <section className="result-report-student-meta">
           <div className="result-report-student-photo-wrap">
-            <div className="result-report-student-photo">
+            <div className={`result-report-student-photo ${data.student.photoUrl ? "has-image" : "is-empty"}`}>
               {data.student.photoUrl ? (
                 <img src={data.student.photoUrl} alt={data.student.fullName} />
               ) : (

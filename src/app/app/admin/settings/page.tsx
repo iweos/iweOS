@@ -75,6 +75,23 @@ export default async function AdminSettingsPage({
                 <span className="field-label">Upload School Logo</span>
                 <input name="logoFile" type="file" accept="image/*" className="form-control" />
               </label>
+              <div className="d-grid gap-2">
+                <span className="field-label">Current logo</span>
+                {school.logoUrl ? (
+                  <>
+                    <div className="rounded border bg-white px-3 py-3 d-inline-flex align-items-center justify-content-center" style={{ minHeight: 96 }}>
+                      <img src={school.logoUrl} alt={school.name} className="img-fluid" style={{ maxHeight: 72, objectFit: "contain" }} />
+                    </div>
+                    <label className="form-check">
+                      <input name="removeLogo" type="checkbox" value="on" className="form-check-input" />
+                      <span className="form-check-label">Remove current logo</span>
+                    </label>
+                    <p className="small text-muted mb-0">Upload a new file to replace the current logo, or tick remove if you want to clear it.</p>
+                  </>
+                ) : (
+                  <p className="small text-muted mb-0">No school logo uploaded yet.</p>
+                )}
+              </div>
               <label className="d-grid gap-1">
                 <span className="field-label">School Logo URL (Optional)</span>
                 <input name="logoUrl" defaultValue={logoInputValue} className="form-control" placeholder="https://... or leave blank if you upload above" />
@@ -144,6 +161,24 @@ export default async function AdminSettingsPage({
                     <span className="field-label">Upload School Logo</span>
                     <input name="logoFile" type="file" accept="image/*" className="form-control" />
                   </label>
+
+                  <div className="d-grid gap-2">
+                    <span className="field-label">Current logo</span>
+                    {school.logoUrl ? (
+                      <>
+                        <div className="rounded border bg-white px-3 py-3 d-inline-flex align-items-center justify-content-center" style={{ minHeight: 96 }}>
+                          <img src={school.logoUrl} alt={school.name} className="img-fluid" style={{ maxHeight: 72, objectFit: "contain" }} />
+                        </div>
+                        <label className="form-check">
+                          <input name="removeLogo" type="checkbox" value="on" className="form-check-input" />
+                          <span className="form-check-label">Remove current logo</span>
+                        </label>
+                        <p className="small text-muted mb-0">Upload a new file to replace the current logo, or tick remove if you want to clear it.</p>
+                      </>
+                    ) : (
+                      <p className="small text-muted mb-0">No school logo uploaded yet.</p>
+                    )}
+                  </div>
 
                   <label className="d-grid gap-1 md:col-span-2">
                     <span className="field-label">School Logo URL (Optional)</span>

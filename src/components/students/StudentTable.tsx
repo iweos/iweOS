@@ -455,6 +455,25 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                     </label>
                   </div>
                   <div className="col-md-6">
+                    <div className="d-grid gap-2">
+                      <span className="field-label">Current photo</span>
+                      {activeStudent.photoUrl ? (
+                        <>
+                          <div className="rounded border bg-white px-3 py-3 d-inline-flex align-items-center justify-content-center" style={{ minHeight: 96 }}>
+                            <img src={activeStudent.photoUrl} alt={activeStudentFullName || "Student"} className="img-fluid rounded" style={{ maxHeight: 72, objectFit: "cover" }} />
+                          </div>
+                          <label className="form-check">
+                            <input name="removePhoto" type="checkbox" value="on" className="form-check-input" />
+                            <span className="form-check-label">Remove current photo</span>
+                          </label>
+                          <p className="small text-muted mb-0">Upload a new image to replace the current photo, or tick remove to clear it.</p>
+                        </>
+                      ) : (
+                        <p className="small text-muted mb-0">No student photo uploaded yet.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-md-6">
                     <Input
                       name="photoUrl"
                       type="text"

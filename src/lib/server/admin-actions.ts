@@ -49,11 +49,16 @@ async function resolveUploadedImage(
   options: {
     fileKey: string;
     valueKey: string;
+    removeKey?: string;
     currentValue?: string;
     folder: string[];
     fileStem: string;
   },
 ) {
+  if (options.removeKey && formValue(formData, options.removeKey) === "on") {
+    return "";
+  }
+
   const uploadedFile = formData.get(options.fileKey);
   if (uploadedFile instanceof File && uploadedFile.size > 0) {
     return storeUploadedImage({
@@ -495,6 +500,7 @@ export async function updateSchoolAction(formData: FormData) {
   const resolvedLogoUrl = await resolveUploadedImage(formData, {
     fileKey: "logoFile",
     valueKey: "logoUrl",
+    removeKey: "removeLogo",
     currentValue: formValue(formData, "currentLogoUrl"),
     folder: ["schools", profile.schoolId],
     fileStem: "school-logo",
@@ -1160,6 +1166,7 @@ export async function updateStudentAction(formData: FormData) {
   const resolvedPhotoUrl = await resolveUploadedImage(formData, {
     fileKey: "photoFile",
     valueKey: "photoUrl",
+    removeKey: "removePhoto",
     currentValue: formValue(formData, "currentPhotoUrl"),
     folder: ["students", profile.schoolId],
     fileStem: `student-${studentId || "record"}`,
