@@ -236,6 +236,9 @@ html.kai-admin .card-round {
 
 html.kai-admin .card .card-title {
   margin-bottom: 0;
+  color: #111827 !important;
+  font-family: var(--font-ui), Inter, "Segoe UI", sans-serif;
+  font-weight: 700 !important;
 }
 
 html.kai-admin .card-stats .card-body {
