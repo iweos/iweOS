@@ -1154,6 +1154,122 @@ textarea:focus {
   color: #475569;
 }
 
+.result-performance-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.result-performance-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.result-performance-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  font-size: 0.82rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.result-performance-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.result-performance-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.result-performance-swatch.is-student,
+.result-performance-bar.is-student {
+  fill: #2f6b3f;
+  background: #2f6b3f;
+}
+
+.result-performance-swatch.is-class,
+.result-performance-bar.is-class {
+  fill: #195da3;
+  background: #195da3;
+}
+
+.result-performance-chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.result-performance-chart {
+  width: 100%;
+  min-width: 680px;
+  height: auto;
+  display: block;
+}
+
+.result-performance-axis,
+.result-performance-grid {
+  stroke: #d1d5db;
+  stroke-width: 1;
+}
+
+.result-performance-grid {
+  stroke-dasharray: 4 4;
+}
+
+.result-performance-track {
+  fill: #dbe7df;
+}
+
+.result-performance-track.is-light {
+  fill: #e3edf7;
+}
+
+.result-performance-tick,
+.result-performance-label,
+.result-performance-value {
+  font-family: var(--font-ui), Inter, "Segoe UI", sans-serif;
+  fill: #111827;
+}
+
+.result-performance-tick {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.result-performance-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.result-performance-value {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.result-performance-value.is-student {
+  fill: #2f6b3f;
+}
+
+.result-performance-value.is-class {
+  fill: #195da3;
+}
+
+.result-performance-empty {
+  border: 1px dashed #d1d5db;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
 .result-report-card {
   color: #111827;
 }
@@ -1519,6 +1635,52 @@ textarea:focus {
   min-height: 74px;
 }
 
+.result-report-performance {
+  margin-top: 1rem;
+  border: 1px solid #111827;
+  background: #fff;
+  padding: 0.7rem 0.8rem;
+}
+
+.result-report-performance .result-performance-card {
+  gap: 0.7rem;
+}
+
+.result-report-performance .result-performance-header {
+  gap: 0.55rem;
+}
+
+.result-report-performance .result-performance-legend {
+  font-size: 0.72rem;
+}
+
+.result-report-performance .result-performance-swatch {
+  width: 0.6rem;
+  height: 0.6rem;
+}
+
+.result-report-performance .result-performance-chart {
+  min-width: 620px;
+}
+
+.result-report-performance .result-performance-tick {
+  font-size: 10px;
+}
+
+.result-report-performance .result-performance-label,
+.result-report-performance .result-performance-value {
+  font-size: 11px;
+}
+
+.result-report-performance .section-heading {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.result-report-performance .section-subtle {
+  font-size: 0.72rem;
+}
+
 .result-print-page-break {
   break-before: page;
   page-break-before: always;
@@ -1659,6 +1821,37 @@ textarea:focus {
   padding: 0.45rem 0.55rem;
 }
 
+.result-print-preview .result-report-performance {
+  margin-top: 0.7rem;
+  padding: 0.4rem 0.45rem;
+}
+
+.result-print-preview .result-report-performance .result-performance-card {
+  gap: 0.4rem;
+}
+
+.result-print-preview .result-report-performance .result-performance-legend {
+  font-size: 0.56rem;
+  gap: 0.55rem;
+}
+
+.result-print-preview .result-report-performance .result-performance-label,
+.result-print-preview .result-report-performance .result-performance-value {
+  font-size: 9px;
+}
+
+.result-print-preview .result-report-performance .result-performance-tick {
+  font-size: 8px;
+}
+
+.result-print-preview .result-report-performance .section-heading {
+  font-size: 0.62rem;
+}
+
+.result-print-preview .result-report-performance .section-subtle {
+  font-size: 0.54rem;
+}
+
 .student-profile-photo {
   width: 72px;
   height: 88px;
@@ -1725,6 +1918,10 @@ textarea:focus {
 
   .result-print-preview .result-report-school {
     text-align: center;
+  }
+
+  .result-performance-chart {
+    min-width: 620px;
   }
 }
 
@@ -1856,6 +2053,28 @@ textarea:focus {
   .result-print-preview .result-report-overall-remark {
     min-height: 42px;
     padding: 0.34rem 0.42rem;
+  }
+
+  .result-print-preview .result-report-performance {
+    margin-top: 0.55rem;
+    padding: 0.3rem 0.35rem;
+  }
+
+  .result-print-preview .result-report-performance .result-performance-chart {
+    min-width: 0;
+  }
+
+  .result-print-preview .result-report-performance .result-performance-label,
+  .result-print-preview .result-report-performance .result-performance-value {
+    font-size: 8px;
+  }
+
+  .result-print-preview .result-report-performance .result-performance-tick {
+    font-size: 7px;
+  }
+
+  .result-print-preview .result-report-performance .result-performance-legend {
+    font-size: 0.5rem;
   }
 }
 
