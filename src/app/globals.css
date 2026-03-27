@@ -34,26 +34,26 @@
 html[data-theme="dark"] {
   --brand-primary: #7bc792;
   --brand-primary-strong: #58a372;
-  --brand-primary-soft: #183223;
+  --brand-primary-soft: #1a2b20;
   --brand-secondary: #e3b276;
   --brand-secondary-strong: #c99557;
-  --brand-secondary-soft: #342515;
-  --admin-bg: #0d1712;
-  --admin-card: #13211a;
-  --admin-border: #274034;
-  --admin-muted: #a5baa8;
-  --admin-text: #edf7ef;
-  --admin-shadow: 0 16px 36px rgb(2 10 6 / 0.42);
-  --bg: #09130f;
-  --bg-strong: #10211a;
-  --fg: #edf7ef;
-  --muted: #a5baa8;
-  --surface: #13211a;
-  --surface-soft: #183026;
-  --line: #274034;
-  --line-strong: #3f6654;
+  --brand-secondary-soft: #2f261a;
+  --admin-bg: #0f1115;
+  --admin-card: #171a21;
+  --admin-border: #2b303b;
+  --admin-muted: #a7afbe;
+  --admin-text: #edf2fb;
+  --admin-shadow: 0 16px 36px rgb(2 6 23 / 0.42);
+  --bg: #0d1015;
+  --bg-strong: #161b22;
+  --fg: #edf2fb;
+  --muted: #a7afbe;
+  --surface: #171a21;
+  --surface-soft: #1d222b;
+  --line: #2b303b;
+  --line-strong: #434a58;
   --danger: #f87171;
-  --panel-shadow: 0 18px 40px rgb(2 10 6 / 0.38);
+  --panel-shadow: 0 18px 40px rgb(2 6 23 / 0.38);
 }
 
 * {
@@ -73,8 +73,8 @@ body {
 
 html[data-theme="dark"] body {
   background:
-    radial-gradient(1200px 520px at -5% -15%, rgb(42 92 60 / 0.34) 0%, transparent 55%),
-    radial-gradient(1000px 460px at 110% -10%, rgb(82 54 24 / 0.24) 0%, transparent 50%),
+    radial-gradient(1200px 520px at -5% -15%, rgb(41 77 54 / 0.16) 0%, transparent 55%),
+    radial-gradient(1000px 460px at 110% -10%, rgb(73 47 22 / 0.14) 0%, transparent 50%),
     var(--bg);
 }
 
