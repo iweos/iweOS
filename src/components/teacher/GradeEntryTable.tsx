@@ -196,8 +196,9 @@ export default function GradeEntryTable({
             };
           };
 
-          setRows((current) => current.map(mergeSavedRow));
-          rowsRef.current = rowsRef.current.map(mergeSavedRow);
+          const mergedRows = rowsRef.current.map(mergeSavedRow);
+          rowsRef.current = mergedRows;
+          setRows(mergedRows);
           setRowStatus(studentId, { tone: "saved", message: "Saved" });
           scheduleStatusClear(studentId);
         })
