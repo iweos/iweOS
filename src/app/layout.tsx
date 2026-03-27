@@ -5,6 +5,7 @@ import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import ClerkDiagnosticsClient from "@/components/ClerkDiagnosticsClient";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
+import ThemeSync from "@/components/ThemeSync";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -59,8 +60,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <link rel="icon" href="/favicon-dove.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
           <link rel="icon" href="/favicon-dove-white.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
           <link rel="shortcut icon" href="/favicon-dove.svg" />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function () {
+                  try {
+                    var stored = window.localStorage.getItem('iweos-theme');
+                    var theme = stored === 'dark' || stored === 'light'
+                      ? stored
+                      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    document.documentElement.dataset.theme = theme;
+                    document.documentElement.style.colorScheme = theme;
+                  } catch (error) {}
+                })();
+              `,
+            }}
+          />
         </head>
         <body className={`${display.variable} ${ui.variable} ui`}>
+          <ThemeSync />
           <ClerkDiagnosticsClient />
           <Suspense fallback={null}>
             <GlobalPendingIndicator />

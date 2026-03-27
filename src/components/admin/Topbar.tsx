@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import BrandLogo from "@/components/BrandLogo";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type TopbarProps = {
   onMenuToggle: () => void;
@@ -90,7 +91,7 @@ export default function Topbar({
             </button>
           </div>
           <div className="topbar-mobile-actions">
-            <span className="mobile-header-spacer" aria-hidden="true" />
+            <ThemeToggle className="btn btn-toggle mobile-header-action mobile-theme-toggle" />
           </div>
         </div>
       </div>
@@ -113,6 +114,9 @@ export default function Topbar({
           </nav>
 
           <ul className="navbar-nav topbar-nav ms-md-auto align-items-center">
+            <li className="nav-item topbar-icon hidden-caret">
+              <ThemeToggle className="nav-link border-0 bg-transparent topbar-theme-toggle" />
+            </li>
             <li className="nav-item topbar-icon dropdown hidden-caret">
               <button
                 type="button"
