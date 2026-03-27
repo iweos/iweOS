@@ -402,7 +402,7 @@ export default async function TeacherGradeEntryPage({
                 values: Object.fromEntries(
                   assessmentTypes.map((assessment) => [
                     assessment.id,
-                    score?.values.get(assessment.id)?.toString() ?? "0",
+                    score?.values.get(assessment.id)?.toString() ?? "",
                   ]),
                 ),
               };

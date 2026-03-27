@@ -192,6 +192,10 @@ function parseNumberishScoreOrZero(raw: string | number | null | undefined) {
   return parsed.data;
 }
 
+function isBlankNumberish(raw: string | number | null | undefined) {
+  return raw === null || raw === undefined || (typeof raw === "string" && raw.trim() === "");
+}
+
 function parseNumberishConductOrZero(raw: string | number | null | undefined) {
   const parsed = conductValueSchema.safeParse(raw ?? "0");
   if (!parsed.success) {
@@ -655,7 +659,7 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
             },
           });
 
-    const [assignment, term, classSubject, gradeScale, enrollment] = await Promise.all([
+    const [assignment, term, classSubject, gradeScale, enrollment, existingScore] = await Promise.all([
       assignmentPromise,
       prisma.term.findFirst({
         where: {
@@ -688,6 +692,18 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
         },
         select: { id: true },
       }),
+      prisma.score.findUnique({
+        where: {
+          studentId_subjectId_termId: {
+            studentId,
+            subjectId,
+            termId,
+          },
+        },
+        include: {
+          assessmentValues: true,
+        },
+      }),
     ]);
     const assessmentSetup = await getAssessmentTypesForTerm(actorProfile.schoolId, termId);
     const assessmentTypes = assessmentSetup.types;
@@ -712,8 +728,19 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
     }
 
     const submittedValueMap = new Map(input.scores.map((item) => [item.assessmentTypeId, item.value]));
+    const existingValueMap = new Map(
+      (existingScore?.assessmentValues ?? []).map((item) => [item.assessmentTypeId, Number(item.value)]),
+    );
     const assessmentInputs = assessmentTypes.map((assessment) => {
-      const value = parseNumberishScoreOrZero(submittedValueMap.get(assessment.id));
+      const rawValue = submittedValueMap.get(assessment.id);
+      const hasSubmittedValue = !isBlankNumberish(rawValue);
+      const existingValue = existingValueMap.get(assessment.id);
+      const hasExistingValue = existingValue !== undefined;
+      const value = hasSubmittedValue
+        ? parseNumberishScoreOrZero(rawValue)
+        : hasExistingValue
+          ? existingValue
+          : 0;
       if (value > assessment.weight) {
         throw new Error(`${assessment.name} cannot exceed ${assessment.weight}.`);
       }
@@ -721,6 +748,7 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
         name: assessment.name,
         assessmentTypeId: assessment.id,
         value,
+        isRecorded: hasSubmittedValue || hasExistingValue,
         weight: assessment.weight,
       };
     });
@@ -778,6 +806,10 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
       });
 
       for (const item of assessmentInputs) {
+        if (!item.isRecorded) {
+          continue;
+        }
+
         await tx.scoreAssessmentValue.upsert({
           where: {
             scoreId_assessmentTypeId: {
@@ -808,7 +840,9 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
       message: "Scores saved successfully.",
       total,
       grade,
-      values: Object.fromEntries(assessmentInputs.map((item) => [item.assessmentTypeId, item.value.toString()])),
+      values: Object.fromEntries(
+        assessmentInputs.map((item) => [item.assessmentTypeId, item.isRecorded ? item.value.toString() : ""]),
+      ),
     };
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {

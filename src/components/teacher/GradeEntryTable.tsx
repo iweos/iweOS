@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { saveStudentScoresAction, type SaveStudentScoresInput, type SaveStudentScoresResult } from "@/lib/server/teacher-actions";
 
@@ -55,12 +55,13 @@ export default function GradeEntryTable({
   const [isPending, startTransition] = useTransition();
   const clearTimersRef = useRef<Record<string, number>>({});
   const requestVersionRef = useRef<Record<string, number>>({});
+  const rowsRef = useRef(initialRows);
 
   const totalColumns = assessmentTypes.length + 4;
-  const rowsByStudentId = useMemo(() => new Map(rows.map((row) => [row.studentId, row])), [rows]);
 
   useEffect(() => {
     setRows(initialRows);
+    rowsRef.current = initialRows;
     setRowStatusByStudentId({});
     requestVersionRef.current = {};
 
@@ -108,23 +109,24 @@ export default function GradeEntryTable({
   }
 
   function handleValueChange(studentId: string, assessmentTypeId: string, nextValue: string) {
-    setRows((current) =>
-      current.map((row) =>
-        row.studentId === studentId
-          ? {
-              ...row,
-              values: {
-                ...row.values,
-                [assessmentTypeId]: nextValue,
-              },
-            }
-          : row,
-      ),
+    const nextRows = rowsRef.current.map((row) =>
+      row.studentId === studentId
+        ? {
+            ...row,
+            values: {
+              ...row.values,
+              [assessmentTypeId]: nextValue,
+            },
+          }
+        : row,
     );
+
+    rowsRef.current = nextRows;
+    setRows(nextRows);
   }
 
   function saveRow(studentId: string) {
-    const row = rowsByStudentId.get(studentId);
+    const row = rowsRef.current.find((currentRow) => currentRow.studentId === studentId);
     if (!row) {
       return;
     }
@@ -137,7 +139,7 @@ export default function GradeEntryTable({
       studentId,
       scores: assessmentTypes.map((assessment) => ({
         assessmentTypeId: assessment.id,
-        value: row.values[assessment.id] ?? "0",
+        value: row.values[assessment.id] ?? "",
       })),
     };
 
@@ -169,6 +171,16 @@ export default function GradeEntryTable({
                   }
                 : currentRow,
             ),
+          );
+          rowsRef.current = rowsRef.current.map((currentRow) =>
+            currentRow.studentId === studentId
+              ? {
+                  ...currentRow,
+                  total: result.total,
+                  grade: result.grade,
+                  values: result.values,
+                }
+              : currentRow,
           );
           setRowStatus(studentId, { tone: "saved", message: "Saved" });
           scheduleStatusClear(studentId);
@@ -228,7 +240,7 @@ export default function GradeEntryTable({
                         max={assessment.weight}
                         step={0.01}
                         className="input"
-                        value={row.values[assessment.id] ?? "0"}
+                        value={row.values[assessment.id] ?? ""}
                         onChange={(event) => handleValueChange(row.studentId, assessment.id, event.target.value)}
                         onBlur={() => saveRow(row.studentId)}
                         onKeyDown={(event) => {
