@@ -39,6 +39,10 @@ type RowStatus = {
 
 const IDLE_STATUS: RowStatus = { tone: "idle", message: "" };
 
+function normalizeInputValue(value: string | undefined) {
+  return (value ?? "").trim();
+}
+
 export default function GradeEntryTable({
   teacherProfileId,
   termId,
@@ -142,6 +146,9 @@ export default function GradeEntryTable({
         value: row.values[assessment.id] ?? "",
       })),
     };
+    const submittedValueMap = Object.fromEntries(
+      payload.scores.map((item) => [item.assessmentTypeId, normalizeInputValue(String(item.value))]),
+    );
 
     const nextRequestVersion = (requestVersionRef.current[studentId] ?? 0) + 1;
     requestVersionRef.current[studentId] = nextRequestVersion;
@@ -160,28 +167,37 @@ export default function GradeEntryTable({
             return;
           }
 
-          setRows((current) =>
-            current.map((currentRow) =>
-              currentRow.studentId === studentId
-                ? {
-                    ...currentRow,
-                    total: result.total,
-                    grade: result.grade,
-                    values: result.values,
-                  }
-                : currentRow,
-            ),
-          );
-          rowsRef.current = rowsRef.current.map((currentRow) =>
-            currentRow.studentId === studentId
-              ? {
-                  ...currentRow,
-                  total: result.total,
-                  grade: result.grade,
-                  values: result.values,
+          const mergeSavedRow = (currentRow: GradeEntryStudentRow) => {
+            if (currentRow.studentId !== studentId) {
+              return currentRow;
+            }
+
+            let rowChangedAfterSaveStarted = false;
+            const mergedValues = Object.fromEntries(
+              assessmentTypes.map((assessment) => {
+                const currentValue = normalizeInputValue(currentRow.values[assessment.id]);
+                const submittedValue = submittedValueMap[assessment.id] ?? "";
+                const serverValue = normalizeInputValue(result.values[assessment.id]);
+
+                if (currentValue !== submittedValue) {
+                  rowChangedAfterSaveStarted = true;
+                  return [assessment.id, currentRow.values[assessment.id] ?? ""];
                 }
-              : currentRow,
-          );
+
+                return [assessment.id, serverValue];
+              }),
+            );
+
+            return {
+              ...currentRow,
+              total: rowChangedAfterSaveStarted ? currentRow.total : result.total,
+              grade: rowChangedAfterSaveStarted ? currentRow.grade : result.grade,
+              values: mergedValues,
+            };
+          };
+
+          setRows((current) => current.map(mergeSavedRow));
+          rowsRef.current = rowsRef.current.map(mergeSavedRow);
           setRowStatus(studentId, { tone: "saved", message: "Saved" });
           scheduleStatusClear(studentId);
         })
