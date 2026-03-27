@@ -128,6 +128,15 @@ html.kai-admin .mobile-theme-toggle {
   width: 2.1rem !important;
   height: 2.1rem !important;
   border-radius: 999px;
+}
+
+html.kai-admin .topbar-theme-toggle {
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #575962 !important;
+}
+
+html.kai-admin .mobile-theme-toggle {
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   background: rgba(255, 255, 255, 0.08) !important;
   color: #fff !important;
@@ -137,7 +146,8 @@ html.kai-admin .topbar-theme-toggle:hover,
 html.kai-admin .topbar-theme-toggle:focus,
 html.kai-admin .mobile-theme-toggle:hover,
 html.kai-admin .mobile-theme-toggle:focus {
-  background: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(47, 107, 63, 0.12) !important;
+  color: var(--iwe-primary) !important;
 }
 
 html.kai-admin .mobile-sidebar-footer {
@@ -168,33 +178,33 @@ html.kai-admin .logo-header[data-background-color="dark"] {
 
 html[data-theme="dark"].kai-admin,
 html[data-theme="dark"].kai-admin body {
-  background: #0f172a !important;
-  color: #e5edf8 !important;
+  background: #0d1712 !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .wrapper,
 html[data-theme="dark"].kai-admin .main-panel {
-  background: #0f172a !important;
+  background: #0d1712 !important;
 }
 
 html[data-theme="dark"].kai-admin .card {
-  background: #111c33 !important;
-  border-color: #24324c !important;
-  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.28) !important;
+  background: #13211a !important;
+  border-color: #274034 !important;
+  box-shadow: 0 12px 28px rgba(2, 10, 6, 0.28) !important;
 }
 
 html[data-theme="dark"].kai-admin .card-title,
 html[data-theme="dark"].kai-admin .section-title,
 html[data-theme="dark"].kai-admin .section-heading,
 html[data-theme="dark"].kai-admin .page-title {
-  color: #edf2ff !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .section-subtle,
 html[data-theme="dark"].kai-admin .field-label,
 html[data-theme="dark"].kai-admin .page-category,
 html[data-theme="dark"].kai-admin .card-category {
-  color: #9fb0c8 !important;
+  color: #a5baa8 !important;
 }
 
 html[data-theme="dark"].kai-admin .form-control,
@@ -202,82 +212,86 @@ html[data-theme="dark"].kai-admin .form-select,
 html[data-theme="dark"].kai-admin .input,
 html[data-theme="dark"].kai-admin .select,
 html[data-theme="dark"].kai-admin textarea {
-  background: #16233c !important;
-  border-color: #385170 !important;
-  color: #edf2ff !important;
+  background: #183026 !important;
+  border-color: #3f6654 !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .form-control::placeholder,
 html[data-theme="dark"].kai-admin textarea::placeholder {
-  color: #8ea2bf !important;
+  color: #9ab09d !important;
 }
 
 html[data-theme="dark"].kai-admin .table > :not(caption) > * > th,
 html[data-theme="dark"].kai-admin table th {
-  background: #16233c !important;
-  border-color: #24324c !important;
-  color: #edf2ff !important;
+  background: #183026 !important;
+  border-color: #274034 !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .table > :not(caption) > * > td,
 html[data-theme="dark"].kai-admin table td,
 html[data-theme="dark"].kai-admin .table,
 html[data-theme="dark"].kai-admin table {
-  color: #dbe5f5 !important;
-  border-color: #24324c !important;
+  color: #dfebdf !important;
+  border-color: #274034 !important;
 }
 
 html[data-theme="dark"].kai-admin .dataTables_wrapper,
 html[data-theme="dark"].kai-admin .dataTables_wrapper .table-responsive {
-  background: #111c33 !important;
-  border-color: #24324c !important;
+  background: #13211a !important;
+  border-color: #274034 !important;
 }
 
 html[data-theme="dark"].kai-admin .dataTables_wrapper .dataTables_info,
 html[data-theme="dark"].kai-admin .dataTables_wrapper .dataTables_length label,
 html[data-theme="dark"].kai-admin .dataTables_wrapper .dataTables_filter label {
-  color: #9fb0c8 !important;
+  color: #a5baa8 !important;
 }
 
 html[data-theme="dark"].kai-admin .btn-secondary,
 html[data-theme="dark"].kai-admin .btn-muted,
 html[data-theme="dark"].kai-admin .btn-outline-secondary {
-  background: #16233c !important;
-  border-color: #385170 !important;
-  color: #edf2ff !important;
+  background: #183026 !important;
+  border-color: #3f6654 !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .main-header .navbar-header,
 html[data-theme="dark"].kai-admin .main-header .navbar-header-transparent {
-  background: #111c33 !important;
-  border-color: #24324c !important;
+  background: #13211a !important;
+  border-color: #274034 !important;
 }
 
 html[data-theme="dark"].kai-admin .main-header .nav-link,
 html[data-theme="dark"].kai-admin .main-header .dropdown-toggle,
 html[data-theme="dark"].kai-admin .main-header .search-icon {
-  color: #edf2ff !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .main-header .form-control {
-  background: #16233c !important;
-  border-color: #385170 !important;
-  color: #edf2ff !important;
+  background: #183026 !important;
+  border-color: #3f6654 !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .dropdown-menu,
 html[data-theme="dark"].kai-admin .notif-box,
 html[data-theme="dark"].kai-admin .dropdown-user {
-  background: #111c33 !important;
-  border-color: #24324c !important;
-  color: #edf2ff !important;
+  background: #13211a !important;
+  border-color: #274034 !important;
+  color: #edf7ef !important;
 }
 
 html[data-theme="dark"].kai-admin .notif-box .dropdown-title,
 html[data-theme="dark"].kai-admin .dropdown-user .u-text h4,
 html[data-theme="dark"].kai-admin .dropdown-user .dropdown-item,
 html[data-theme="dark"].kai-admin .notif-box .notif-content .block {
-  color: #edf2ff !important;
+  color: #edf7ef !important;
+}
+
+html[data-theme="dark"].kai-admin .topbar-theme-toggle {
+  color: #edf7ef !important;
 }
 
 html.kai-admin .sidebar .user .info a > span,

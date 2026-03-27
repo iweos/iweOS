@@ -34,26 +34,26 @@
 html[data-theme="dark"] {
   --brand-primary: #7bc792;
   --brand-primary-strong: #58a372;
-  --brand-primary-soft: #183022;
+  --brand-primary-soft: #183223;
   --brand-secondary: #e3b276;
   --brand-secondary-strong: #c99557;
   --brand-secondary-soft: #342515;
-  --admin-bg: #0f172a;
-  --admin-card: #111c33;
-  --admin-border: #24324c;
-  --admin-muted: #9fb0c8;
-  --admin-text: #edf2ff;
-  --admin-shadow: 0 16px 36px rgb(2 6 23 / 0.42);
-  --bg: #0b1220;
-  --bg-strong: #162033;
-  --fg: #edf2ff;
-  --muted: #9fb0c8;
-  --surface: #111c33;
-  --surface-soft: #16233c;
-  --line: #24324c;
-  --line-strong: #385170;
+  --admin-bg: #0d1712;
+  --admin-card: #13211a;
+  --admin-border: #274034;
+  --admin-muted: #a5baa8;
+  --admin-text: #edf7ef;
+  --admin-shadow: 0 16px 36px rgb(2 10 6 / 0.42);
+  --bg: #09130f;
+  --bg-strong: #10211a;
+  --fg: #edf7ef;
+  --muted: #a5baa8;
+  --surface: #13211a;
+  --surface-soft: #183026;
+  --line: #274034;
+  --line-strong: #3f6654;
   --danger: #f87171;
-  --panel-shadow: 0 18px 40px rgb(2 6 23 / 0.38);
+  --panel-shadow: 0 18px 40px rgb(2 10 6 / 0.38);
 }
 
 * {
@@ -73,8 +73,8 @@ body {
 
 html[data-theme="dark"] body {
   background:
-    radial-gradient(1200px 520px at -5% -15%, rgb(32 57 44 / 0.35) 0%, transparent 55%),
-    radial-gradient(1000px 460px at 110% -10%, rgb(73 47 22 / 0.28) 0%, transparent 50%),
+    radial-gradient(1200px 520px at -5% -15%, rgb(42 92 60 / 0.34) 0%, transparent 55%),
+    radial-gradient(1000px 460px at 110% -10%, rgb(82 54 24 / 0.24) 0%, transparent 50%),
     var(--bg);
 }
 
