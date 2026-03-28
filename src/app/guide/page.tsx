@@ -1,308 +1,301 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
 
-const quickStartCards = [
-  {
-    icon: "fas fa-school",
-    title: "Create school account",
-    body: "Sign up, complete the school profile, upload logo/signature, and confirm the school identity before inviting staff.",
-  },
-  {
-    icon: "fas fa-sitemap",
-    title: "Build academic structure",
-    body: "Set up sessions, sub-sessions, classes, subjects, assessment templates, grade scales, and conduct structure.",
-  },
-  {
-    icon: "fas fa-users-cog",
-    title: "Assign staff and students",
-    body: "Add teachers, link accounts, assign classes, import students, enroll them, and keep statuses accurate.",
-  },
-  {
-    icon: "fas fa-file-signature",
-    title: "Run results end-to-end",
-    body: "Capture attendance, comments, conduct, scores, publish results, export PDFs, and share secure result links.",
-  },
-];
-
 const sections = [
   {
-    id: "overview",
-    title: "Overview",
-    subtitle: "What iweOS handles today",
+    id: "getting-started",
+    title: "Getting Started",
+    summary: "Create the school account, complete settings, and set the school identity before inviting staff.",
     bullets: [
-      "Admin, teacher, and public payment workflows in one app.",
-      "Academic setup, grading, conduct, attendance, comments, results, and promotion logic.",
-      "PDF result export, shareable result links, and notifications for operational changes.",
-      "Teacher portal with admin override, analytics, and mobile-aware workflows.",
+      "Sign up the school from the website.",
+      "Open Settings and complete school profile details.",
+      "Upload school logo and principal signature.",
+      "Choose the result template the school will use for result rendering and export.",
     ],
+    links: [
+      { label: "Sign up", href: "/sign-up" },
+      { label: "Settings", href: "/app/admin/settings" },
+    ],
+    note: "Best screenshot to add here later: Settings tabs with school profile, logo, result template, and principal signature.",
   },
   {
-    id: "signup",
-    title: "1. Sign up and school setup",
-    subtitle: "Starting point for a new school",
+    id: "academic-structure",
+    title: "Academic Structure",
+    summary: "Build the school structure that powers grading, results, and promotion.",
     bullets: [
-      "Sign up from the website using the main CTA.",
-      "Complete school profile details in Settings.",
-      "Upload school logo and principal signature for results and exported PDFs.",
-      "Choose your result template so generated and shared results follow the school’s preferred layout.",
-    ],
-    actions: [
-      { label: "Open Sign up", href: "/sign-up" },
-      { label: "Open Settings", href: "/app/admin/settings" },
-    ],
-    callout: "Suggested screenshot: Settings -> School / Results tab with logo, signature, and template selection.",
-  },
-  {
-    id: "academic-setup",
-    title: "2. Academic setup",
-    subtitle: "Define the structure the school will operate on",
-    bullets: [
-      "Create sessions with built-in term/semester bundles or custom sub-session labels.",
+      "Create sessions with built-in terms, semesters, or custom sub-sessions.",
       "Create classes and subjects.",
       "Assign subjects to classes.",
-      "Define assessment presets and assign the right preset to each term/session segment.",
-      "Configure conduct sections and sub-categories.",
-      "Set grade scales and promotion rules.",
+      "Create assessment presets and assign them to each term/session segment.",
+      "Configure conduct sections, conduct categories, and grade scales.",
+      "Set promotion rules in Settings.",
     ],
-    actions: [
+    links: [
       { label: "Sessions", href: "/app/admin/terms" },
       { label: "Classes", href: "/app/admin/classes" },
       { label: "Subjects", href: "/app/admin/subjects" },
       { label: "Grading", href: "/app/admin/grading" },
     ],
-    callout: "Suggested screenshots: Sessions setup, Assessment Types, Conduct, and Promotion Rules.",
+    note: "Recommended screenshots: Sessions, Assessment Type, Conduct, Grades, and Promotion Rules.",
   },
   {
-    id: "teachers",
-    title: "3. Teachers and assignments",
-    subtitle: "Get staff into the correct workspace",
+    id: "teachers-and-assignments",
+    title: "Teachers and Assignments",
+    summary: "Bring teachers in, link their accounts, and connect them to the right classes.",
     bullets: [
-      "Add teachers from the admin side.",
-      "Link already-signed-up teachers manually when needed.",
-      "Promote selected teachers to admin where appropriate.",
-      "Assign teachers to classes so the teacher portal only shows the correct students and workflows.",
-      "Use Teacher Portal from admin to audit or assist from the teacher point of view.",
+      "Add teacher records from the admin side.",
+      "Manually link signed-up teachers when needed.",
+      "Promote teachers to admin where appropriate.",
+      "Assign teachers to classes so their portal stays scoped correctly.",
+      "Use Teacher Portal as admin override when you need to inspect or support teacher workflows.",
     ],
-    actions: [
+    links: [
       { label: "Teachers", href: "/app/admin/teachers" },
-      { label: "Teacher Classes", href: "/app/admin/assignments/teacher-classes" },
+      { label: "Teacher-Class", href: "/app/admin/assignments/teacher-classes" },
       { label: "Teacher Portal", href: "/app/teacher/dashboard" },
     ],
-    callout: "Recommended screenshot: teacher class assignment screen and the admin override teacher portal banner.",
+    note: "Useful screenshots: teacher table, class assignment page, admin override teacher portal.",
   },
   {
-    id: "students",
-    title: "4. Students and enrollment",
-    subtitle: "Populate the school with active student records",
+    id: "students-and-enrollment",
+    title: "Students and Enrollment",
+    summary: "Add students, manage their records, and place them into the right class and term.",
     bullets: [
-      "Add students one-by-one or import in bulk through CSV/pasted rows.",
-      "Edit student details, upload student pictures, and maintain statuses.",
-      "Use status correctly: active, inactive, graduated, suspended, withdrawn.",
-      "Enroll students by class and term, including bulk enroll for active registered students.",
-      "Teachers only see active students in their grading flows.",
+      "Add students individually or import them in bulk.",
+      "Edit student details and upload student photos.",
+      "Maintain student statuses accurately: active, inactive, graduated, suspended, withdrawn.",
+      "Enroll students manually or in bulk by class and term.",
+      "Only active students appear in teacher grading workflows.",
     ],
-    actions: [
+    links: [
       { label: "Add Students", href: "/app/admin/students/add" },
       { label: "Manage Students", href: "/app/admin/students/manage" },
       { label: "Enrollments", href: "/app/admin/assignments/enrollments" },
     ],
-    callout: "Suggested screenshot: Add Students import page and the enrollment summary/term selector.",
+    note: "Useful screenshots: import flow, student profile modal, term-specific enrollment summary.",
   },
   {
     id: "teacher-workflows",
-    title: "5. Teacher workflows",
-    subtitle: "What teachers do every day",
+    title: "Teacher Workflows",
+    summary: "Teachers record operational data directly inside the class workflows they own.",
     bullets: [
-      "Attendance: enter times school opened, present, and absent for each student.",
-      "Grade Entry: enter assessment values with autosave and live row status.",
-      "Conduct: score a selected student against conduct categories.",
-      "Comment: add class teacher comments per student.",
-      "Students: compare student performance against class averages and subject positions.",
-      "Results: review result-oriented records from the teacher side.",
+      "Attendance saves per student row with immediate feedback.",
+      "Grade Entry autosaves assessment values per row.",
+      "Conduct scoring is focused per student with grouped conduct sections.",
+      "Comments save inline and feed the result sheet.",
+      "Student analytics compare a student against class averages and subject positions.",
     ],
-    actions: [
-      { label: "Teacher Attendance", href: "/app/teacher/attendance" },
-      { label: "Teacher Grade Entry", href: "/app/teacher/grade-entry" },
-      { label: "Teacher Conduct", href: "/app/teacher/conduct" },
-      { label: "Teacher Comment", href: "/app/teacher/comment" },
+    links: [
+      { label: "Attendance", href: "/app/teacher/attendance" },
+      { label: "Grade Entry", href: "/app/teacher/grade-entry" },
+      { label: "Conduct", href: "/app/teacher/conduct" },
+      { label: "Comment", href: "/app/teacher/comment" },
+      { label: "Students", href: "/app/teacher/students" },
     ],
-    callout: "Suggested screenshots: one teacher row in attendance, grade entry, and the student analytics page.",
+    note: "Best screenshots: teacher grade entry row, conduct screen, and student analytics comparison page.",
   },
   {
-    id: "results",
-    title: "6. Results, export, and sharing",
-    subtitle: "Turn recorded school data into report cards",
+    id: "results-and-sharing",
+    title: "Results and Sharing",
+    summary: "Results move from recorded data to published documents, exports, and secure sharing.",
     bullets: [
-      "Admin reviews generated result sheets per student or per class.",
-      "Publish, unpublish, or keep results in draft.",
-      "Open the dedicated export route for clean document rendering.",
-      "Download PDF, print, or share the PDF to supported apps on mobile.",
-      "Use secure result links for student-facing result access.",
-      "Results include logo, student image, attendance, conduct, comments, analytics, and performance charting.",
+      "Admins review student and class result views.",
+      "Results can be left in draft, published, or unpublished.",
+      "Export uses a clean document route outside the admin shell.",
+      "Users can print, download PDF, or share PDF to supported apps on mobile.",
+      "Shared result links respect publication status and template styling.",
     ],
-    actions: [
+    links: [
       { label: "Results Center", href: "/app/admin/grading/results" },
       { label: "Teacher Results", href: "/app/teacher/results" },
     ],
-    callout: "Suggested screenshots: result preview, export route, and shared result page.",
+    note: "Best screenshots: admin result preview, export page, and public result page.",
   },
   {
     id: "payments",
-    title: "7. Payments",
-    subtitle: "Fee operations and reconciliation",
+    title: "Payments",
+    summary: "Fee management, public fee payment, and reconciliation stay in one dedicated section.",
     bullets: [
-      "Configure fee schedules and fee items.",
+      "Configure fee items and schedules.",
       "Generate invoices and line items.",
-      "Track transactions, reports, reconciliation, imports, and payment settings.",
-      "Public payment flow allows fee payment by student payment ID.",
+      "Track transactions, reconciliation, imports, settings, and payment reports.",
+      "Public fee payment works through student payment IDs.",
     ],
-    actions: [
-      { label: "Payment Overview", href: "/app/admin/payments" },
+    links: [
+      { label: "Payments", href: "/app/admin/payments" },
       { label: "Pay Fees", href: "/pay" },
     ],
-    callout: "Suggested screenshots: payment overview, invoices, reconciliation, and parent pay flow.",
+    note: "Best screenshots: payment overview, invoice list, reconciliation, and public pay page.",
   },
   {
-    id: "notifications",
-    title: "8. Notifications and operational awareness",
-    subtitle: "Use the bell panel for school updates",
+    id: "notifications-and-operations",
+    title: "Notifications and Operations",
+    summary: "Use notifications and policy tools to keep the school operational as workflows expand.",
     bullets: [
-      "Admins receive notifications for key changes such as student imports.",
-      "Teachers receive notifications when they are assigned to classes or when admin updates affect their class.",
-      "Notifications currently cover student imports, class assignment changes, result publication changes, and admin attendance/comment changes.",
-      "Unread items appear in the bell dropdown and can link the user back to the affected workflow.",
+      "Bell notifications show student imports, class assignment changes, result publication changes, and admin attendance/comment updates.",
+      "Promotion rules live in Settings and support multiple school-specific policies.",
+      "School assets and result templates can be updated as the school evolves.",
+      "Use the in-app tour and this guide as the living onboarding manual.",
     ],
-    actions: [
-      { label: "Admin Dashboard", href: "/app/admin/dashboard" },
-      { label: "Teacher Dashboard", href: "/app/teacher/dashboard" },
-    ],
-    callout: "Suggested screenshot: bell dropdown showing recent unread actions.",
-  },
-  {
-    id: "operations",
-    title: "9. Ongoing operations",
-    subtitle: "What to maintain as the school grows",
-    bullets: [
-      "Update result templates and school assets as branding changes.",
-      "Keep promotion rules aligned with school policy.",
-      "Review mobile workflows regularly for teachers and admins.",
-      "Use the guide as a living handbook whenever new modules are released.",
-    ],
-    actions: [
+    links: [
+      { label: "Dashboard", href: "/app/admin/dashboard" },
       { label: "Promotion Rules", href: "/app/admin/settings/promotion-rules" },
-      { label: "Settings", href: "/app/admin/settings" },
+      { label: "Guide Tour", href: "/app/admin/dashboard" },
     ],
-    callout: "If you want live screenshots inside this guide, the next pass needs either uploaded screenshots from you or a curated list of pages you want captured.",
+    note: "Best screenshots: notification dropdown, promotion rules, and the in-app tour overlay.",
   },
+];
+
+const quickLinks = [
+  { label: "Create school account", href: "#getting-started" },
+  { label: "Build academic structure", href: "#academic-structure" },
+  { label: "Assign teachers", href: "#teachers-and-assignments" },
+  { label: "Import and enroll students", href: "#students-and-enrollment" },
+  { label: "Run grading and results", href: "#results-and-sharing" },
+  { label: "Configure payments", href: "#payments" },
 ];
 
 export default function GuidePage() {
   return (
-    <div className="guide-page">
-      <section className="guide-hero">
-        <div className="guide-hero-inner">
-          <div className="guide-hero-copy">
-            <p className="guide-kicker">Product Guide</p>
-            <h1>School setup guide for ìwéOS</h1>
-            <p>
-              A navigable walkthrough for onboarding a new school, configuring academic workflows, enabling teachers,
-              and moving all the way to published and shared results.
+    <div className="guide-docs-page">
+      <header className="guide-docs-topbar">
+        <div className="guide-docs-topbar-inner">
+          <BrandLogo href="/" variant="dark" className="guide-docs-logo" textClassName="guide-docs-logo-text" />
+          <div className="guide-docs-topbar-actions">
+            <Link href="/sign-up" className="btn btn-primary">
+              Sign up
+            </Link>
+            <Link href="/app/admin/dashboard" className="btn btn-outline-secondary">
+              Open App
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="guide-docs-shell">
+        <aside className="guide-docs-sidebar">
+          <div className="guide-docs-sidebar-card">
+            <p className="guide-docs-eyebrow">Setup Guide</p>
+            <h1>School setup manual</h1>
+            <p className="guide-docs-sidebar-intro">
+              A GitBook-style handbook for configuring a school from first sign-up to live grading, payments, results,
+              and teacher operations.
             </p>
-            <div className="guide-hero-actions">
-              <Link href="/sign-up" className="btn btn-primary">
-                Start with Sign up
+          </div>
+
+          <div className="guide-docs-sidebar-card">
+            <p className="guide-docs-mini-label">Quick start</p>
+            <ul className="guide-docs-link-list">
+              {quickLinks.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="guide-docs-sidebar-card">
+            <p className="guide-docs-mini-label">Need live help?</p>
+            <div className="guide-docs-inline-actions">
+              <Link href="/sign-in" className="guide-docs-chip">
+                Open sign in
               </Link>
-              <Link href="/app/admin/settings" className="btn btn-outline-secondary">
-                Open Settings
+              <Link href="/app/admin/dashboard" className="guide-docs-chip">
+                Open dashboard
               </Link>
             </div>
           </div>
-          <div className="guide-hero-brand">
-            <BrandLogo href="/" variant="dark" className="guide-brand-mark" textClassName="guide-brand-text" />
-            <div className="guide-hero-stat-grid">
-              <div className="guide-hero-stat">
-                <strong>9</strong>
-                <span>Core setup stages</span>
+        </aside>
+
+        <main className="guide-docs-content">
+          <section className="guide-docs-intro-block">
+            <p className="guide-docs-breadcrumb">Documentation / School onboarding</p>
+            <h2>Everything a school needs to go live on ìwéOS</h2>
+            <p>
+              Use this as the master reference for onboarding, internal training, and rollout support. The in-app tour
+              helps with quick orientation; this guide explains the full setup path in order.
+            </p>
+            <div className="guide-docs-stat-grid">
+              <div className="guide-docs-stat">
+                <strong>8</strong>
+                <span>Core sections</span>
               </div>
-              <div className="guide-hero-stat">
+              <div className="guide-docs-stat">
                 <strong>3</strong>
-                <span>Main user modes</span>
+                <span>Main roles</span>
               </div>
-              <div className="guide-hero-stat">
+              <div className="guide-docs-stat">
                 <strong>1</strong>
                 <span>Living handbook</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section className="guide-quickstart">
-        <div className="guide-quickstart-grid">
-          {quickStartCards.map((card) => (
-            <article key={card.title} className="guide-quick-card">
-              <span className="guide-quick-icon" aria-hidden="true">
-                <i className={card.icon} />
-              </span>
-              <h2>{card.title}</h2>
-              <p>{card.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="guide-body">
-        <aside className="guide-nav">
-          <div className="guide-nav-card">
-            <p className="guide-nav-label">Jump to section</p>
-            <nav aria-label="Guide navigation">
-              <ul>
-                {sections.map((section) => (
-                  <li key={section.id}>
-                    <a href={`#${section.id}`}>{section.title}</a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </aside>
-
-        <div className="guide-sections">
-          {sections.map((section) => (
-            <article key={section.id} id={section.id} className="guide-section-card">
-              <div className="guide-section-head">
-                <p className="guide-section-kicker">{section.subtitle}</p>
-                <h2>{section.title}</h2>
+          {sections.map((section, index) => (
+            <section key={section.id} id={section.id} className="guide-docs-section">
+              <div className="guide-docs-section-head">
+                <span className="guide-docs-step-pill">{index + 1}</span>
+                <div>
+                  <p className="guide-docs-section-label">{section.summary}</p>
+                  <h3>{section.title}</h3>
+                </div>
               </div>
 
-              <ul className="guide-checklist">
+              <ul className="guide-docs-checks">
                 {section.bullets.map((bullet) => (
                   <li key={bullet}>
-                    <span className="guide-check-icon" aria-hidden="true">
-                      <i className="fas fa-check" />
-                    </span>
+                    <i className="fas fa-check-circle" aria-hidden="true" />
                     <span>{bullet}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="guide-actions">
-                {section.actions?.map((action) => (
-                  <Link key={`${section.id}-${action.href}`} href={action.href} className="guide-action-link">
-                    {action.label}
+              <div className="guide-docs-action-row">
+                {section.links.map((link) => (
+                  <Link key={`${section.id}-${link.href}`} href={link.href} className="guide-docs-link-pill">
+                    {link.label}
                     <i className="fas fa-arrow-right" aria-hidden="true" />
                   </Link>
                 ))}
               </div>
 
-              <div className="guide-callout">
+              <div className="guide-docs-note">
                 <i className="fas fa-image" aria-hidden="true" />
-                <p>{section.callout}</p>
+                <p>{section.note}</p>
               </div>
-            </article>
+            </section>
           ))}
-        </div>
-      </section>
+        </main>
+
+        <aside className="guide-docs-rightbar">
+          <div className="guide-docs-right-card">
+            <p className="guide-docs-mini-label">On this page</p>
+            <ul className="guide-docs-outline">
+              {sections.map((section) => (
+                <li key={section.id}>
+                  <a href={`#${section.id}`}>{section.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="guide-docs-right-card">
+            <p className="guide-docs-mini-label">Tour and replay</p>
+            <p>
+              Inside the app shell, users can reopen the guided tour anytime from the fixed footer bar without searching
+              for documentation.
+            </p>
+          </div>
+
+          <div className="guide-docs-right-card">
+            <p className="guide-docs-mini-label">Screenshots</p>
+            <p>
+              To make this guide visual, the next pass can embed real screenshots for the key pages listed in each
+              section note.
+            </p>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

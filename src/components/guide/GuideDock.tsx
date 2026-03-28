@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export default function GuideDock() {
   const pathname = usePathname();
 
-  if (!pathname || pathname === "/guide" || pathname.includes("/print")) {
+  if (!pathname || pathname === "/guide" || pathname.includes("/print") || pathname.startsWith("/app")) {
     return null;
   }
 
