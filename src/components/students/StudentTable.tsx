@@ -67,6 +67,28 @@ function toDisplayName(value: string | null | undefined, fallback = "-") {
     .join(" ");
 }
 
+function studentStatusBadgeClass(status: string | null | undefined) {
+  const normalized = (status ?? "").trim().toLowerCase();
+
+  if (normalized === "active") {
+    return "text-bg-success";
+  }
+
+  if (normalized === "inactive") {
+    return "text-bg-secondary";
+  }
+
+  if (normalized === "suspended" || normalized === "withdrawn") {
+    return "text-bg-dark";
+  }
+
+  if (normalized === "graduated") {
+    return "text-bg-primary";
+  }
+
+  return "text-bg-light border";
+}
+
 function EyeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16" aria-hidden="true">
@@ -566,7 +588,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                           </div>
                           <div className="d-flex flex-wrap gap-2">
                             <span className="badge text-bg-light border">{activeStudent.className ?? "No class"}</span>
-                            <span className="badge text-bg-success">{toSentenceCase(activeStudent.status)}</span>
+                            <span className={`badge ${studentStatusBadgeClass(activeStudent.status)}`}>{toSentenceCase(activeStudent.status)}</span>
                             <span className="badge text-bg-light border">{toSentenceCase(activeStudent.gender, "Unspecified")}</span>
                           </div>
                         </div>
