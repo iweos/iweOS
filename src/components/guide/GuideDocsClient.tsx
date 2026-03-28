@@ -53,42 +53,6 @@ export default function GuideDocsClient({ sections, quickTopics }: GuideDocsClie
 
   return (
     <>
-      <section className="guide-support-hero">
-        <div className="guide-support-hero-card">
-          <p className="guide-docs-eyebrow">Support Center</p>
-          <h2>How can we help you set up your school?</h2>
-          <p>
-            Search the setup guide, jump into common workflows, or use the in-app tour for a quick product walkthrough.
-          </p>
-          <label className="guide-support-search" htmlFor="guide-search">
-            <i className="fas fa-search" aria-hidden="true" />
-            <input
-              id="guide-search"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search setup, teachers, results, payments..."
-            />
-          </label>
-        </div>
-      </section>
-
-      <section className="guide-support-topics">
-        <div className="guide-support-topic-grid">
-          {filteredTopics.map((topic) => (
-            <Link key={topic.title} href={topic.href} className="guide-support-topic-card">
-              <span className="guide-support-topic-icon" aria-hidden="true">
-                <i className={topic.icon} />
-              </span>
-              <div>
-                <strong>{topic.title}</strong>
-                <p>{topic.description}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       <div className="guide-docs-shell">
         <aside className="guide-docs-sidebar">
           <div className="guide-docs-sidebar-card">
@@ -97,14 +61,23 @@ export default function GuideDocsClient({ sections, quickTopics }: GuideDocsClie
             <p className="guide-docs-sidebar-intro">
               Follow the setup path from first sign-up to live grading, results, payments, and ongoing school operations.
             </p>
-          </div>
-
-          <div className="guide-docs-sidebar-card">
             <p className="guide-docs-mini-label">Sections</p>
             <ul className="guide-docs-link-list">
               {filteredSections.map((section) => (
                 <li key={section.id}>
                   <a href={`#${section.id}`}>{section.title}</a>
+                </li>
+              ))}
+            </ul>
+
+            <p className="guide-docs-mini-label">Quick links</p>
+            <ul className="guide-docs-link-list guide-docs-link-list-topics">
+              {filteredTopics.map((topic) => (
+                <li key={topic.title}>
+                  <a href={topic.href}>
+                    <i className={topic.icon} aria-hidden="true" />
+                    <span>{topic.title}</span>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -127,19 +100,23 @@ export default function GuideDocsClient({ sections, quickTopics }: GuideDocsClie
                   Use this guide as the master reference for rollout, staff onboarding, and day-to-day configuration. Search above to narrow it
                   down fast, or browse section by section like a handbook.
                 </p>
-                <div className="guide-docs-stat-grid">
-                  <div className="guide-docs-stat">
-                    <strong>{sections.length}</strong>
-                    <span>Core sections</span>
-                  </div>
-                  <div className="guide-docs-stat">
-                    <strong>3</strong>
-                    <span>Main roles</span>
-                  </div>
-                  <div className="guide-docs-stat">
-                    <strong>1</strong>
-                    <span>Living handbook</span>
-                  </div>
+                <label className="guide-docs-search" htmlFor="guide-search">
+                  <i className="fas fa-search" aria-hidden="true" />
+                  <input
+                    id="guide-search"
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search setup, teachers, attendance, results, payments..."
+                  />
+                </label>
+                <div className="guide-docs-inline-actions">
+                  {filteredTopics.map((topic) => (
+                    <Link key={topic.title} href={topic.href} className="guide-docs-chip">
+                      <i className={topic.icon} aria-hidden="true" />
+                      <span>{topic.title}</span>
+                    </Link>
+                  ))}
                 </div>
               </section>
 

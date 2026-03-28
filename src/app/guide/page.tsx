@@ -1,6 +1,13 @@
 import Link from "next/link";
+import localFont from "next/font/local";
 import BrandLogo from "@/components/BrandLogo";
 import GuideDocsClient from "@/components/guide/GuideDocsClient";
+
+const hornbill = localFont({
+  src: "../../../public/fonts/Hornbill-Regular.otf",
+  variable: "--font-guide-hornbill",
+  display: "swap",
+});
 
 const sections = [
   {
@@ -188,7 +195,7 @@ const quickTopics = [
 
 export default function GuidePage() {
   return (
-    <div className="guide-docs-page">
+    <div className={`guide-docs-page ${hornbill.variable}`}>
       <header className="guide-docs-topbar">
         <div className="guide-docs-topbar-inner">
           <BrandLogo href="/" variant="dark" className="guide-docs-logo" textClassName="guide-docs-logo-text" />
