@@ -9,7 +9,7 @@ import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
-import { createNotifications, notifyTeachersForClass } from "@/lib/server/notifications";
+import { createNotifications, notifyProfile, notifyTeachersForClass, notifyTeachersForClassId } from "@/lib/server/notifications";
 import { buildResultPublicationPayload } from "@/lib/server/results";
 import { storeUploadedImage } from "@/lib/server/uploads";
 import {
@@ -1655,6 +1655,15 @@ export async function assignTeacherToClassAction(formData: FormData) {
     },
   });
 
+  await notifyProfile({
+    schoolId: profile.schoolId,
+    recipientProfileId: teacher.id,
+    actorProfileId: profile.id,
+    title: "Class assignment updated",
+    message: `You have been assigned to ${klass.name}.`,
+    href: "/app/teacher/dashboard",
+  });
+
   revalidateAdminPages();
 }
 
@@ -1662,12 +1671,38 @@ export async function removeTeacherClassAssignmentAction(formData: FormData) {
   const profile = await requireRole("admin");
   const assignmentId = formValue(formData, "assignmentId");
 
+  const assignment = await prisma.teacherClassAssignment.findFirst({
+    where: {
+      id: assignmentId,
+      schoolId: profile.schoolId,
+    },
+    select: {
+      teacherProfileId: true,
+      class: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
   await prisma.teacherClassAssignment.deleteMany({
     where: {
       id: assignmentId,
       schoolId: profile.schoolId,
     },
   });
+
+  if (assignment) {
+    await notifyProfile({
+      schoolId: profile.schoolId,
+      recipientProfileId: assignment.teacherProfileId,
+      actorProfileId: profile.id,
+      title: "Class assignment updated",
+      message: `You have been removed from ${assignment.class.name}.`,
+      href: "/app/teacher/dashboard",
+    });
+  }
 
   revalidateAdminPages();
 }
@@ -2014,6 +2049,12 @@ export async function setResultPublicationStatusAction(formData: FormData) {
         : parsed.data.status === "UNPUBLISHED"
           ? ResultPublicationStatus.UNPUBLISHED
           : ResultPublicationStatus.DRAFT;
+    const statusLabel =
+      nextStatus === ResultPublicationStatus.PUBLISHED
+        ? "published"
+        : nextStatus === ResultPublicationStatus.UNPUBLISHED
+          ? "unpublished"
+          : "set to draft";
 
     await prisma.$transaction(async (tx) => {
       for (const student of targetStudents) {
@@ -2045,13 +2086,20 @@ export async function setResultPublicationStatusAction(formData: FormData) {
       }
     });
 
+    await notifyTeachersForClassId({
+      schoolId: profile.schoolId,
+      classId: parsed.data.classId,
+      actorProfileId: profile.id,
+      title: "Result publication updated",
+      message:
+        targetStudents.length === 1
+          ? `${targetStudents[0].fullName} result was ${statusLabel} for ${term.sessionLabel} ${term.termLabel} in ${klass.name}.`
+          : `${targetStudents.length} student results were ${statusLabel} for ${term.sessionLabel} ${term.termLabel} in ${klass.name}.`,
+      href: `/app/teacher/results?termId=${parsed.data.termId}&classId=${parsed.data.classId}`,
+      dedupeWindowMinutes: 120,
+    });
+
     revalidateAdminPages();
-    const statusLabel =
-      nextStatus === ResultPublicationStatus.PUBLISHED
-        ? "published"
-        : nextStatus === ResultPublicationStatus.UNPUBLISHED
-          ? "unpublished"
-          : "set to draft";
     const skippedCount = parsed.data.studentIds.length - targetStudents.length;
     const baseMessage =
       targetStudents.length === 1
@@ -2140,6 +2188,16 @@ export async function upsertStudentAttendanceAction(formData: FormData) {
         timesPresent: parsed.data.timesPresent,
         timesAbsent: parsed.data.timesAbsent,
       },
+    });
+
+    await notifyTeachersForClassId({
+      schoolId: profile.schoolId,
+      classId: parsed.data.classId,
+      actorProfileId: profile.id,
+      title: "Attendance updated",
+      message: `Attendance records were updated for ${klass.name} in ${term.sessionLabel} ${term.termLabel}.`,
+      href: `/app/teacher/attendance?termId=${parsed.data.termId}&classId=${parsed.data.classId}`,
+      dedupeWindowMinutes: 120,
     });
 
     revalidateAdminPages();
@@ -2232,6 +2290,16 @@ export async function saveStudentAttendanceAdminAction(input: SaveStudentAttenda
       },
     });
 
+    await notifyTeachersForClassId({
+      schoolId: profile.schoolId,
+      classId: parsed.data.classId,
+      actorProfileId: profile.id,
+      title: "Attendance updated",
+      message: `Attendance records were updated for ${klass.name} in ${term.sessionLabel} ${term.termLabel}.`,
+      href: `/app/teacher/attendance?termId=${parsed.data.termId}&classId=${parsed.data.classId}`,
+      dedupeWindowMinutes: 120,
+    });
+
     revalidateAdminPages();
     return {
       ok: true,
@@ -2275,7 +2343,7 @@ export async function upsertStudentCommentAction(formData: FormData) {
   }
 
   try {
-    const [student, term] = await Promise.all([
+    const [student, term, klass] = await Promise.all([
       prisma.student.findFirst({
         where: { id: parsed.data.studentId, schoolId: profile.schoolId },
         select: { id: true, fullName: true },
@@ -2284,10 +2352,14 @@ export async function upsertStudentCommentAction(formData: FormData) {
         where: { id: parsed.data.termId, schoolId: profile.schoolId },
         select: { id: true, sessionLabel: true, termLabel: true },
       }),
+      prisma.class.findFirst({
+        where: { id: parsed.data.classId, schoolId: profile.schoolId },
+        select: { id: true, name: true },
+      }),
     ]);
 
-    if (!student || !term) {
-      throw new Error("The selected student or term could not be found.");
+    if (!student || !term || !klass) {
+      throw new Error("The selected student, class, or term could not be found.");
     }
 
     await prisma.studentComment.upsert({
@@ -2308,6 +2380,16 @@ export async function upsertStudentCommentAction(formData: FormData) {
         classId: parsed.data.classId,
         comment: parsed.data.comment ?? "",
       },
+    });
+
+    await notifyTeachersForClassId({
+      schoolId: profile.schoolId,
+      classId: parsed.data.classId,
+      actorProfileId: profile.id,
+      title: "Comments updated",
+      message: `Class teacher comments were updated for ${klass.name} in ${term.sessionLabel} ${term.termLabel}.`,
+      href: `/app/teacher/comment?termId=${parsed.data.termId}&classId=${parsed.data.classId}`,
+      dedupeWindowMinutes: 120,
     });
 
     revalidateAdminPages();
@@ -2351,7 +2433,7 @@ export async function saveStudentCommentAdminAction(input: SaveStudentCommentInp
       return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid comment." };
     }
 
-    const [student, term] = await Promise.all([
+    const [student, term, klass] = await Promise.all([
       prisma.student.findFirst({
         where: { id: parsed.data.studentId, schoolId: profile.schoolId, status: "active" },
         select: { id: true, fullName: true },
@@ -2360,10 +2442,14 @@ export async function saveStudentCommentAdminAction(input: SaveStudentCommentInp
         where: { id: parsed.data.termId, schoolId: profile.schoolId },
         select: { id: true, sessionLabel: true, termLabel: true },
       }),
+      prisma.class.findFirst({
+        where: { id: parsed.data.classId, schoolId: profile.schoolId },
+        select: { id: true, name: true },
+      }),
     ]);
 
-    if (!student || !term) {
-      return { ok: false, message: "The selected active student or term could not be found." };
+    if (!student || !term || !klass) {
+      return { ok: false, message: "The selected active student, class, or term could not be found." };
     }
 
     await prisma.studentComment.upsert({
@@ -2384,6 +2470,16 @@ export async function saveStudentCommentAdminAction(input: SaveStudentCommentInp
         classId: parsed.data.classId,
         comment: parsed.data.comment ?? "",
       },
+    });
+
+    await notifyTeachersForClassId({
+      schoolId: profile.schoolId,
+      classId: parsed.data.classId,
+      actorProfileId: profile.id,
+      title: "Comments updated",
+      message: `Class teacher comments were updated for ${klass.name} in ${term.sessionLabel} ${term.termLabel}.`,
+      href: `/app/teacher/comment?termId=${parsed.data.termId}&classId=${parsed.data.classId}`,
+      dedupeWindowMinutes: 120,
     });
 
     revalidateAdminPages();
