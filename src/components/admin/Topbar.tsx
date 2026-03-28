@@ -198,7 +198,7 @@ export default function Topbar({
             <li className="nav-item topbar-icon hidden-caret">
               <ThemeToggle className="nav-link border-0 bg-transparent topbar-theme-toggle" />
             </li>
-            <li className="nav-item topbar-icon dropdown hidden-caret">
+            <li className="nav-item topbar-icon dropdown hidden-caret" data-tour="topbar-notifications">
               <button
                 type="button"
                 className="nav-link dropdown-toggle border-0 bg-transparent"
@@ -243,7 +243,7 @@ export default function Topbar({
               ) : null}
             </li>
 
-            <li className="nav-item topbar-user dropdown hidden-caret">
+            <li className="nav-item topbar-user dropdown hidden-caret" data-tour="topbar-profile">
               <button
                 type="button"
                 className="dropdown-toggle profile-pic border-0 bg-transparent"

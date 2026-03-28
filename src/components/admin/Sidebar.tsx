@@ -170,7 +170,7 @@ export default function Sidebar({
   }
 
   return (
-    <div className="sidebar" data-background-color="dark">
+    <div className="sidebar" data-background-color="dark" data-tour="sidebar-main">
       <div className="sidebar-logo">
         <div className="logo-header" data-background-color="dark">
           <BrandLogo
@@ -216,7 +216,23 @@ export default function Sidebar({
             {mainLinks.map((item) => {
               const active = isActive(pathname, item.href);
               return (
-                <li key={item.href} className={`nav-item ${active ? "active" : ""}`}>
+                <li
+                  key={item.href}
+                  className={`nav-item ${active ? "active" : ""}`}
+                  data-tour={
+                    item.label === "Teachers"
+                      ? "admin-teachers-link"
+                      : item.label === "Students"
+                        ? "teacher-students-link"
+                        : item.label === "Attendance"
+                          ? "teacher-attendance-link"
+                          : item.label === "Grade Entry"
+                            ? "teacher-grade-entry-link"
+                            : item.label === "Results"
+                              ? "teacher-results-link"
+                              : undefined
+                  }
+                >
                   <Link href={item.href} onClick={onClose}>
                     <i className={item.icon} />
                     <p>{item.label}</p>
@@ -239,7 +255,21 @@ export default function Sidebar({
               const open = isGroupOpen(group);
 
               return (
-                <li key={group.id} className={`nav-item ${active ? "active " : ""}${open ? "submenu" : ""}`.trim()}>
+                <li
+                  key={group.id}
+                  className={`nav-item ${active ? "active " : ""}${open ? "submenu" : ""}`.trim()}
+                  data-tour={
+                    group.id === "academic-setup"
+                      ? "admin-academic-group"
+                      : group.id === "assignments"
+                        ? "admin-assignments-group"
+                        : group.id === "grading"
+                          ? "admin-grading-group"
+                          : group.id === "payment"
+                            ? "admin-payments-group"
+                            : undefined
+                  }
+                >
                   <a
                     href={`#${group.id}`}
                     data-bs-toggle="collapse"

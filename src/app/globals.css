@@ -3043,6 +3043,12 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   white-space: nowrap;
 }
 
+.guide-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .guide-page {
   min-height: 100vh;
   background:
@@ -3387,7 +3393,8 @@ html[data-theme="dark"] .guide-callout {
   }
 
   .guide-footer-bar,
-  .guide-footer-copy {
+  .guide-footer-copy,
+  .guide-footer-actions {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -3412,4 +3419,94 @@ html[data-theme="dark"] .guide-callout {
   .guide-section-card {
     padding: 1.15rem;
   }
+}
+
+.shell-tour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+}
+
+.shell-tour-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 18, 0.64);
+}
+
+.shell-tour-spotlight {
+  position: fixed;
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 9999px rgba(8, 12, 18, 0.58),
+    0 0 0 2px rgba(255, 255, 255, 0.92);
+  pointer-events: none;
+  transition: all 180ms ease;
+}
+
+.shell-tour-card {
+  position: fixed;
+  z-index: 2;
+  width: min(340px, calc(100vw - 2rem));
+  padding: 1rem 1rem 1.05rem;
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.98);
+  color: #152232;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+}
+
+.shell-tour-card.is-centered {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.shell-tour-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #617081;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shell-tour-close {
+  border: 0;
+  background: transparent;
+  color: #607082;
+}
+
+.shell-tour-card h3 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.shell-tour-card p {
+  margin: 0;
+  color: #566476;
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+.shell-tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+html[data-theme="dark"] .shell-tour-card {
+  background: rgba(17, 18, 22, 0.98);
+  color: #f4f6fb;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+}
+
+html[data-theme="dark"] .shell-tour-card p,
+html[data-theme="dark"] .shell-tour-progress,
+html[data-theme="dark"] .shell-tour-close {
+  color: #c5d0dc;
 }

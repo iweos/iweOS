@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/admin/Sidebar";
 import GuideFooterBar from "@/components/guide/GuideFooterBar";
+import ShellTour from "@/components/guide/ShellTour";
 import Topbar from "@/components/admin/Topbar";
 
 type AdminShellProps = {
@@ -53,6 +54,7 @@ export default function AdminShell({
 
   return (
     <div className={`wrapper ${sidebarMinimized ? "sidebar_minimize" : ""}`}>
+      <ShellTour mode={mode} teacherPortalAdmin={teacherPortalAdmin} />
       <Sidebar
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
@@ -78,11 +80,13 @@ export default function AdminShell({
           profileEmail={profileEmail}
         />
         <div className="container">
-          <main className="page-inner admin-page-wrap">{children}</main>
+          <main className="page-inner admin-page-wrap" data-tour="main-content">
+            {children}
+          </main>
         </div>
         <div className="container">
           <div className="page-inner pt-0">
-            <GuideFooterBar compact />
+            <GuideFooterBar compact showTourButton />
           </div>
         </div>
       </div>
