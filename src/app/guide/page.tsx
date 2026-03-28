@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
+import GuideDocsClient from "@/components/guide/GuideDocsClient";
 
 const sections = [
   {
@@ -146,13 +147,43 @@ const sections = [
   },
 ];
 
-const quickLinks = [
-  { label: "Create school account", href: "#getting-started" },
-  { label: "Build academic structure", href: "#academic-structure" },
-  { label: "Assign teachers", href: "#teachers-and-assignments" },
-  { label: "Import and enroll students", href: "#students-and-enrollment" },
-  { label: "Run grading and results", href: "#results-and-sharing" },
-  { label: "Configure payments", href: "#payments" },
+const quickTopics = [
+  {
+    title: "School setup",
+    description: "Create the school identity, configure settings, and prepare branding for results.",
+    href: "#getting-started",
+    icon: "fas fa-school",
+  },
+  {
+    title: "Academic structure",
+    description: "Set up sessions, classes, subjects, assessments, conduct, and grading policy.",
+    href: "#academic-structure",
+    icon: "fas fa-sitemap",
+  },
+  {
+    title: "Teachers and assignments",
+    description: "Add staff, link accounts, and assign the right teachers to the right classes.",
+    href: "#teachers-and-assignments",
+    icon: "fas fa-chalkboard-teacher",
+  },
+  {
+    title: "Students and enrollment",
+    description: "Import students, update their records, and enroll them by class and term.",
+    href: "#students-and-enrollment",
+    icon: "fas fa-user-graduate",
+  },
+  {
+    title: "Results and exports",
+    description: "Generate, publish, export, and share result documents.",
+    href: "#results-and-sharing",
+    icon: "fas fa-file-alt",
+  },
+  {
+    title: "Payments",
+    description: "Manage invoices, reconciliation, transactions, reports, and public fee payment.",
+    href: "#payments",
+    icon: "fas fa-wallet",
+  },
 ];
 
 export default function GuidePage() {
@@ -171,131 +202,7 @@ export default function GuidePage() {
           </div>
         </div>
       </header>
-
-      <div className="guide-docs-shell">
-        <aside className="guide-docs-sidebar">
-          <div className="guide-docs-sidebar-card">
-            <p className="guide-docs-eyebrow">Setup Guide</p>
-            <h1>School setup manual</h1>
-            <p className="guide-docs-sidebar-intro">
-              A GitBook-style handbook for configuring a school from first sign-up to live grading, payments, results,
-              and teacher operations.
-            </p>
-          </div>
-
-          <div className="guide-docs-sidebar-card">
-            <p className="guide-docs-mini-label">Quick start</p>
-            <ul className="guide-docs-link-list">
-              {quickLinks.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href}>{item.label}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="guide-docs-sidebar-card">
-            <p className="guide-docs-mini-label">Need live help?</p>
-            <div className="guide-docs-inline-actions">
-              <Link href="/sign-in" className="guide-docs-chip">
-                Open sign in
-              </Link>
-              <Link href="/app/admin/dashboard" className="guide-docs-chip">
-                Open dashboard
-              </Link>
-            </div>
-          </div>
-        </aside>
-
-        <main className="guide-docs-content">
-          <section className="guide-docs-intro-block">
-            <p className="guide-docs-breadcrumb">Documentation / School onboarding</p>
-            <h2>Everything a school needs to go live on ìwéOS</h2>
-            <p>
-              Use this as the master reference for onboarding, internal training, and rollout support. The in-app tour
-              helps with quick orientation; this guide explains the full setup path in order.
-            </p>
-            <div className="guide-docs-stat-grid">
-              <div className="guide-docs-stat">
-                <strong>8</strong>
-                <span>Core sections</span>
-              </div>
-              <div className="guide-docs-stat">
-                <strong>3</strong>
-                <span>Main roles</span>
-              </div>
-              <div className="guide-docs-stat">
-                <strong>1</strong>
-                <span>Living handbook</span>
-              </div>
-            </div>
-          </section>
-
-          {sections.map((section, index) => (
-            <section key={section.id} id={section.id} className="guide-docs-section">
-              <div className="guide-docs-section-head">
-                <span className="guide-docs-step-pill">{index + 1}</span>
-                <div>
-                  <p className="guide-docs-section-label">{section.summary}</p>
-                  <h3>{section.title}</h3>
-                </div>
-              </div>
-
-              <ul className="guide-docs-checks">
-                {section.bullets.map((bullet) => (
-                  <li key={bullet}>
-                    <i className="fas fa-check-circle" aria-hidden="true" />
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="guide-docs-action-row">
-                {section.links.map((link) => (
-                  <Link key={`${section.id}-${link.href}`} href={link.href} className="guide-docs-link-pill">
-                    {link.label}
-                    <i className="fas fa-arrow-right" aria-hidden="true" />
-                  </Link>
-                ))}
-              </div>
-
-              <div className="guide-docs-note">
-                <i className="fas fa-image" aria-hidden="true" />
-                <p>{section.note}</p>
-              </div>
-            </section>
-          ))}
-        </main>
-
-        <aside className="guide-docs-rightbar">
-          <div className="guide-docs-right-card">
-            <p className="guide-docs-mini-label">On this page</p>
-            <ul className="guide-docs-outline">
-              {sections.map((section) => (
-                <li key={section.id}>
-                  <a href={`#${section.id}`}>{section.title}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="guide-docs-right-card">
-            <p className="guide-docs-mini-label">Tour and replay</p>
-            <p>
-              Inside the app shell, users can reopen the guided tour anytime from the fixed footer bar without searching
-              for documentation.
-            </p>
-          </div>
-
-          <div className="guide-docs-right-card">
-            <p className="guide-docs-mini-label">Screenshots</p>
-            <p>
-              To make this guide visual, the next pass can embed real screenshots for the key pages listed in each
-              section note.
-            </p>
-          </div>
-        </aside>
-      </div>
+      <GuideDocsClient sections={sections} quickTopics={quickTopics} />
     </div>
   );
 }
