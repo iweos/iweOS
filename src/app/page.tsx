@@ -1,5 +1,12 @@
 import type { Metadata } from 'next'
+import localFont from 'next/font/local'
 import IweosTemplateHome from '@/components/home-template/IweosTemplateHome'
+
+const hornbill = localFont({
+  src: '../../public/fonts/Hornbill-Regular.otf',
+  variable: '--font-homepage-hornbill',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'ìwéOS | School OS for Grading and Payments',
@@ -22,5 +29,9 @@ export const metadata: Metadata = {
 }
 
 export default function HomePage() {
-  return <IweosTemplateHome />
+  return (
+    <div className={hornbill.className}>
+      <IweosTemplateHome />
+    </div>
+  )
 }
