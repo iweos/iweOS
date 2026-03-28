@@ -3,11 +3,13 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, ProfileRole, ResultPublicationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
+import { createNotifications, notifyTeachersForClass } from "@/lib/server/notifications";
 import { buildResultPublicationPayload } from "@/lib/server/results";
 import { storeUploadedImage } from "@/lib/server/uploads";
 import {
@@ -90,6 +92,14 @@ function redirectEnrollmentsStatus(status: "success" | "error", message: string)
     message,
   });
   redirect(`/app/admin/assignments/enrollments?${query.toString()}`);
+}
+
+function redirectStudentsAddStatus(status: "success" | "error", message: string): never {
+  const query = new URLSearchParams({
+    status,
+    message,
+  });
+  redirect(`/app/admin/students/add?${query.toString()}`);
 }
 
 function redirectPromotionStatus(
@@ -923,44 +933,44 @@ export async function deleteClassAction(formData: FormData) {
 }
 
 export async function createStudentAction(formData: FormData) {
-  const profile = await requireRole("admin");
-  const resolvedPhotoUrl = await resolveUploadedImage(formData, {
-    fileKey: "photoFile",
-    valueKey: "photoUrl",
-    folder: ["students", profile.schoolId],
-    fileStem: `student-${formValue(formData, "studentCode") || "new"}`,
-  });
-
-  const parsed = studentSchema.safeParse({
-    studentCode: formValue(formData, "studentCode"),
-    firstName: formValue(formData, "firstName"),
-    lastName: formValue(formData, "lastName"),
-    className: formValue(formData, "className"),
-    address: formValue(formData, "address"),
-    guardianName: formValue(formData, "guardianName"),
-    guardianPhone: formValue(formData, "guardianPhone"),
-    guardianEmail: formValue(formData, "guardianEmail"),
-    status: formValue(formData, "status") || "active",
-    gender: formValue(formData, "gender"),
-    photoUrl: resolvedPhotoUrl,
-  });
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid student payload.");
-  }
-
-  const school = await prisma.school.findUnique({
-    where: { id: profile.schoolId },
-    select: { code: true },
-  });
-
-  if (!school) {
-    throw new Error("School not found.");
-  }
-
-  const fullName = `${parsed.data.firstName} ${parsed.data.lastName}`.trim();
-
   try {
+    const profile = await requireRole("admin");
+    const resolvedPhotoUrl = await resolveUploadedImage(formData, {
+      fileKey: "photoFile",
+      valueKey: "photoUrl",
+      folder: ["students", profile.schoolId],
+      fileStem: `student-${formValue(formData, "studentCode") || "new"}`,
+    });
+
+    const parsed = studentSchema.safeParse({
+      studentCode: formValue(formData, "studentCode"),
+      firstName: formValue(formData, "firstName"),
+      lastName: formValue(formData, "lastName"),
+      className: formValue(formData, "className"),
+      address: formValue(formData, "address"),
+      guardianName: formValue(formData, "guardianName"),
+      guardianPhone: formValue(formData, "guardianPhone"),
+      guardianEmail: formValue(formData, "guardianEmail"),
+      status: formValue(formData, "status") || "active",
+      gender: formValue(formData, "gender"),
+      photoUrl: resolvedPhotoUrl,
+    });
+
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0]?.message ?? "Invalid student payload.");
+    }
+
+    const school = await prisma.school.findUnique({
+      where: { id: profile.schoolId },
+      select: { code: true },
+    });
+
+    if (!school) {
+      throw new Error("School not found.");
+    }
+
+    const fullName = `${parsed.data.firstName} ${parsed.data.lastName}`.trim();
+
     await prisma.student.create({
       data: {
         schoolId: profile.schoolId,
@@ -979,176 +989,229 @@ export async function createStudentAction(formData: FormData) {
         photoUrl: parsed.data.photoUrl || null,
       },
     });
+
+    await createNotifications([
+      {
+        schoolId: profile.schoolId,
+        recipientProfileId: profile.id,
+        actorProfileId: profile.id,
+        title: "Student added",
+        message: `${fullName} was added${parsed.data.className ? ` to ${parsed.data.className}` : ""}.`,
+        href: "/app/admin/students/manage",
+      },
+    ]);
+
+    await notifyTeachersForClass({
+      schoolId: profile.schoolId,
+      className: parsed.data.className,
+      actorProfileId: profile.id,
+      title: "New student added",
+      message: `${fullName} was added${parsed.data.className ? ` to ${parsed.data.className}` : ""}.`,
+      href: "/app/teacher/students",
+    });
+
+    revalidateAdminPages();
   } catch (error) {
     if (isLegacyStudentSchemaError(error) || isPrismaSchemaMismatchError(error)) {
       throw studentSchemaSyncError();
     }
     throw error;
   }
-
-  revalidateAdminPages();
 }
 
 export async function createStudentsBulkAction(formData: FormData) {
-  const profile = await requireRole("admin");
-  const uploadedFile = formData.get("studentCsv");
-  const uploadedCsvText =
-    uploadedFile instanceof File && uploadedFile.size > 0 ? await uploadedFile.text() : "";
-
-  const parsed = studentBulkSchema.safeParse({
-    studentRows: uploadedCsvText || formValue(formData, "studentRows"),
-    enrollmentYear: formValue(formData, "enrollmentYear"),
-    className: formValue(formData, "className"),
-    status: formValue(formData, "status") || "active",
-    gender: formValue(formData, "gender"),
-  });
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid student bulk payload.");
-  }
-
-  const rowText = parsed.data.studentRows || "";
-  const lines = rowText
-    .split(/\r?\n/g)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length === 0) {
-    throw new Error("Upload a CSV file or enter at least one student row.");
-  }
-
-  const dataLines = hasStudentHeader(parseCsvLine(lines[0])) ? lines.slice(1) : lines;
-
-  if (dataLines.length === 0) {
-    throw new Error("The CSV file does not contain any student rows.");
-  }
-
-  const studentsToCreate = dataLines.map((row) => {
-    const parts = parseCsvLine(row);
-    const firstName = parts[0] ?? "";
-    const rawLastName = parts[1] ?? "";
-    const inferredLastName =
-      !rawLastName && firstName.includes(" ")
-        ? firstName
-            .split(/\s+/)
-            .slice(1)
-            .join(" ")
-        : rawLastName;
-    const normalizedFirstName =
-      !rawLastName && firstName.includes(" ") ? firstName.split(/\s+/)[0] ?? "" : firstName;
-    const lastName = inferredLastName;
-
-    if (!normalizedFirstName || !lastName) {
-      throw new Error("Each row must include: First Name, Last Name.");
-    }
-
-    const guardianEmail = parts[5] ?? "";
-    if (guardianEmail) {
-      const emailCheck = /\S+@\S+\.\S+/.test(guardianEmail);
-      if (!emailCheck) {
-        throw new Error(`Invalid guardian email for ${normalizedFirstName} ${lastName}.`);
-      }
-    }
-
-    const parsedGender = parseStudentGender(parts[6] ?? "");
-    if (parsedGender === null) {
-      throw new Error(`Invalid gender for ${normalizedFirstName} ${lastName}. Use Male or Female.`);
-    }
-
-    return {
-      firstName: normalizedFirstName,
-      lastName,
-      address: parts[2] || "",
-      guardianName: parts[3] || "",
-      guardianPhone: parts[4] || "",
-      guardianEmail,
-      gender: parsedGender,
-    };
-  });
-
-  const school = await prisma.school.findUnique({
-    where: { id: profile.schoolId },
-    select: { id: true, code: true, name: true },
-  });
-
-  if (!school) {
-    throw new Error("School not found.");
-  }
-
-  const token = schoolNameToken(school.name);
-  const prefix = `${token}-${parsed.data.enrollmentYear}-`;
-
-  let existing: Array<{ studentCode: string }> = [];
   try {
-    existing = await prisma.student.findMany({
-      where: {
-        schoolId: profile.schoolId,
-        studentCode: {
-          startsWith: prefix,
-        },
-      },
-      select: { studentCode: true },
+    const profile = await requireRole("admin");
+    const uploadedFile = formData.get("studentCsv");
+    const uploadedCsvText =
+      uploadedFile instanceof File && uploadedFile.size > 0 ? await uploadedFile.text() : "";
+
+    const parsed = studentBulkSchema.safeParse({
+      studentRows: uploadedCsvText || formValue(formData, "studentRows"),
+      enrollmentYear: formValue(formData, "enrollmentYear"),
+      className: formValue(formData, "className"),
+      status: formValue(formData, "status") || "active",
+      gender: formValue(formData, "gender"),
     });
-  } catch (error) {
-    if (isPrismaSchemaMismatchError(error)) {
-      throw studentSchemaSyncError();
+
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0]?.message ?? "Invalid student bulk payload.");
     }
-    throw error;
-  }
 
-  let serial = existing.reduce((max, row) => {
-    const match = row.studentCode.match(new RegExp(`^${prefix}(\\d{4})$`));
-    if (!match) {
-      return max;
+    const rowText = parsed.data.studentRows || "";
+    const lines = rowText
+      .split(/\r?\n/g)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length === 0) {
+      throw new Error("Upload a CSV file or enter at least one student row.");
     }
-    const value = Number.parseInt(match[1] ?? "0", 10);
-    return Number.isFinite(value) ? Math.max(max, value) : max;
-  }, 0);
 
-  await prisma.$transaction(async (tx) => {
-    for (const row of studentsToCreate) {
-      // Retry serial in case of a concurrent create clash.
-      for (;;) {
-        serial += 1;
-        const generatedCode = `${prefix}${serial.toString().padStart(4, "0")}`;
-        const fullName = `${row.firstName} ${row.lastName}`.trim();
+    const dataLines = hasStudentHeader(parseCsvLine(lines[0])) ? lines.slice(1) : lines;
 
-        try {
-          await tx.student.create({
-            data: {
-              schoolId: profile.schoolId,
-              studentCode: generatedCode,
-              studentPaymentId: toStudentPaymentId(school.code, generatedCode),
-              firstName: row.firstName,
-              lastName: row.lastName,
-              fullName,
-              className: parsed.data.className || null,
-              address: row.address || null,
-              guardianName: row.guardianName || null,
-              guardianPhone: row.guardianPhone || null,
-              guardianEmail: row.guardianEmail || null,
-              status: parsed.data.status,
-              gender: row.gender || parsed.data.gender || null,
-            },
-          });
-          break;
-        } catch (error) {
-          if (isLegacyStudentSchemaError(error)) {
-            throw studentSchemaSyncError();
-          }
-          if (isPrismaSchemaMismatchError(error)) {
-            throw studentSchemaSyncError();
-          }
-          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-            continue;
-          }
-          throw error;
+    if (dataLines.length === 0) {
+      throw new Error("The CSV file does not contain any student rows.");
+    }
+
+    const studentsToCreate = dataLines.map((row) => {
+      const parts = parseCsvLine(row);
+      const firstName = parts[0] ?? "";
+      const rawLastName = parts[1] ?? "";
+      const inferredLastName =
+        !rawLastName && firstName.includes(" ")
+          ? firstName
+              .split(/\s+/)
+              .slice(1)
+              .join(" ")
+          : rawLastName;
+      const normalizedFirstName =
+        !rawLastName && firstName.includes(" ") ? firstName.split(/\s+/)[0] ?? "" : firstName;
+      const lastName = inferredLastName;
+
+      if (!normalizedFirstName || !lastName) {
+        throw new Error("Each row must include: First Name, Last Name.");
+      }
+
+      const guardianEmail = parts[5] ?? "";
+      if (guardianEmail) {
+        const emailCheck = /\S+@\S+\.\S+/.test(guardianEmail);
+        if (!emailCheck) {
+          throw new Error(`Invalid guardian email for ${normalizedFirstName} ${lastName}.`);
         }
       }
-    }
-  });
 
-  revalidateAdminPages();
+      const parsedGender = parseStudentGender(parts[6] ?? "");
+      if (parsedGender === null) {
+        throw new Error(`Invalid gender for ${normalizedFirstName} ${lastName}. Use Male or Female.`);
+      }
+
+      return {
+        firstName: normalizedFirstName,
+        lastName,
+        address: parts[2] || "",
+        guardianName: parts[3] || "",
+        guardianPhone: parts[4] || "",
+        guardianEmail,
+        gender: parsedGender,
+      };
+    });
+
+    const school = await prisma.school.findUnique({
+      where: { id: profile.schoolId },
+      select: { id: true, code: true, name: true },
+    });
+
+    if (!school) {
+      throw new Error("School not found.");
+    }
+
+    const token = schoolNameToken(school.name);
+    const prefix = `${token}-${parsed.data.enrollmentYear}-`;
+
+    let existing: Array<{ studentCode: string }> = [];
+    try {
+      existing = await prisma.student.findMany({
+        where: {
+          schoolId: profile.schoolId,
+          studentCode: {
+            startsWith: prefix,
+          },
+        },
+        select: { studentCode: true },
+      });
+    } catch (error) {
+      if (isPrismaSchemaMismatchError(error)) {
+        throw studentSchemaSyncError();
+      }
+      throw error;
+    }
+
+    let serial = existing.reduce((max, row) => {
+      const match = row.studentCode.match(new RegExp(`^${prefix}(\\d{4})$`));
+      if (!match) {
+        return max;
+      }
+      const value = Number.parseInt(match[1] ?? "0", 10);
+      return Number.isFinite(value) ? Math.max(max, value) : max;
+    }, 0);
+
+    await prisma.$transaction(async (tx) => {
+      for (const row of studentsToCreate) {
+        for (;;) {
+          serial += 1;
+          const generatedCode = `${prefix}${serial.toString().padStart(4, "0")}`;
+          const fullName = `${row.firstName} ${row.lastName}`.trim();
+
+          try {
+            await tx.student.create({
+              data: {
+                schoolId: profile.schoolId,
+                studentCode: generatedCode,
+                studentPaymentId: toStudentPaymentId(school.code, generatedCode),
+                firstName: row.firstName,
+                lastName: row.lastName,
+                fullName,
+                className: parsed.data.className || null,
+                address: row.address || null,
+                guardianName: row.guardianName || null,
+                guardianPhone: row.guardianPhone || null,
+                guardianEmail: row.guardianEmail || null,
+                status: parsed.data.status,
+                gender: row.gender || parsed.data.gender || null,
+              },
+            });
+            break;
+          } catch (error) {
+            if (isLegacyStudentSchemaError(error)) {
+              throw studentSchemaSyncError();
+            }
+            if (isPrismaSchemaMismatchError(error)) {
+              throw studentSchemaSyncError();
+            }
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+              continue;
+            }
+            throw error;
+          }
+        }
+      }
+    });
+
+    await createNotifications([
+      {
+        schoolId: profile.schoolId,
+        recipientProfileId: profile.id,
+        actorProfileId: profile.id,
+        title: "Students imported",
+        message: `${studentsToCreate.length} student${studentsToCreate.length === 1 ? "" : "s"} imported${parsed.data.className ? ` into ${parsed.data.className}` : ""}.`,
+        href: "/app/admin/students/manage",
+      },
+    ]);
+
+    await notifyTeachersForClass({
+      schoolId: profile.schoolId,
+      className: parsed.data.className,
+      actorProfileId: profile.id,
+      title: "New students added",
+      message: `${studentsToCreate.length} new student${studentsToCreate.length === 1 ? "" : "s"} ${studentsToCreate.length === 1 ? "was" : "were"} added${parsed.data.className ? ` to ${parsed.data.className}` : ""}.`,
+      href: "/app/teacher/students",
+    });
+
+    revalidateAdminPages();
+    redirectStudentsAddStatus(
+      "success",
+      `${studentsToCreate.length} student${studentsToCreate.length === 1 ? "" : "s"} imported successfully${parsed.data.className ? ` into ${parsed.data.className}` : ""}.`,
+    );
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    if (isPrismaSchemaMismatchError(error)) {
+      redirectStudentsAddStatus("error", schemaSyncMessage("Student"));
+    }
+    redirectStudentsAddStatus("error", error instanceof Error ? error.message : "Unable to import students right now.");
+  }
 }
 
 export async function deleteStudentAction(formData: FormData) {

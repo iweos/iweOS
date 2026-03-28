@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -16,11 +17,14 @@ type TopbarProps = {
   profileEmail?: string;
 };
 
-const notifications = [
-  "New invoice payment received",
-  "3 teachers updated grade sheets",
-  "Weekly analytics report generated",
-];
+type TopbarNotification = {
+  id: string;
+  title: string;
+  message: string;
+  href?: string | null;
+  isRead: boolean;
+  createdAt: string;
+};
 
 export default function Topbar({
   onMenuToggle,
@@ -37,8 +41,85 @@ export default function Topbar({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [notifications, setNotifications] = useState<TopbarNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const roleLabel = mode === "teacher" ? "Teacher" : "Admin";
+  const hasNotifications = notifications.length > 0;
+
+  const notificationLabel = useMemo(() => {
+    if (unreadCount > 0) {
+      return unreadCount;
+    }
+    return notifications.length;
+  }, [notifications.length, unreadCount]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadNotifications() {
+      try {
+        const response = await fetch("/api/notifications", { cache: "no-store" });
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as {
+          items: TopbarNotification[];
+          unreadCount: number;
+        };
+
+        if (cancelled) {
+          return;
+        }
+
+        setNotifications(payload.items);
+        setUnreadCount(payload.unreadCount);
+      } catch {
+        // Fail silently in the shell; notifications are additive.
+      }
+    }
+
+    void loadNotifications();
+    const intervalId = window.setInterval(() => {
+      void loadNotifications();
+    }, 60000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  function formatNotificationTime(value: string) {
+    const date = new Date(value);
+    const deltaMs = Date.now() - date.getTime();
+    const deltaMinutes = Math.max(1, Math.floor(deltaMs / 60000));
+
+    if (deltaMinutes < 60) {
+      return `${deltaMinutes}m ago`;
+    }
+
+    const deltaHours = Math.floor(deltaMinutes / 60);
+    if (deltaHours < 24) {
+      return `${deltaHours}h ago`;
+    }
+
+    const deltaDays = Math.floor(deltaHours / 24);
+    return `${deltaDays}d ago`;
+  }
+
+  async function markNotificationsRead() {
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+      });
+      setUnreadCount(0);
+      setNotifications((current) => current.map((item) => ({ ...item, isRead: true })));
+    } catch {
+      // Ignore badge sync failure.
+    }
+  }
 
   function handleSignOut() {
     if (isSigningOut) {
@@ -122,13 +203,17 @@ export default function Topbar({
                 type="button"
                 className="nav-link dropdown-toggle border-0 bg-transparent"
                 onClick={() => {
-                  setNotificationsOpen((current) => !current);
+                  const nextOpen = !notificationsOpen;
+                  setNotificationsOpen(nextOpen);
                   setProfileOpen(false);
+                  if (nextOpen) {
+                    void markNotificationsRead();
+                  }
                 }}
                 aria-label="Notifications"
               >
                 <i className="fa fa-bell" />
-                <span className="notification">{notifications.length}</span>
+                {notificationLabel > 0 ? <span className="notification">{notificationLabel}</span> : null}
               </button>
 
               {notificationsOpen ? (
@@ -138,16 +223,20 @@ export default function Topbar({
                   </li>
                   <li>
                     <div className="notif-center">
-                      {notifications.map((item) => (
-                        <a href="#notifications" key={item}>
-                          <div className="notif-icon notif-success">
+                      {hasNotifications ? notifications.map((item) => (
+                        <Link href={item.href || "#"} key={item.id} onClick={() => setNotificationsOpen(false)}>
+                          <div className={`notif-icon ${item.isRead ? "notif-success" : "notif-primary"}`}>
                             <i className="fa fa-info" />
                           </div>
                           <div className="notif-content">
-                            <span className="block">{item}</span>
+                            <span className="block fw-semibold">{item.title}</span>
+                            <span className="time">{item.message}</span>
+                            <span className="time">{formatNotificationTime(item.createdAt)}</span>
                           </div>
-                        </a>
-                      ))}
+                        </Link>
+                      )) : (
+                        <div className="px-3 py-3 text-sm text-muted">No notifications yet.</div>
+                      )}
                     </div>
                   </li>
                 </ul>

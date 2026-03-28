@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import Card from "@/components/admin/Card";
 import Input from "@/components/admin/ui/Input";
 import PageHeader from "@/components/admin/PageHeader";
@@ -10,7 +11,19 @@ import { createStudentsBulkAction } from "@/lib/server/admin-actions";
 import { prisma } from "@/lib/server/prisma";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 
-export default async function AdminStudentsAddPage() {
+type AdminStudentsAddSearchParams = {
+  status?: string;
+  message?: string;
+};
+
+export default async function AdminStudentsAddPage({
+  searchParams,
+}: {
+  searchParams: Promise<AdminStudentsAddSearchParams>;
+}) {
+  const params = await searchParams;
+  const status = params.status === "success" || params.status === "error" ? params.status : null;
+  const message = (params.message ?? "").trim();
   const profile = await requireRole("admin");
 
   let studentCount = 0;
@@ -41,6 +54,7 @@ export default async function AdminStudentsAddPage() {
 
   return (
     <Section>
+      {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <PageHeader
         title="Add Students"
         subtitle="Bulk import students with CSV or paste rows directly."
