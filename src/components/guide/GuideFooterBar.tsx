@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth, useClerk } from "@clerk/nextjs";
+import { useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 
 type GuideFooterBarProps = {
   compact?: boolean;
@@ -8,32 +11,58 @@ type GuideFooterBarProps = {
 };
 
 export default function GuideFooterBar({ compact = false, showTourButton = false }: GuideFooterBarProps) {
+  const { signOut } = useClerk();
+  const { sessionId } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  function handleSignOut() {
+    if (isSigningOut) {
+      return;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("iweos:pending-indicator", {
+        detail: { durationMs: 9000 },
+      }),
+    );
+
+    setIsSigningOut(true);
+    const signOutPromise = sessionId ? signOut({ sessionId, redirectUrl: "/sign-in" }) : signOut({ redirectUrl: "/sign-in" });
+    void signOutPromise.catch(() => {
+      setIsSigningOut(false);
+    });
+  }
+
   return (
     <div className={`guide-footer-bar${compact ? " is-compact" : ""}`} data-tour="tour-footer">
-      <div className="guide-footer-copy" aria-hidden="true">
-        <span className="guide-footer-kicker">
-          <i className="fas fa-life-ring" />
-        </span>
-        <div>
-          <strong>Support</strong>
-          <p>Tour and guide</p>
-        </div>
+      <div className="guide-footer-brand" aria-hidden="true">
+        <BrandLogo href="/" variant="dark" className="guide-footer-logo" textClassName="guide-footer-logo-text" />
       </div>
       <div className="guide-footer-actions">
         {showTourButton ? (
           <button
             type="button"
-            className="btn btn-outline-secondary guide-footer-button"
+            className="guide-footer-icon-button"
             onClick={() => window.dispatchEvent(new CustomEvent("iweos:open-tour"))}
+            aria-label="Start tour"
+            title="Start tour"
           >
             <i className="fas fa-magic" />
-            <span>Tour</span>
           </button>
         ) : null}
-        <Link href="/guide" className="btn btn-primary guide-footer-button">
+        <Link href="/guide" className="guide-footer-icon-button guide-footer-icon-button-primary" aria-label="Open guide" title="Open guide">
           <i className="fas fa-book-open" />
-          <span>Guide</span>
         </Link>
+        <button
+          type="button"
+          className="guide-footer-icon-button"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          aria-label="Sign out"
+          title={isSigningOut ? "Signing out..." : "Sign out"}
+        >
+          <i className="fas fa-sign-out-alt" />
+        </button>
       </div>
     </div>
   );

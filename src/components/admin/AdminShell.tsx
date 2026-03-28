@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/admin/Sidebar";
-import FloatingSignOut from "@/components/guide/FloatingSignOut";
 import GuideFooterBar from "@/components/guide/GuideFooterBar";
 import ShellTour from "@/components/guide/ShellTour";
 import Topbar from "@/components/admin/Topbar";
@@ -56,7 +55,6 @@ export default function AdminShell({
   return (
     <div className={`wrapper ${sidebarMinimized ? "sidebar_minimize" : ""}`}>
       <ShellTour mode={mode} teacherPortalAdmin={teacherPortalAdmin} />
-      <FloatingSignOut />
       <Sidebar
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
