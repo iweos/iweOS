@@ -29,7 +29,7 @@ export default function FloatingSignOut() {
   return (
     <button type="button" className="floating-signout-button" onClick={handleSignOut} disabled={isSigningOut} aria-label="Sign out">
       <i className="fas fa-sign-out-alt" aria-hidden="true" />
-      <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
+      <span className="floating-signout-label">{isSigningOut ? "Signing out..." : "Sign out"}</span>
     </button>
   );
 }

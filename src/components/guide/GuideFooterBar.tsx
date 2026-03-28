@@ -10,11 +10,13 @@ type GuideFooterBarProps = {
 export default function GuideFooterBar({ compact = false, showTourButton = false }: GuideFooterBarProps) {
   return (
     <div className={`guide-footer-bar${compact ? " is-compact" : ""}`} data-tour="tour-footer">
-      <div className="guide-footer-copy">
-        <span className="guide-footer-kicker">Need a walkthrough?</span>
+      <div className="guide-footer-copy" aria-hidden="true">
+        <span className="guide-footer-kicker">
+          <i className="fas fa-life-ring" />
+        </span>
         <div>
-          <strong>School setup guide</strong>
-          <p>Follow the full path from sign-up to live results, payments, and teacher workflows.</p>
+          <strong>Support</strong>
+          <p>Tour and guide</p>
         </div>
       </div>
       <div className="guide-footer-actions">
@@ -24,13 +26,13 @@ export default function GuideFooterBar({ compact = false, showTourButton = false
             className="btn btn-outline-secondary guide-footer-button"
             onClick={() => window.dispatchEvent(new CustomEvent("iweos:open-tour"))}
           >
-            <i className="fas fa-magic me-2" />
-            Start Tour
+            <i className="fas fa-magic" />
+            <span>Tour</span>
           </button>
         ) : null}
         <Link href="/guide" className="btn btn-primary guide-footer-button">
-          <i className="fas fa-book-open me-2" />
-          Open Guide
+          <i className="fas fa-book-open" />
+          <span>Guide</span>
         </Link>
       </div>
     </div>
