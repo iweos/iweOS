@@ -54,6 +54,7 @@ export const navItems: NavItem[] = [
   { label: "Product", href: "#product" },
   { label: "Grading", href: "#grading" },
   { label: "Payments", href: "#payments" },
+  { label: "Guide", href: "/guide" },
   { label: "Pricing", href: "/pricing" },
   { label: "Docs", href: "/docs" },
 ];
@@ -280,6 +281,7 @@ export const footerGroups: FooterGroup[] = [
   {
     title: "Resources",
     links: [
+      { label: "Guide", href: "/guide" },
       { label: "Docs", href: "/docs" },
       { label: "Pay fees", href: "/pay" },
       { label: "FAQ", href: "#faq" },

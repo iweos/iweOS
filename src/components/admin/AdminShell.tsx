@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/admin/Sidebar";
+import GuideFooterBar from "@/components/guide/GuideFooterBar";
 import Topbar from "@/components/admin/Topbar";
 
 type AdminShellProps = {
@@ -78,6 +79,11 @@ export default function AdminShell({
         />
         <div className="container">
           <main className="page-inner admin-page-wrap">{children}</main>
+        </div>
+        <div className="container">
+          <div className="page-inner pt-0">
+            <GuideFooterBar compact />
+          </div>
         </div>
       </div>
     </div>

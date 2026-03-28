@@ -47,6 +47,21 @@ export default function Footer() {
           ))}
         </div>
       </div>
+      <div className="container mt-8">
+        <div className="guide-footer-bar">
+          <div className="guide-footer-copy">
+            <span className="guide-footer-kicker">Need setup help?</span>
+            <div>
+              <strong>Open the school setup guide</strong>
+              <p>See the full setup flow from school sign-up to published results and teacher workflows.</p>
+            </div>
+          </div>
+          <Link href="/guide" className="btn btn-primary guide-footer-button">
+            <i className="fas fa-book-open me-2" />
+            Open Guide
+          </Link>
+        </div>
+      </div>
     </footer>
   );
 }

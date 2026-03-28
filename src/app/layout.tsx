@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import ClerkDiagnosticsClient from "@/components/ClerkDiagnosticsClient";
+import GuideDock from "@/components/guide/GuideDock";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
 import ThemeSync from "@/components/ThemeSync";
@@ -80,6 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className={`${display.variable} ${ui.variable} ui`}>
           <ThemeSync />
           <ClerkDiagnosticsClient />
+          <GuideDock />
           <Suspense fallback={null}>
             <GlobalPendingIndicator />
           </Suspense>
