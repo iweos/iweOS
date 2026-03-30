@@ -3008,6 +3008,10 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   backdrop-filter: blur(10px);
 }
 
+.kai-admin {
+  --guide-footer-clearance: 10.5rem;
+}
+
 .sidebar_minimize .guide-footer-bar {
   left: 85px;
 }
@@ -3472,7 +3476,7 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
 }
 
 .admin-page-wrap {
-  padding-bottom: 8.5rem;
+  padding-bottom: calc(var(--guide-footer-clearance) + env(safe-area-inset-bottom, 0px));
 }
 
 html[data-theme="dark"] .guide-footer-bar,
@@ -3578,7 +3582,7 @@ html[data-theme="dark"] .guide-docs-section {
   }
 
   .admin-page-wrap {
-    padding-bottom: 8.75rem;
+    padding-bottom: calc(11rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -3631,7 +3635,7 @@ html[data-theme="dark"] .guide-docs-section {
   }
 
   .admin-page-wrap {
-    padding-bottom: 9rem;
+    padding-bottom: calc(11.75rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
