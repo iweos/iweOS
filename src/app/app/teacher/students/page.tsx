@@ -233,6 +233,29 @@ export default async function TeacherStudentsPage({
     return value.includes("/") ? value.split("/")[0]?.trim() ?? value : value;
   }
 
+  function toOrdinal(value: string) {
+    const numeric = Number.parseInt(value, 10);
+    if (!Number.isFinite(numeric) || numeric <= 0) {
+      return value;
+    }
+
+    const mod100 = numeric % 100;
+    if (mod100 >= 11 && mod100 <= 13) {
+      return `${numeric}th`;
+    }
+
+    switch (numeric % 10) {
+      case 1:
+        return `${numeric}st`;
+      case 2:
+        return `${numeric}nd`;
+      case 3:
+        return `${numeric}rd`;
+      default:
+        return `${numeric}th`;
+    }
+  }
+
   return (
     <>
       <section className="section-panel space-y-3">
@@ -354,7 +377,7 @@ export default async function TeacherStudentsPage({
                   />
                 </div>
                 <div className="col-12 col-md-6 col-xl-4">
-                  <StatCard label="Class Rank" value={getPositionOnly(rankLabel)} icon="fas fa-medal" cardVariant="info" />
+                  <StatCard label="Class Rank" value={toOrdinal(getPositionOnly(rankLabel))} icon="fas fa-medal" cardVariant="info" />
                 </div>
                 <div className="col-12 col-md-6 col-xl-4">
                   <StatCard
@@ -402,7 +425,7 @@ export default async function TeacherStudentsPage({
                         <Td>
                           {row.gap === null ? "-" : `${row.gap >= 0 ? "+" : ""}${row.gap.toFixed(1)}`}
                         </Td>
-                        <Td>{getPositionOnly(row.subjectPosition)}</Td>
+                        <Td>{toOrdinal(getPositionOnly(row.subjectPosition))}</Td>
                         <Td>{row.grade ?? "-"}</Td>
                       </tr>
                     ))}
