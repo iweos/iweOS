@@ -1,7 +1,19 @@
 "use client";
 
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
-import { ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Compass,
+  FlaskConical,
+  HelpCircle,
+  KeyRound,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import type { SidebarGroup, SidebarItem } from "./types";
 
 type SidebarProps = {
@@ -11,6 +23,20 @@ type SidebarProps = {
   onToggleCollapsed: () => void;
   onOpenPage: (pageId: string) => void;
 };
+
+const iconMap = {
+  sparkles: Sparkles,
+  compass: Compass,
+  book: BookOpen,
+  flask: FlaskConical,
+  key: KeyRound,
+  shield: ShieldCheck,
+  help: HelpCircle,
+} as const;
+
+function resolveItemIcon(icon?: string) {
+  return icon ? (iconMap[icon as keyof typeof iconMap] ?? BookOpen) : BookOpen;
+}
 
 function itemContainsActive(item: SidebarItem, activePageId: string): boolean {
   if (item.pageId === activePageId) {
@@ -34,6 +60,7 @@ function SidebarItemNode({
   const isActive = item.pageId === activePageId;
   const hasChildren = Boolean(item.children?.length);
   const hasActiveDescendant = itemContainsActive(item, activePageId);
+  const Icon = resolveItemIcon(item.icon);
 
   if (!hasChildren) {
     return (
@@ -47,6 +74,7 @@ function SidebarItemNode({
         }`}
         style={{ paddingLeft: `${0.75 + depth * 0.9}rem` }}
       >
+        <Icon className="mr-2 h-4 w-4 shrink-0" />
         {item.title}
       </button>
     );
@@ -64,7 +92,10 @@ function SidebarItemNode({
             }`}
             style={{ paddingLeft: `${0.75 + depth * 0.9}rem` }}
           >
-            <span>{item.title}</span>
+            <span className="flex items-center">
+              <Icon className="mr-2 h-4 w-4 shrink-0" />
+              <span>{item.title}</span>
+            </span>
             {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </DisclosureButton>
           <DisclosurePanel className="space-y-1">
@@ -95,26 +126,29 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
       <div className="flex-1 overflow-y-auto px-3 py-4">
         {collapsed ? (
           <div className="space-y-3">
-            {groups.flatMap((group) => group.items).map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  const fallbackPageId = item.pageId ?? item.children?.[0]?.pageId;
-                  if (fallbackPageId) {
-                    onOpenPage(fallbackPageId);
-                  }
-                }}
-                className={`flex h-10 w-full items-center justify-center rounded-xl text-xs font-semibold transition ${
-                  itemContainsActive(item, activePageId)
-                    ? "bg-[var(--brand-primary-soft)] text-[var(--primary-strong)] dark:bg-[rgba(123,199,146,0.16)] dark:text-[#dff2e5]"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-                }`}
-                title={item.title}
-              >
-                {item.title.slice(0, 2).toUpperCase()}
-              </button>
-            ))}
+            {groups.flatMap((group) => group.items).map((item) => {
+              const CollapsedIcon = resolveItemIcon(item.icon);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    const fallbackPageId = item.pageId ?? item.children?.[0]?.pageId;
+                    if (fallbackPageId) {
+                      onOpenPage(fallbackPageId);
+                    }
+                  }}
+                  className={`flex h-10 w-full items-center justify-center rounded-xl text-xs font-semibold transition ${
+                    itemContainsActive(item, activePageId)
+                      ? "bg-[var(--brand-primary-soft)] text-[var(--primary-strong)] dark:bg-[rgba(123,199,146,0.16)] dark:text-[#dff2e5]"
+                      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+                  }`}
+                  title={item.title}
+                >
+                  <CollapsedIcon className="h-4.5 w-4.5" />
+                </button>
+              );
+            })}
           </div>
         ) : (
           <div className="space-y-7">

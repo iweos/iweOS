@@ -9,6 +9,7 @@ import SearchModal from "./SearchModal";
 import CardGrid from "./CardGrid";
 import CodeBlock from "./CodeBlock";
 import APIEndpointPanel from "./APIEndpointPanel";
+import InfographicPanel from "./InfographicPanel";
 import type { DocPage, DocsTab, DocsTabId, SidebarGroup } from "./types";
 
 type DocLayoutProps = {
@@ -143,6 +144,13 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                   <MessageSquareHeart className="h-4 w-4" />
                   Ask Assistant
                 </button>
+                {activePage.infographics?.length ? (
+                  <div className="mt-10 space-y-6 text-left">
+                    {activePage.infographics.map((infographic) => (
+                      <InfographicPanel key={infographic.id} infographic={infographic} />
+                    ))}
+                  </div>
+                ) : null}
                 {activePage.cards?.length ? <div className="mt-10 text-left"><CardGrid cards={activePage.cards} onOpenPage={openPage} /></div> : null}
               </section>
             ) : (
@@ -162,6 +170,14 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                 {activePage.cards?.length ? (
                   <div className="mb-10">
                     <CardGrid cards={activePage.cards} onOpenPage={openPage} />
+                  </div>
+                ) : null}
+
+                {activePage.infographics?.length ? (
+                  <div className="mb-10 space-y-6">
+                    {activePage.infographics.map((infographic) => (
+                      <InfographicPanel key={infographic.id} infographic={infographic} />
+                    ))}
                   </div>
                 ) : null}
 

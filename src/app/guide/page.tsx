@@ -20,9 +20,9 @@ const groups: SidebarGroup[] = [
     id: "getting-started",
     title: "Getting Started",
     items: [
-      { id: "welcome", title: "Welcome", pageId: "welcome" },
-      { id: "quickstart", title: "Quickstart", pageId: "quickstart" },
-      { id: "concepts", title: "Concepts", pageId: "concepts" },
+      { id: "welcome", title: "Welcome", icon: "sparkles", pageId: "welcome" },
+      { id: "quickstart", title: "Quickstart", icon: "compass", pageId: "quickstart" },
+      { id: "concepts", title: "Concepts", icon: "book", pageId: "concepts" },
     ],
   },
   {
@@ -32,12 +32,14 @@ const groups: SidebarGroup[] = [
       {
         id: "authentication",
         title: "Authentication",
-        children: [{ id: "auth-tokens", title: "Auth tokens", pageId: "auth-tokens" }],
+        icon: "key",
+        children: [{ id: "auth-tokens", title: "Auth tokens", icon: "key", pageId: "auth-tokens" }],
       },
       {
         id: "resources",
         title: "Core resources",
-        children: [{ id: "users-resource", title: "Users", pageId: "users-resource" }],
+        icon: "flask",
+        children: [{ id: "users-resource", title: "Users", icon: "flask", pageId: "users-resource" }],
       },
     ],
   },
@@ -45,22 +47,22 @@ const groups: SidebarGroup[] = [
     id: "security",
     title: "Security",
     items: [
-      { id: "security-overview", title: "Overview", pageId: "security-overview" },
-      { id: "security-policies", title: "Policies", pageId: "security-policies" },
+      { id: "security-overview", title: "Overview", icon: "shield", pageId: "security-overview" },
+      { id: "security-policies", title: "Policies", icon: "shield", pageId: "security-policies" },
     ],
   },
   {
     id: "support",
     title: "Help Center",
     items: [
-      { id: "help-home", title: "Support Home", pageId: "help-home" },
-      { id: "onboarding-rollout", title: "Onboarding & rollout", pageId: "onboarding-rollout" },
+      { id: "help-home", title: "Support Home", icon: "help", pageId: "help-home" },
+      { id: "onboarding-rollout", title: "Onboarding & rollout", icon: "help", pageId: "onboarding-rollout" },
     ],
   },
   {
     id: "updates",
     title: "Changelog",
-    items: [{ id: "latest-updates", title: "Latest updates", pageId: "latest-updates" }],
+    items: [{ id: "latest-updates", title: "Latest updates", icon: "sparkles", pageId: "latest-updates" }],
   },
 ];
 
@@ -73,6 +75,23 @@ const pages: DocPage[] = [
       "The operating manual for schools using iweOS. Start here to set up the school, onboard teachers, manage students, publish results, and keep day-to-day workflows running cleanly.",
     kind: "guide",
     badge: "Guide",
+    infographics: [
+      {
+        id: "welcome-workflow",
+        title: "How schools typically go live on iweOS",
+        description:
+          "This is the cleanest rollout sequence we keep seeing work well: set identity first, then academics, then people, then result publication.",
+        tone: "amber",
+        imageSrc: "/images/iweos-features-concept.svg",
+        imageAlt: "iweOS product overview illustration",
+        items: [
+          { label: "Stage 1", value: "School setup", note: "Logo, signature, result template, branding." },
+          { label: "Stage 2", value: "Academic model", note: "Sessions, classes, subjects, grading, promotion." },
+          { label: "Stage 3", value: "Team rollout", note: "Teachers linked, assigned, and trained by workflow." },
+          { label: "Stage 4", value: "Student operations", note: "Students imported, enrolled, scored, and reviewed." },
+        ],
+      },
+    ],
     cards: [
       {
         id: "card-setup",
@@ -157,6 +176,21 @@ const pages: DocPage[] = [
       "A practical setup path for a school starting fresh on iweOS, from sign-up to live teacher activity.",
     kind: "guide",
     badge: "Getting Started",
+    infographics: [
+      {
+        id: "quickstart-timeline",
+        title: "Quickstart at a glance",
+        description:
+          "Use this as the minimum launch checklist when onboarding a new school onto the platform.",
+        tone: "emerald",
+        items: [
+          { label: "0-1 day", value: "Settings complete", note: "School profile, logo, signature, template." },
+          { label: "Day 1", value: "Academic setup", note: "Sessions, classes, subjects, grade scale, conduct." },
+          { label: "Day 2", value: "People onboarded", note: "Teachers linked, students imported, enrollments checked." },
+          { label: "Day 3", value: "Teacher go-live", note: "Attendance, comments, grade entry, conduct, results." },
+        ],
+      },
+    ],
     cards: [
       {
         id: "q1",
@@ -228,6 +262,21 @@ const pages: DocPage[] = [
       "The key concepts behind sessions, assessment templates, teacher workflows, results, promotion, and payments inside iweOS.",
     kind: "doc",
     badge: "Concepts",
+    infographics: [
+      {
+        id: "concepts-lifecycle",
+        title: "Result lifecycle inside iweOS",
+        description:
+          "Results are not just printed documents. They are the end of a chain that starts from teacher-owned entries and ends with controlled publication and sharing.",
+        tone: "slate",
+        items: [
+          { label: "Input", value: "Attendance + comment", note: "Teachers feed operational context into the result." },
+          { label: "Academic", value: "Scores + conduct", note: "Term-fixed assessment schemes keep data stable." },
+          { label: "Review", value: "Admin result center", note: "Preview, status control, publication checks." },
+          { label: "Output", value: "Print + PDF + share", note: "Document route, mobile sharing, secure links." },
+        ],
+      },
+    ],
     sections: [
       {
         id: "sessions",
@@ -466,6 +515,21 @@ export async function GET() {
     heroTitle: "How can we help your school today?",
     heroDescription:
       "Use the guide like a support center: search a workflow, jump into a category, or use the in-app tour to orient staff inside the live workspace.",
+    infographics: [
+      {
+        id: "support-summary",
+        title: "Where schools usually need help first",
+        description:
+          "These are the most common support surfaces during rollout and the first few active academic cycles.",
+        tone: "amber",
+        items: [
+          { label: "Setup", value: "Branding", note: "Logo, signatures, template, school identity." },
+          { label: "Academic", value: "Assessments", note: "Term structure, schemes, grades, promotion rules." },
+          { label: "Teachers", value: "Autosave flows", note: "Attendance, comments, grade entry, conduct." },
+          { label: "Results", value: "Publishing", note: "Preview, PDF, sharing, and public link status." },
+        ],
+      },
+    ],
     cards: [
       {
         id: "help-card-1",

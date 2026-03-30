@@ -50,6 +50,7 @@ export type DocPage = {
   heroTitle?: string;
   heroDescription?: string;
   cards?: DocCard[];
+  infographics?: DocInfographic[];
   sections?: DocContentSection[];
   endpoints?: DocEndpoint[];
   helpfulPrompt?: string;
@@ -58,6 +59,7 @@ export type DocPage = {
 export type SidebarItem = {
   id: string;
   title: string;
+  icon?: string;
   pageId?: string;
   children?: SidebarItem[];
 };
@@ -74,4 +76,18 @@ export type SearchRecord = {
   title: string;
   description: string;
   sectionTitle?: string;
+};
+
+export type DocInfographic = {
+  id: string;
+  title: string;
+  description: string;
+  tone?: "amber" | "emerald" | "slate";
+  items: Array<{
+    label: string;
+    value: string;
+    note?: string;
+  }>;
+  imageSrc?: string;
+  imageAlt?: string;
 };
