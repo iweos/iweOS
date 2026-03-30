@@ -3000,8 +3000,8 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
-  min-height: 72px;
-  padding: 0.85rem 1.2rem;
+  min-height: 60px;
+  padding: 0.6rem 1rem;
   border-top: 1px solid rgba(15, 23, 42, 0.12);
   background: rgba(236, 239, 242, 0.98);
   box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.05);
@@ -3009,7 +3009,7 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
 }
 
 .kai-admin {
-  --guide-footer-clearance: 10.5rem;
+  --guide-footer-clearance: 7.5rem;
 }
 
 .sidebar_minimize .guide-footer-bar {
@@ -3024,7 +3024,7 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  padding-right: 0.6rem;
+  padding-right: 0.4rem;
 }
 
 .guide-footer-logo {
@@ -3034,20 +3034,20 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
 
 .guide-footer-logo-text {
   font-weight: 700;
-  font-size: 0.96rem;
+  font-size: 0.9rem;
   color: #3f4b5b;
 }
 
 .guide-footer-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.45rem;
   flex-shrink: 0;
 }
 
 .guide-footer-icon-button {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3585,15 +3585,15 @@ html[data-theme="dark"] .guide-docs-section {
   .guide-footer-bar {
     left: 0;
     right: 0;
-    padding-inline: 0.85rem;
+    padding-inline: 0.8rem;
   }
 
   .admin-page-wrap {
-    padding-bottom: calc(11rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(8.75rem + env(safe-area-inset-bottom, 0px));
   }
 
   .admin-footer-spacer {
-    height: calc(11rem + env(safe-area-inset-bottom, 0px));
+    height: calc(8.75rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -3613,8 +3613,8 @@ html[data-theme="dark"] .guide-docs-section {
   }
 
   .guide-footer-bar {
-    min-height: 78px;
-    padding: 0.75rem 0.9rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    min-height: 64px;
+    padding: 0.55rem 0.8rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
   }
 
   .guide-docs-topbar-inner,
@@ -3633,24 +3633,24 @@ html[data-theme="dark"] .guide-docs-section {
   }
 
   .guide-footer-logo-text {
-    font-size: 0.92rem;
+    font-size: 0.86rem;
   }
 
   .guide-footer-actions {
-    gap: 0.45rem;
+    gap: 0.35rem;
   }
 
   .guide-footer-icon-button {
-    width: 2.55rem;
-    height: 2.55rem;
+    width: 2.15rem;
+    height: 2.15rem;
   }
 
   .admin-page-wrap {
-    padding-bottom: calc(11.75rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   .admin-footer-spacer {
-    height: calc(11.75rem + env(safe-area-inset-bottom, 0px));
+    height: calc(9.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
