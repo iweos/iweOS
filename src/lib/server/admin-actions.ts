@@ -298,6 +298,66 @@ function studentSchemaSyncError() {
   return new Error(schemaSyncMessage("Student"));
 }
 
+function normalizeStudentIdentityValue(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+async function findDuplicateStudentInClass(options: {
+  schoolId: string;
+  className?: string | null;
+  fullName: string;
+  excludeStudentId?: string;
+}) {
+  if (!options.className?.trim()) {
+    return null;
+  }
+
+  const normalizedFullName = normalizeStudentIdentityValue(options.fullName);
+  const students = await prisma.student.findMany({
+    where: {
+      schoolId: options.schoolId,
+      className: options.className,
+      ...(options.excludeStudentId
+        ? {
+            id: {
+              not: options.excludeStudentId,
+            },
+          }
+        : {}),
+    },
+    select: {
+      id: true,
+      fullName: true,
+      studentCode: true,
+    },
+  });
+
+  return (
+    students.find((student) => normalizeStudentIdentityValue(student.fullName) === normalizedFullName) ??
+    null
+  );
+}
+
+async function assertNoDuplicateStudentInClass(options: {
+  schoolId: string;
+  className?: string | null;
+  fullName: string;
+  excludeStudentId?: string;
+}) {
+  const duplicateStudent = await findDuplicateStudentInClass(options);
+
+  if (!duplicateStudent) {
+    return;
+  }
+
+  throw new Error(
+    `A student named ${options.fullName} already exists in ${options.className}. Use the existing record instead of adding a duplicate.`,
+  );
+}
+
 function assessmentSchemaSyncError() {
   return new Error(schemaSyncMessage("Assessment type"));
 }
@@ -970,6 +1030,11 @@ export async function createStudentAction(formData: FormData) {
     }
 
     const fullName = `${parsed.data.firstName} ${parsed.data.lastName}`.trim();
+    await assertNoDuplicateStudentInClass({
+      schoolId: profile.schoolId,
+      className: parsed.data.className,
+      fullName,
+    });
 
     await prisma.student.create({
       data: {
@@ -1106,25 +1171,66 @@ export async function createStudentsBulkAction(formData: FormData) {
       throw new Error("School not found.");
     }
 
+    if (parsed.data.className) {
+      const seenStudentKeys = new Set<string>();
+      for (const row of studentsToCreate) {
+        const fullName = `${row.firstName} ${row.lastName}`.trim();
+        const key = `${normalizeStudentIdentityValue(parsed.data.className)}::${normalizeStudentIdentityValue(fullName)}`;
+        if (seenStudentKeys.has(key)) {
+          throw new Error(
+            `The import includes ${fullName} more than once for ${parsed.data.className}. Remove the duplicate row and try again.`,
+          );
+        }
+        seenStudentKeys.add(key);
+      }
+    }
+
     const token = schoolNameToken(school.name);
     const prefix = `${token}-${parsed.data.enrollmentYear}-`;
 
     let existing: Array<{ studentCode: string }> = [];
+    let existingClassStudents: Array<{ fullName: string }> = [];
     try {
-      existing = await prisma.student.findMany({
-        where: {
-          schoolId: profile.schoolId,
-          studentCode: {
-            startsWith: prefix,
+      [existing, existingClassStudents] = await Promise.all([
+        prisma.student.findMany({
+          where: {
+            schoolId: profile.schoolId,
+            studentCode: {
+              startsWith: prefix,
+            },
           },
-        },
-        select: { studentCode: true },
-      });
+          select: { studentCode: true },
+        }),
+        parsed.data.className
+          ? prisma.student.findMany({
+              where: {
+                schoolId: profile.schoolId,
+                className: parsed.data.className,
+              },
+              select: { fullName: true },
+            })
+          : Promise.resolve([]),
+      ]);
     } catch (error) {
       if (isPrismaSchemaMismatchError(error)) {
         throw studentSchemaSyncError();
       }
       throw error;
+    }
+
+    if (parsed.data.className) {
+      const existingNameSet = new Set(
+        existingClassStudents.map((student) => normalizeStudentIdentityValue(student.fullName)),
+      );
+
+      for (const row of studentsToCreate) {
+        const fullName = `${row.firstName} ${row.lastName}`.trim();
+        if (existingNameSet.has(normalizeStudentIdentityValue(fullName))) {
+          throw new Error(
+            `A student named ${fullName} already exists in ${parsed.data.className}. Remove the duplicate row and try again.`,
+          );
+        }
+      }
     }
 
     let serial = existing.reduce((max, row) => {
@@ -1268,6 +1374,13 @@ export async function updateStudentAction(formData: FormData) {
   const fullName = `${parsed.data.firstName} ${parsed.data.lastName}`.trim();
 
   try {
+    await assertNoDuplicateStudentInClass({
+      schoolId: profile.schoolId,
+      className: parsed.data.className,
+      fullName,
+      excludeStudentId: parsed.data.studentId,
+    });
+
     const result = await prisma.student.updateMany({
       where: {
         id: parsed.data.studentId,
