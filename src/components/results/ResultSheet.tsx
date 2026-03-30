@@ -148,7 +148,7 @@ function DefaultResultSheet({
         <div className="col-12 col-md-6 col-xl-3">
           <article className="card card-body h-100">
             <p className="small text-muted mb-1">Position</p>
-            <p className={`h3 fw-bold mb-0 ${toneClass(positionTone)}`}>{data.summary.position}</p>
+            <p className={`h3 fw-bold mb-0 ${toneClass(positionTone)}`}>{getPositionOnly(data.summary.position)}</p>
           </article>
         </div>
         <div className="col-12 col-md-6 col-xl-3">
@@ -224,7 +224,7 @@ function DefaultResultSheet({
                     <span className={getGradeTone(row.grade) ? toneClass(getGradeTone(row.grade)) : ""}>{row.grade}</span>
                   </td>
                   <td>
-                    <span className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</span>
+                    <span className={toneClass(getPositionTone(row.subjectPosition))}>{getPositionOnly(row.subjectPosition)}</span>
                   </td>
                   <td>{formatNumber(row.classAverage)}</td>
                 </tr>
@@ -502,7 +502,7 @@ function ReportCardResultSheet({
                       <td>{formatNumber(row.classLowest, 0)}</td>
                       <td>{formatNumber(row.classAverage, 2)}</td>
                       <td>
-                        <span className={toneClass(getPositionTone(row.subjectPosition))}>{row.subjectPosition}</span>
+                        <span className={toneClass(getPositionTone(row.subjectPosition))}>{getPositionOnly(row.subjectPosition)}</span>
                       </td>
                       <td>
                         <span className={getGradeTone(row.remark) ? toneClass(getGradeTone(row.remark)) : ""}>{row.remark}</span>

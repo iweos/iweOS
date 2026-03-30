@@ -225,6 +225,14 @@ export default async function TeacherStudentsPage({
     return value === null ? "-" : value.toFixed(digits);
   }
 
+  function getPositionOnly(value: string | null) {
+    if (!value) {
+      return "-";
+    }
+
+    return value.includes("/") ? value.split("/")[0]?.trim() ?? value : value;
+  }
+
   return (
     <>
       <section className="section-panel space-y-3">
@@ -346,7 +354,7 @@ export default async function TeacherStudentsPage({
                   />
                 </div>
                 <div className="col-12 col-md-6 col-xl-4">
-                  <StatCard label="Class Rank" value={rankLabel} icon="fas fa-medal" cardVariant="info" />
+                  <StatCard label="Class Rank" value={getPositionOnly(rankLabel)} icon="fas fa-medal" cardVariant="info" />
                 </div>
                 <div className="col-12 col-md-6 col-xl-4">
                   <StatCard
@@ -394,7 +402,7 @@ export default async function TeacherStudentsPage({
                         <Td>
                           {row.gap === null ? "-" : `${row.gap >= 0 ? "+" : ""}${row.gap.toFixed(1)}`}
                         </Td>
-                        <Td>{row.subjectPosition ?? "-"}</Td>
+                        <Td>{getPositionOnly(row.subjectPosition)}</Td>
                         <Td>{row.grade ?? "-"}</Td>
                       </tr>
                     ))}
