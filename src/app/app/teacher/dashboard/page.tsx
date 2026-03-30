@@ -1,4 +1,6 @@
 import { requireTeacherPortalContext } from "@/lib/server/auth";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 import { ProfileRole } from "@prisma/client";
 import { prisma } from "@/lib/server/prisma";
 import Card from "@/components/admin/Card";
@@ -17,116 +19,117 @@ export default async function TeacherDashboardPage({
 }: {
   searchParams: Promise<TeacherDashboardSearchParams>;
 }) {
-  const params = await searchParams;
-  const context = await requireTeacherPortalContext(params.teacherProfileId);
+  try {
+    const params = await searchParams;
+    const context = await requireTeacherPortalContext(params.teacherProfileId);
 
-  const [activeTerm, assignments] = await Promise.all([
-    prisma.term.findFirst({
-      where: {
-        schoolId: context.actorProfile.schoolId,
-        isActive: true,
-      },
-    }),
-    context.mode === "admin_override"
-      ? prisma.class.findMany({
-          where: { schoolId: context.actorProfile.schoolId },
-          orderBy: { name: "asc" },
-        })
-      : prisma.teacherClassAssignment.findMany({
-          where: {
+    const [activeTerm, assignments] = await Promise.all([
+      prisma.term.findFirst({
+        where: {
+          schoolId: context.actorProfile.schoolId,
+          isActive: true,
+        },
+      }),
+      context.mode === "admin_override"
+        ? prisma.class.findMany({
+            where: { schoolId: context.actorProfile.schoolId },
+            orderBy: { name: "asc" },
+          })
+        : prisma.teacherClassAssignment.findMany({
+            where: {
+              schoolId: context.actorProfile.schoolId,
+              teacherProfileId: context.effectiveTeacherProfile.id,
+            },
+            include: { class: true },
+            orderBy: { class: { name: "asc" } },
+          }).then((rows) => rows.map((row) => row.class)),
+    ]);
+
+    const classIds = assignments.map((row) => row.id);
+    const scoreWhereBase =
+      context.mode === "admin_override"
+        ? {
+            schoolId: context.actorProfile.schoolId,
+          }
+        : {
             schoolId: context.actorProfile.schoolId,
             teacherProfileId: context.effectiveTeacherProfile.id,
-          },
-          include: { class: true },
-          orderBy: { class: { name: "asc" } },
-        }).then((rows) => rows.map((row) => row.class)),
-  ]);
+          };
 
-  const classIds = assignments.map((row) => row.id);
-  const scoreWhereBase =
-    context.mode === "admin_override"
-      ? {
-          schoolId: context.actorProfile.schoolId,
-        }
-      : {
-          schoolId: context.actorProfile.schoolId,
-          teacherProfileId: context.effectiveTeacherProfile.id,
-        };
+    const [classSubjects, enrollments, scores, gradeScale] =
+      activeTerm && classIds.length > 0
+        ? await Promise.all([
+            prisma.classSubject.findMany({
+              where: {
+                schoolId: context.actorProfile.schoolId,
+                classId: { in: classIds },
+              },
+              include: {
+                class: true,
+                subject: true,
+              },
+            }),
+            prisma.enrollment.findMany({
+              where: {
+                schoolId: context.actorProfile.schoolId,
+                termId: activeTerm.id,
+                classId: { in: classIds },
+                student: {
+                  is: {
+                    status: "active",
+                  },
+                },
+              },
+              include: {
+                class: true,
+                student: true,
+              },
+            }),
+            prisma.score.findMany({
+              where: {
+                ...scoreWhereBase,
+                termId: activeTerm.id,
+                classId: { in: classIds },
+              },
+              select: {
+                id: true,
+                classId: true,
+                studentId: true,
+                subjectId: true,
+                total: true,
+                grade: true,
+                updatedAt: true,
+                class: {
+                  select: {
+                    name: true,
+                  },
+                },
+                student: {
+                  select: {
+                    fullName: true,
+                  },
+                },
+                subject: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+              orderBy: [{ updatedAt: "desc" }],
+            }),
+            prisma.gradeScale.findMany({
+              where: {
+                schoolId: context.actorProfile.schoolId,
+              },
+              orderBy: { orderIndex: "asc" },
+            }),
+          ])
+        : [[], [], [], []];
 
-  const [classSubjects, enrollments, scores, gradeScale] =
-    activeTerm && classIds.length > 0
-      ? await Promise.all([
-          prisma.classSubject.findMany({
-            where: {
-              schoolId: context.actorProfile.schoolId,
-              classId: { in: classIds },
-            },
-            include: {
-              class: true,
-              subject: true,
-            },
-          }),
-          prisma.enrollment.findMany({
-            where: {
-              schoolId: context.actorProfile.schoolId,
-              termId: activeTerm.id,
-              classId: { in: classIds },
-              student: {
-                is: {
-                  status: "active",
-                },
-              },
-            },
-            include: {
-              class: true,
-              student: true,
-            },
-          }),
-          prisma.score.findMany({
-            where: {
-              ...scoreWhereBase,
-              termId: activeTerm.id,
-              classId: { in: classIds },
-            },
-            select: {
-              id: true,
-              classId: true,
-              studentId: true,
-              subjectId: true,
-              total: true,
-              grade: true,
-              updatedAt: true,
-              class: {
-                select: {
-                  name: true,
-                },
-              },
-              student: {
-                select: {
-                  fullName: true,
-                },
-              },
-              subject: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-            orderBy: [{ updatedAt: "desc" }],
-          }),
-          prisma.gradeScale.findMany({
-            where: {
-              schoolId: context.actorProfile.schoolId,
-            },
-            orderBy: { orderIndex: "asc" },
-          }),
-        ])
-      : [[], [], [], []];
-
-  const label =
-    context.mode === "admin_override"
-      ? "Admin Override (All Classes)"
-      : context.effectiveTeacherProfile.fullName;
+    const label =
+      context.mode === "admin_override"
+        ? "Admin Override (All Classes)"
+        : context.effectiveTeacherProfile.fullName;
 
   const uniqueSubjectMap = new Map(classSubjects.map((row) => [row.subjectId, row.subject.name]));
   const uniqueStudentMap = new Map(enrollments.map((row) => [row.studentId, row.student.fullName]));
@@ -278,12 +281,12 @@ export default async function TeacherDashboardPage({
     grade: row.grade ?? "-",
   }));
 
-  function formatMetric(value: number) {
-    return value.toFixed(1);
-  }
+    function formatMetric(value: number) {
+      return value.toFixed(1);
+    }
 
-  return (
-    <div className="d-grid gap-3">
+    return (
+      <div className="d-grid gap-3">
       <PageHeader
         title="Teacher Dashboard"
         subtitle={`Active Term: ${activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "Not configured"}`}
@@ -538,6 +541,26 @@ export default async function TeacherDashboardPage({
           </Table>
         </TableWrap>
       </Card>
-    </div>
-  );
+      </div>
+    );
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    if (isDynamicServerError(error)) {
+      throw error;
+    }
+
+    console.error("[dashboard][teacher] Failed to render teacher dashboard", error);
+    return (
+      <section className="section-panel space-y-2">
+        <p className="section-kicker">Teacher Portal</p>
+        <h1 className="section-title">Teacher dashboard temporarily unavailable</h1>
+        <p className="section-subtle">
+          We hit an unexpected issue while loading the teacher dashboard. Try refreshing once. If it keeps happening, the server logs now
+          include a tagged dashboard error so we can trace it quickly.
+        </p>
+      </section>
+    );
+  }
 }
