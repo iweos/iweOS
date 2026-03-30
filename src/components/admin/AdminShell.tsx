@@ -82,6 +82,7 @@ export default function AdminShell({
         <div className="container">
           <main className="page-inner admin-page-wrap" data-tour="main-content">
             {children}
+            <div className="admin-footer-spacer" aria-hidden="true" />
           </main>
         </div>
         <GuideFooterBar showTourButton />
