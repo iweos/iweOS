@@ -28,8 +28,8 @@ function HelpfulPrompt({ label = "Was this helpful?" }: { label?: string }) {
   return (
     <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-[#13161c]">
       <div>
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">{label}</p>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Your feedback helps us keep this guide useful as features change.</p>
+        <p className="text-[13px] font-semibold text-slate-900 dark:text-white">{label}</p>
+        <p className="text-[13px] text-slate-500 dark:text-slate-400">Your feedback helps us keep this guide useful as features change.</p>
       </div>
       <div className="flex items-center gap-2">
         <button
@@ -118,7 +118,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
 
         <main className="min-w-0 border-x border-slate-200 bg-[#fafafa] px-5 py-8 lg:px-10 dark:border-slate-800 dark:bg-[#0d1117]">
           <div className="mx-auto max-w-4xl">
-            <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="mb-5 flex flex-wrap items-center gap-2 text-[13px] text-slate-500 dark:text-slate-400">
               <span>{tabs.find((tab) => tab.id === activePage.tab)?.label}</span>
               <ChevronRight className="h-4 w-4" />
               <span>{activePage.title}</span>
@@ -130,10 +130,10 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                   <LifeBuoy className="h-4 w-4" />
                   Help Center
                 </span>
-                <h1 className="mt-6 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl dark:text-white" style={hornbillStyle()}>
+                <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[2.6rem] dark:text-white" style={hornbillStyle()}>
                   {activePage.heroTitle ?? activePage.title}
                 </h1>
-                <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+                <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-7 text-slate-600 dark:text-slate-300">
                   {activePage.heroDescription ?? activePage.description}
                 </p>
                 <button
@@ -161,10 +161,10 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                       {activePage.badge}
                     </span>
                   ) : null}
-                  <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-[3.15rem] dark:text-white" style={hornbillStyle()}>
+                  <h1 className="mt-2.5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[2.5rem] dark:text-white" style={hornbillStyle()}>
                     {activePage.title}
                   </h1>
-                  <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">{activePage.description}</p>
+                  <p className="mt-3 max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-slate-300">{activePage.description}</p>
                 </div>
 
                 {activePage.cards?.length ? (
@@ -187,18 +187,18 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                       {section.eyebrow ? (
                         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">{section.eyebrow}</p>
                       ) : null}
-                      <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white" style={hornbillStyle()}>
+                      <h2 className="text-[1.45rem] font-semibold tracking-tight text-slate-950 dark:text-white" style={hornbillStyle()}>
                         {section.title}
                       </h2>
                       {section.body?.map((paragraph) => (
-                        <p key={paragraph} className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
+                        <p key={paragraph} className="mt-3 text-[14px] leading-7 text-slate-600 dark:text-slate-300">
                           {paragraph}
                         </p>
                       ))}
                       {section.bullets?.length ? (
                         <ul className="mt-5 space-y-3">
                           {section.bullets.map((bullet) => (
-                            <li key={bullet} className="flex gap-3 text-base leading-7 text-slate-600 dark:text-slate-300">
+                            <li key={bullet} className="flex gap-3 text-[14px] leading-6 text-slate-600 dark:text-slate-300">
                               <span className="mt-2 inline-block h-2 w-2 rounded-full bg-[var(--primary)]" />
                               <span>{bullet}</span>
                             </li>
@@ -232,7 +232,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
             <div className="sticky top-[5.25rem] space-y-5">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_18px_40px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-[#13161c]">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">On this page</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <ul className="mt-3 space-y-2 text-[13px] text-slate-600 dark:text-slate-300">
                   {sections.map((section) => (
                     <li key={section.id}>
                       <a href={`#${section.id}`} className="transition hover:text-[var(--primary)]">
@@ -245,7 +245,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
 
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_18px_40px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-[#13161c]">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Need help?</p>
-                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                <p className="mt-3 text-[13px] leading-6 text-slate-600 dark:text-slate-300">
                   Use search to jump between guides quickly, or reopen the in-app tour from the footer inside the school workspace.
                 </p>
               </div>

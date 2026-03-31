@@ -35,9 +35,9 @@ export default function CardGrid({ cards, onOpenPage }: CardGridProps) {
             <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(245,158,11,0.12)] text-[#d97706] dark:bg-[rgba(245,158,11,0.16)] dark:text-[#fbbf24]">
               <Icon className="h-5 w-5" />
             </span>
-            <h3 className="text-lg font-semibold tracking-tight text-slate-950 dark:text-white">{card.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{card.description}</p>
-            <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)] transition group-hover:gap-3">
+            <h3 className="text-[1rem] font-semibold tracking-tight text-slate-950 dark:text-white">{card.title}</h3>
+            <p className="mt-2 text-[13px] leading-6 text-slate-600 dark:text-slate-300">{card.description}</p>
+            <div className="mt-4 inline-flex items-center gap-2 text-[13px] font-semibold text-[var(--primary)] transition group-hover:gap-3">
               <span>{card.hrefLabel ?? "Open"}</span>
               <span aria-hidden="true">→</span>
             </div>

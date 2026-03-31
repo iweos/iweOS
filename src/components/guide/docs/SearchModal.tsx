@@ -68,7 +68,7 @@ export default function SearchModal({ open, onClose, pages, onOpenPage }: Search
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search guides, API endpoints, changelog entries..."
-                className="w-full border-0 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+                className="w-full border-0 bg-transparent text-[15px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
               />
               <span className="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:border-slate-700">
                 Esc
@@ -90,13 +90,13 @@ export default function SearchModal({ open, onClose, pages, onOpenPage }: Search
                       </span>
                       <span className="min-w-0">
                         <span className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-semibold text-slate-950 dark:text-white">{result.title}</span>
+                          <span className="text-[13px] font-semibold text-slate-950 dark:text-white">{result.title}</span>
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/5 dark:text-slate-400">
                             {result.tab}
                           </span>
                         </span>
                         {result.sectionTitle ? <span className="mt-1 block text-xs font-medium text-[var(--primary)]">{result.sectionTitle}</span> : null}
-                        <span className="mt-1 block line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{result.description}</span>
+                        <span className="mt-1 block line-clamp-2 text-[13px] text-slate-500 dark:text-slate-400">{result.description}</span>
                       </span>
                     </button>
                   ))}

@@ -67,7 +67,7 @@ function SidebarItemNode({
       <button
         type="button"
         onClick={() => item.pageId && onOpenPage(item.pageId)}
-        className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${
+        className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-[13px] transition ${
           isActive
             ? "bg-[var(--brand-primary-soft)] font-semibold text-[var(--primary-strong)] dark:bg-[rgba(123,199,146,0.16)] dark:text-[#dff2e5]"
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
@@ -85,7 +85,7 @@ function SidebarItemNode({
       {({ open }) => (
         <div className="space-y-1">
           <DisclosureButton
-            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
+            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[13px] font-medium transition ${
               hasActiveDescendant
                 ? "text-slate-950 dark:text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"

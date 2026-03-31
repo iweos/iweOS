@@ -23,15 +23,15 @@ export default function InfographicPanel({ infographic }: InfographicPanelProps)
       <div className={`grid gap-6 ${infographic.imageSrc ? "xl:grid-cols-[1.25fr_0.95fr]" : ""}`}>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Infographic</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{infographic.title}</h3>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">{infographic.description}</p>
+          <h3 className="mt-2 text-[1.35rem] font-semibold tracking-tight text-slate-950 dark:text-white">{infographic.title}</h3>
+          <p className="mt-3 max-w-2xl text-[13px] leading-6 text-slate-600 dark:text-slate-300">{infographic.description}</p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {infographic.items.map((item) => (
               <div key={`${infographic.id}-${item.label}`} className="rounded-2xl border border-white/70 bg-white/90 p-4 dark:border-white/10 dark:bg-white/5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">{item.label}</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{item.value}</p>
-                {item.note ? <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{item.note}</p> : null}
+                <p className="mt-2 text-[1.35rem] font-semibold tracking-tight text-slate-950 dark:text-white">{item.value}</p>
+                {item.note ? <p className="mt-2 text-[13px] leading-6 text-slate-500 dark:text-slate-400">{item.note}</p> : null}
               </div>
             ))}
           </div>

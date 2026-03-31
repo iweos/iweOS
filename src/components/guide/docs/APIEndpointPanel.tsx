@@ -25,7 +25,7 @@ export default function APIEndpointPanel({ endpoints, sections }: APIEndpointPan
             <a
               key={`${endpoint.method}-${endpoint.anchorId}`}
               href={`#${endpoint.anchorId}`}
-              className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-[var(--primary)] hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-white/5"
+              className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-[13px] font-medium text-slate-700 transition hover:border-[var(--primary)] hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-white/5"
             >
               <span>{endpoint.label}</span>
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${methodTone[endpoint.method]}`}>{endpoint.method}</span>
@@ -36,7 +36,7 @@ export default function APIEndpointPanel({ endpoints, sections }: APIEndpointPan
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_18px_40px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-[#13161c]">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">On this page</p>
-        <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+        <ul className="mt-3 space-y-2 text-[13px] text-slate-600 dark:text-slate-300">
           {sections.map((section) => (
             <li key={section.id}>
               <a href={`#${section.id}`} className="transition hover:text-[var(--primary)]">
