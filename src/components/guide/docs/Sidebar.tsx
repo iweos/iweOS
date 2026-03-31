@@ -67,14 +67,14 @@ function SidebarItemNode({
       <button
         type="button"
         onClick={() => item.pageId && onOpenPage(item.pageId)}
-        className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-[13px] transition ${
+        className={`flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-[12px] transition ${
           isActive
             ? "bg-[var(--brand-primary-soft)] font-semibold text-[var(--primary-strong)] dark:bg-[rgba(123,199,146,0.16)] dark:text-[#dff2e5]"
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
         }`}
-        style={{ paddingLeft: `${0.75 + depth * 0.9}rem` }}
+        style={{ paddingLeft: `${0.65 + depth * 0.8}rem` }}
       >
-        <Icon className="mr-2 h-4 w-4 shrink-0" />
+        <Icon className="mr-1.5 h-4 w-4 shrink-0" />
         {item.title}
       </button>
     );
@@ -85,15 +85,15 @@ function SidebarItemNode({
       {({ open }) => (
         <div className="space-y-1">
           <DisclosureButton
-            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[13px] font-medium transition ${
+            className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[12px] font-medium transition ${
               hasActiveDescendant
                 ? "text-slate-950 dark:text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
             }`}
-            style={{ paddingLeft: `${0.75 + depth * 0.9}rem` }}
+            style={{ paddingLeft: `${0.65 + depth * 0.8}rem` }}
           >
             <span className="flex items-center">
-              <Icon className="mr-2 h-4 w-4 shrink-0" />
+              <Icon className="mr-1.5 h-4 w-4 shrink-0" />
               <span>{item.title}</span>
             </span>
             {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -138,7 +138,7 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
                       onOpenPage(fallbackPageId);
                     }
                   }}
-                  className={`flex h-10 w-full items-center justify-center rounded-xl text-xs font-semibold transition ${
+                  className={`flex h-9 w-full items-center justify-center rounded-lg text-xs font-semibold transition ${
                     itemContainsActive(item, activePageId)
                       ? "bg-[var(--brand-primary-soft)] text-[var(--primary-strong)] dark:bg-[rgba(123,199,146,0.16)] dark:text-[#dff2e5]"
                       : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
@@ -151,10 +151,10 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
             })}
           </div>
         ) : (
-          <div className="space-y-7">
+          <div className="space-y-6">
             {groups.map((group) => (
               <section key={group.id}>
-                <p className="guide-hornbill mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">{group.title}</p>
+                <p className="guide-hornbill mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">{group.title}</p>
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <SidebarItemNode key={item.id} item={item} activePageId={activePageId} onOpenPage={onOpenPage} />
