@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CreditCard, Settings2 } from "lucide-react";
 import PublicSiteShell from "@/components/home-template/PublicSiteShell";
+import PublicPageHero from "@/components/home-template/visuals/PublicPageHero";
+import { paymentsFlowLottie } from "@/lib/lotties/publicSite";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -11,37 +14,37 @@ export default function PricingPage() {
   return (
     <PublicSiteShell currentPath="/pricing">
       <main>
-        <section className="border-b border-[#e6dfd3]">
-          <div className="mx-auto max-w-6xl px-4 py-16">
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#1e3a5f]">Pricing</p>
-            <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#111827] sm:text-5xl">Simple school pricing: one setup fee, then pay per student</h1>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-[#4b5563]">
-              iweOS pricing is designed around school size. Schools pay a one-time setup fee for onboarding and configuration, then continue on a per-student pricing model.
-            </p>
-          </div>
-        </section>
+        <PublicPageHero
+          eyebrow="Pricing"
+          title="Simple school pricing: one setup fee, then pay per student"
+          description="iweOS pricing is designed around school size. Schools pay a one-time setup fee for onboarding and configuration, then continue on a per-student pricing model."
+          primaryCta={{ label: "Sign up", href: "/sign-up" }}
+          secondaryCta={{ label: "Open guide", href: "/guide" }}
+          animationData={paymentsFlowLottie}
+          icon={CreditCard}
+        />
 
         <section className="border-b border-[#e6dfd3]">
           <div className="mx-auto max-w-6xl px-4 py-14">
             <div className="grid gap-6 lg:grid-cols-2">
-              <article className="rounded-xl border border-[#d7dfe9] bg-white p-6">
+              <article className="rounded-[1.75rem] border border-[#d7dfe9] bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5">
                 <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#1e3a5f]">One-time fee</p>
-                <h2 className="mt-3 text-2xl font-semibold text-[#111827]">Setup and onboarding</h2>
+                <h2 className="mt-3 flex items-center gap-3 text-2xl font-semibold text-[#111827]"><Settings2 className="h-6 w-6 text-[#1e3a5f]" />Setup and onboarding</h2>
                 <p className="mt-3 text-sm leading-7 text-[#4b5563]">
                   Covers school setup, configuration guidance, onboarding support, and the initial rollout structure so the school starts correctly.
                 </p>
               </article>
 
-              <article className="rounded-xl border border-[#d7dfe9] bg-white p-6">
+              <article className="rounded-[1.75rem] border border-[#d7dfe9] bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5">
                 <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#1e3a5f]">Ongoing fee</p>
-                <h2 className="mt-3 text-2xl font-semibold text-[#111827]">Per-student pricing</h2>
+                <h2 className="mt-3 flex items-center gap-3 text-2xl font-semibold text-[#111827]"><CreditCard className="h-6 w-6 text-[#2f6b3f]" />Per-student pricing</h2>
                 <p className="mt-3 text-sm leading-7 text-[#4b5563]">
                   Ongoing cost scales with the number of students using the platform, making the pricing model easier to align with school size and growth.
                 </p>
               </article>
             </div>
 
-            <div className="mt-8 rounded-xl border border-[#d7dfe9] bg-white p-6">
+            <div className="mt-8 rounded-[1.75rem] border border-[#d7dfe9] bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.05)]">
               <h3 className="text-xl font-semibold text-[#111827]">What affects the final quote?</h3>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-[#4b5563]">
                 <li>• Number of active students</li>

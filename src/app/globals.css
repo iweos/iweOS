@@ -83,6 +83,54 @@ a {
   text-decoration: none;
 }
 
+@keyframes siteFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes siteShimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.site-float {
+  animation: siteFloat 7s ease-in-out infinite;
+}
+
+.site-float-delay {
+  animation: siteFloat 8.5s ease-in-out infinite;
+  animation-delay: 0.8s;
+}
+
+.site-float-slow {
+  animation: siteFloat 10s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.site-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.3) 45%, transparent 100%);
+  animation: siteShimmer 5s linear infinite;
+  pointer-events: none;
+}
+
 button,
 input,
 select,
