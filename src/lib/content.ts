@@ -51,12 +51,13 @@ export type FooterGroup = {
 export const siteName = "ìwéOS";
 
 export const navItems: NavItem[] = [
-  { label: "Product", href: "#product" },
-  { label: "Grading", href: "#grading" },
-  { label: "Payments", href: "#payments" },
+  { label: "Home", href: "/" },
+  { label: "Product", href: "/product" },
+  { label: "Grading", href: "/grading" },
+  { label: "Payments", href: "/payments" },
   { label: "Guide", href: "/guide" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Docs", href: "/docs" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 export const heroContent = {
@@ -66,7 +67,7 @@ export const heroContent = {
   trustLine:
     "Built for real school workflows: terms, classes, scores, invoices, receipts.",
   primaryCta: { label: "Sign up", href: "/sign-up" },
-  secondaryCta: { label: "View product", href: "#product" },
+  secondaryCta: { label: "View product", href: "/product" },
   tertiaryCta: { label: "Pay fees", href: "/pay" },
 };
 
@@ -163,7 +164,7 @@ export const roles: RoleTile[] = [
       "Reconcile collections and export reports",
     ],
     ctaLabel: "Admin guide",
-    ctaHref: "/docs",
+    ctaHref: "/guide",
   },
   {
     role: "Teachers",
@@ -174,7 +175,7 @@ export const roles: RoleTile[] = [
       "Review computed totals and grades",
     ],
     ctaLabel: "Teacher workflow",
-    ctaHref: "/docs",
+    ctaHref: "/guide",
   },
   {
     role: "Parents",
@@ -265,8 +266,9 @@ export const footerGroups: FooterGroup[] = [
   {
     title: "Product",
     links: [
-      { label: "Grading", href: "#grading" },
-      { label: "Payments", href: "#payments" },
+      { label: "Product", href: "/product" },
+      { label: "Grading", href: "/grading" },
+      { label: "Payments", href: "/payments" },
       { label: "Pricing", href: "/pricing" },
     ],
   },
@@ -282,9 +284,8 @@ export const footerGroups: FooterGroup[] = [
     title: "Resources",
     links: [
       { label: "Guide", href: "/guide" },
-      { label: "Docs", href: "/docs" },
       { label: "Pay fees", href: "/pay" },
-      { label: "FAQ", href: "#faq" },
+      { label: "FAQ", href: "/faq" },
     ],
   },
   {

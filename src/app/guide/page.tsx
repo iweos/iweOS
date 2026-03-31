@@ -70,7 +70,7 @@ const pages: DocPage[] = [
   {
     id: "welcome",
     tab: "product",
-    title: "Welcome to iweOS Docs",
+    title: "Welcome to iweOS Guide",
     description:
       "The operating manual for schools using iweOS. Start here to set up the school, onboard teachers, manage students, publish results, and keep day-to-day workflows running cleanly.",
     kind: "guide",

@@ -113,7 +113,7 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
   return (
     <div className="flex h-full flex-col border-r border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-[#11141a]/95">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 dark:border-slate-800">
-        {!collapsed ? <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Documentation</span> : null}
+        {!collapsed ? <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Guide</span> : null}
         <button
           type="button"
           onClick={onToggleCollapsed}
