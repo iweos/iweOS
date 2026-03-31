@@ -15,6 +15,199 @@ const tabs: DocsTab[] = [
   { id: "changelog", label: "Changelog", blurb: "What changed recently across the platform." },
 ];
 
+const howToGuides = [
+  {
+    id: "how-to-sign-up-school",
+    title: "How to sign up as a school",
+    description: "Create the school workspace and complete the setup path that turns a fresh sign-up into a live operational account.",
+    icon: "school",
+    bullets: [
+      "Open the public sign-up page and create the school account with the official school contact details.",
+      "Confirm the admin sign-in, then complete the school profile under Settings.",
+      "Upload the school logo and principal signature before sharing the workspace with staff.",
+      "Choose the active result template so report exports are consistent from the beginning.",
+      "Use the guide and in-app tour to orient the first school admin after sign-up.",
+    ],
+  },
+  {
+    id: "how-to-set-up-grading",
+    title: "How to set up grading system",
+    description: "Configure the grading foundation before teachers begin entering any scores.",
+    icon: "docs",
+    bullets: [
+      "Create the grade scale first so totals map cleanly to grades and remarks.",
+      "Set up assessment presets such as 2 CA + Exam or 3 CA + Exam.",
+      "Assign the right assessment scheme to each term so grading stays term-specific.",
+      "Set up conduct categories and sub-categories if the school uses psychomotor or affective scoring.",
+      "Review promotion rules early so the annual result logic matches the school policy.",
+    ],
+  },
+  {
+    id: "how-to-add-student",
+    title: "How to add student to school",
+    description: "Create students one by one or in bulk while keeping the directory clean and searchable.",
+    icon: "student",
+    bullets: [
+      "Go to Students and choose manual add or bulk import.",
+      "Use complete names, status, class reference, and student codes where available.",
+      "Upload a student photo during edit if the school wants it on result sheets.",
+      "Check duplicate warnings carefully because iweOS now blocks repeated student names in the same class.",
+      "Verify that newly added students appear in the directory before enrollment and grading begin.",
+    ],
+  },
+  {
+    id: "how-to-enroll-student",
+    title: "How to add student to class (Enroll)",
+    description: "Attach students to the right class and session so teacher workflows and results stay accurate.",
+    icon: "student",
+    bullets: [
+      "Open Enrollments under Assignments and select the target session or term.",
+      "Pick the correct class before choosing students.",
+      "Use enrollment to control which active students appear in teacher flows.",
+      "Recheck inactive or withdrawn students so they are not mistakenly enrolled for active grading.",
+      "Confirm the enrollment count after saving so class totals match reality.",
+    ],
+  },
+  {
+    id: "how-to-manage-students",
+    title: "How to manage students",
+    description: "Use the student directory to update identity, status, class information, and student photos over time.",
+    icon: "users",
+    bullets: [
+      "Use filters to narrow the directory by class and status.",
+      "Open the profile view before editing so you can confirm the exact student record.",
+      "Change status carefully between active, inactive, suspended, withdrawn, and graduated.",
+      "Update guardian details and photos when result output or contact data needs correction.",
+      "Use edits instead of duplicate re-entry when a student already exists in the system.",
+    ],
+  },
+  {
+    id: "how-to-add-teachers",
+    title: "How to add teachers",
+    description: "Create teacher profiles, link sign-ins, and prepare them for class assignments.",
+    icon: "users",
+    bullets: [
+      "Add the teacher record with the correct email first.",
+      "Link the teacher to the sign-up account after they register.",
+      "Confirm the profile role is teacher and the account is active.",
+      "Use notifications to confirm that newly linked teachers are aware of assignment changes.",
+      "Support teachers through the teacher portal instead of giving them shared admin access.",
+    ],
+  },
+  {
+    id: "how-to-add-subjects",
+    title: "How to add subjects",
+    description: "Create subjects in a way that makes class assignment, grading, and reporting easier later.",
+    icon: "docs",
+    bullets: [
+      "Create subjects once with clear naming that matches the school report style.",
+      "Review subject spelling before teachers start grading to avoid duplicate subject variants.",
+      "Add all core and optional subjects before class-subject assignment begins.",
+      "Check that subjects needed for promotion rules exist exactly as expected.",
+    ],
+  },
+  {
+    id: "how-to-assign-teacher-class",
+    title: "How to assign teacher to class",
+    description: "Assign teachers so the teacher portal only shows the classes and data they are meant to handle.",
+    icon: "users",
+    bullets: [
+      "Open Teacher Classes under Assignments.",
+      "Pick the teacher, class, and session context carefully.",
+      "Verify the assignment on the teacher side after saving.",
+      "Use notifications to confirm the teacher received the change.",
+      "Keep admin override for support only, not as the normal way teachers work.",
+    ],
+  },
+  {
+    id: "how-to-add-grades",
+    title: "How to add grades",
+    description: "Set the grade scale that converts totals into readable academic outcomes.",
+    icon: "docs",
+    bullets: [
+      "Open Grading and create the school grade scale.",
+      "Define score boundaries clearly from A through F.",
+      "Confirm that the grade key matches what the school already uses on report cards.",
+      "Check results after setup to confirm totals map into the intended grade bands.",
+    ],
+  },
+  {
+    id: "how-to-add-conduct",
+    title: "How to add conduct",
+    description: "Build conduct categories and sub-categories that teachers can score student by student.",
+    icon: "book",
+    bullets: [
+      "Create the main conduct category first, such as Psychomotor or Affective.",
+      "Add sub-categories like Handwriting, Neatness, or Punctuality under each category.",
+      "Set a max score for each sub-category so teachers know the valid range.",
+      "Review the conduct layout on the teacher portal before the term goes live.",
+    ],
+  },
+  {
+    id: "how-to-add-session",
+    title: "How to add session",
+    description: "Set up the school year and create its terms, semesters, or custom sub-sessions.",
+    icon: "compass",
+    bullets: [
+      "Open Academic Setup and create the new session label, such as 2025/2026.",
+      "Choose three terms, two semesters, or a custom structure.",
+      "If using custom mode, enter each sub-session label carefully and avoid duplicates.",
+      "Mark the right sub-session active before teachers start entering data.",
+    ],
+  },
+  {
+    id: "how-to-add-assessment",
+    title: "How to add assessment",
+    description: "Create assessment presets and attach them to terms so teachers always see the correct grading columns.",
+    icon: "flask",
+    bullets: [
+      "Create the reusable assessment preset under Assessment Types.",
+      "Assign that preset to the target term so the app creates a fixed term snapshot.",
+      "Do not start teacher score entry until the correct term scheme is attached.",
+      "Use a different preset next term if the school changes from one CA pattern to another.",
+    ],
+  },
+] as const;
+
+const trickGuides = [
+  {
+    id: "tricks-one-click",
+    title: "One click: what it does",
+    description: "A quick explanation of one-click actions that save time in the live workspace.",
+    icon: "sparkles",
+    bullets: [
+      "Single-click filters refresh the page context without requiring manual load buttons.",
+      "One-click export routes open clean document pages instead of dashboard shells.",
+      "One-click status changes on results let admins move records between draft, published, and unpublished states quickly.",
+      "One-click bell notifications keep users aware of major updates without hunting through pages.",
+    ],
+  },
+  {
+    id: "tricks-two-click",
+    title: "Two click: what it does",
+    description: "The fastest two-step moves staff use most often when operating iweOS day to day.",
+    icon: "sparkles",
+    bullets: [
+      "Pick a class, then a student to open focused conduct and analytics flows without huge tables.",
+      "Choose a term, then a scheme to lock the grading structure for that session period.",
+      "Open the teacher portal from admin, then return with Back to Administration when support is complete.",
+      "Select students, then apply a result status in bulk to update a whole result batch faster.",
+    ],
+  },
+  {
+    id: "tricks-power-tips",
+    title: "Other iweOS tricks",
+    description: "Operational habits and platform shortcuts that keep the school team moving smoothly.",
+    icon: "help",
+    bullets: [
+      "Autosave works best when teachers enter a field and move forward naturally instead of waiting on each save.",
+      "Use student status carefully because only active students should remain visible in teacher scoring flows.",
+      "Keep the result route, print route, and shared route separate so exported documents stay clean.",
+      "Reopen the in-app tour anytime from the footer when onboarding a new teacher or school admin.",
+    ],
+  },
+] as const;
+
 const groups: SidebarGroup[] = [
   {
     id: "getting-started",
@@ -50,6 +243,26 @@ const groups: SidebarGroup[] = [
       { id: "security-overview", title: "Overview", icon: "shield", pageId: "security-overview" },
       { id: "security-policies", title: "Policies", icon: "shield", pageId: "security-policies" },
     ],
+  },
+  {
+    id: "how-to",
+    title: "How-To",
+    items: howToGuides.map((guide) => ({
+      id: guide.id,
+      title: guide.title.replace(/^How to\s+/i, ""),
+      icon: "compass",
+      pageId: guide.id,
+    })),
+  },
+  {
+    id: "tricks",
+    title: "iweOS Tricks",
+    items: trickGuides.map((guide) => ({
+      id: guide.id,
+      title: guide.title,
+      icon: "sparkles",
+      pageId: guide.id,
+    })),
   },
   {
     id: "support",
@@ -559,6 +772,20 @@ export async function GET() {
         icon: "shield",
         pageId: "security-overview",
       },
+      {
+        id: "help-card-5",
+        title: "How-To library",
+        description: "Open step-by-step task guides for sign-up, grading, enrollment, teachers, and assessments.",
+        icon: "docs",
+        pageId: "how-to-sign-up-school",
+      },
+      {
+        id: "help-card-6",
+        title: "iweOS tricks",
+        description: "Learn the small workflow shortcuts that make the platform feel faster in daily use.",
+        icon: "bot",
+        pageId: "tricks-one-click",
+      },
     ],
     helpfulPrompt: "Did this help center landing point you to the right article?",
   },
@@ -662,6 +889,68 @@ export async function GET() {
     ],
     helpfulPrompt: "Did this changelog make recent product movement easy to understand?",
   },
+  ...howToGuides.map((guide) => ({
+    id: guide.id,
+    tab: "help" as const,
+    title: guide.title,
+    description: guide.description,
+    kind: "guide" as const,
+    badge: "How-To",
+    sections: [
+      {
+        id: `${guide.id}-overview`,
+        eyebrow: "Outcome",
+        title: "What this task should accomplish",
+        body: [
+          guide.description,
+          "Use this guide as the operational checklist for the task. It is written to keep setup steps, ownership, and validation clear for school admins and support leads.",
+        ],
+      },
+      {
+        id: `${guide.id}-steps`,
+        eyebrow: "Checklist",
+        title: "Recommended steps",
+        bullets: [...guide.bullets],
+      },
+      {
+        id: `${guide.id}-verify`,
+        eyebrow: "Validation",
+        title: "What to verify before moving on",
+        bullets: [
+          "Confirm the change appears in the correct admin page after save.",
+          "If the task affects teachers, verify that the teacher portal reflects the new setup.",
+          "If the task affects results, check at least one result preview before the school starts live usage.",
+        ],
+      },
+    ],
+    helpfulPrompt: `Did this ${guide.title.toLowerCase()} guide help you complete the task?`,
+  })),
+  ...trickGuides.map((guide) => ({
+    id: guide.id,
+    tab: "help" as const,
+    title: guide.title,
+    description: guide.description,
+    kind: "guide" as const,
+    badge: "iweOS Tricks",
+    sections: [
+      {
+        id: `${guide.id}-overview`,
+        eyebrow: "What it means",
+        title: "How this trick helps in daily use",
+        body: [
+          guide.description,
+          "These are not separate features to configure. They are the small workflow behaviors that make iweOS faster and easier once staff understand them.",
+        ],
+      },
+      {
+        id: `${guide.id}-details`,
+        eyebrow: "Examples",
+        title: "What to watch for",
+        bullets: [...guide.bullets],
+      },
+    ],
+    helpfulPrompt: `Was this ${guide.title.toLowerCase()} note useful?`,
+  })),
 ];
 
 export default function GuidePage() {
