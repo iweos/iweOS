@@ -100,7 +100,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
       {children}
 
       <footer className='border-t border-[#d7dfe9] bg-[#ffffff]'>
-        <div className='mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]'>
+        <div className='mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[minmax(0,1.8fr)_repeat(4,minmax(0,0.72fr))] xl:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,0.7fr))]'>
           <div>
             <BrandLogo href='/' variant='dark' className='text-xl' textClassName='font-semibold text-[#111827]' iconClassName='text-[#111827]' />
             <p className='mt-2 max-w-md text-sm leading-7 text-[#4b5563]'>
