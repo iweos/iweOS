@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import localFont from "next/font/local";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import ClerkDiagnosticsClient from "@/components/ClerkDiagnosticsClient";
 import GuideDock from "@/components/guide/GuideDock";
@@ -19,6 +20,12 @@ const ui = Plus_Jakarta_Sans({
   variable: "--font-ui",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+});
+
+const hornbill = localFont({
+  src: "../../public/fonts/Hornbill-Regular.otf",
+  variable: "--font-site-hornbill",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -78,7 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </head>
-        <body className={`${display.variable} ${ui.variable} ui`}>
+        <body className={`${display.variable} ${ui.variable} ${hornbill.variable} ui`}>
           <ThemeSync />
           <ClerkDiagnosticsClient />
           <GuideDock />

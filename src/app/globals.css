@@ -572,7 +572,7 @@ textarea:focus {
 .site-hornbill h4,
 .site-hornbill h5,
 .site-hornbill h6 {
-  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-family: var(--font-site-hornbill), var(--font-display), ui-serif, Georgia, serif;
 }
 
 .site-theme-toggle {
