@@ -67,12 +67,12 @@ function SidebarItemNode({
       <button
         type="button"
         onClick={() => item.pageId && onOpenPage(item.pageId)}
-        className={`flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-[12px] transition ${
+        className={`flex w-full items-center rounded-lg px-2 py-1.5 text-left text-[11px] transition ${
           isActive
             ? "bg-[var(--brand-primary-soft)] font-semibold text-[var(--primary-strong)] dark:bg-[rgba(123,199,146,0.16)] dark:text-[#dff2e5]"
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
         }`}
-        style={{ paddingLeft: `${0.65 + depth * 0.8}rem` }}
+        style={{ paddingLeft: `${0.55 + depth * 0.75}rem` }}
       >
         <Icon className="mr-1.5 h-4 w-4 shrink-0" />
         {item.title}
@@ -85,12 +85,12 @@ function SidebarItemNode({
       {({ open }) => (
         <div className="space-y-1">
           <DisclosureButton
-            className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[12px] font-medium transition ${
+            className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[11px] font-medium transition ${
               hasActiveDescendant
                 ? "text-slate-950 dark:text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
             }`}
-            style={{ paddingLeft: `${0.65 + depth * 0.8}rem` }}
+            style={{ paddingLeft: `${0.55 + depth * 0.75}rem` }}
           >
             <span className="flex items-center">
               <Icon className="mr-1.5 h-4 w-4 shrink-0" />
@@ -151,10 +151,10 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
             })}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {groups.map((group) => (
               <section key={group.id}>
-                <p className="guide-hornbill mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">{group.title}</p>
+                <p className="guide-hornbill mb-1.5 px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">{group.title}</p>
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <SidebarItemNode key={item.id} item={item} activePageId={activePageId} onOpenPage={onOpenPage} />

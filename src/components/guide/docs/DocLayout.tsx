@@ -117,8 +117,8 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
         onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
       />
 
-      <div className="mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[auto_minmax(0,1fr)_280px]">
-        <aside className={`${sidebarCollapsed ? "hidden lg:block lg:w-[92px]" : "hidden lg:block lg:w-[300px]"} h-[calc(100vh-4rem)] sticky top-16`}>
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_240px]">
+        <aside className={`${sidebarCollapsed ? "hidden lg:block lg:w-[84px]" : "hidden lg:block lg:w-[248px] xl:w-[256px]"} h-[calc(100vh-3.5rem)] sticky top-14`}>
           <Sidebar
             groups={groups}
             activePageId={activePage.id}
@@ -128,7 +128,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
           />
         </aside>
 
-        <main className="min-w-0 border-x border-slate-200 bg-[#fafafa] px-5 py-8 lg:px-10 dark:border-slate-800 dark:bg-[#0d1117]">
+        <main className="min-w-0 bg-[#fafafa] px-4 py-6 sm:px-5 lg:border-l lg:border-slate-200 lg:px-7 xl:border-x xl:px-9 dark:bg-[#0d1117] dark:lg:border-slate-800">
           <div className="mx-auto max-w-4xl">
             <div className="mb-5 flex flex-wrap items-center gap-2 text-[13px] text-slate-500 dark:text-slate-400">
               <span>{tabs.find((tab) => tab.id === activePage.tab)?.label}</span>
@@ -275,7 +275,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
           </div>
         </main>
 
-        <aside className="hidden border-l border-slate-200 bg-[#fcfcfc] px-5 py-8 lg:block dark:border-slate-800 dark:bg-[#0f1117]">
+        <aside className="hidden border-l border-slate-200 bg-[#fcfcfc] px-4 py-6 xl:block dark:border-slate-800 dark:bg-[#0f1117]">
           {activePage.kind === "doc" && activePage.endpoints?.length ? (
             <APIEndpointPanel
               endpoints={activePage.endpoints}
@@ -310,7 +310,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
       <Dialog open={mobileSidebarOpen} onClose={setMobileSidebarOpen} className="relative z-[70] lg:hidden">
         <DialogBackdrop className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm" />
         <div className="fixed inset-0 flex">
-          <DialogPanel className="h-full w-[88vw] max-w-sm bg-white shadow-2xl dark:bg-[#11141a]">
+          <DialogPanel className="h-full w-[82vw] max-w-[280px] bg-white shadow-2xl dark:bg-[#11141a]">
             <Sidebar
               groups={groups}
               activePageId={activePage.id}
