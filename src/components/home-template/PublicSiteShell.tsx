@@ -100,7 +100,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
       {children}
 
       <footer className='border-t border-[#d7dfe9] bg-[#ffffff]'>
-        <div className='mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 md:grid-cols-[1.3fr_1fr]'>
+        <div className='mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]'>
           <div>
             <BrandLogo href='/' variant='dark' className='text-xl' textClassName='font-semibold text-[#111827]' iconClassName='text-[#111827]' />
             <p className='mt-2 max-w-md text-sm leading-7 text-[#4b5563]'>
@@ -115,22 +115,20 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
             </div>
           </div>
 
-          <div className='grid gap-6 sm:grid-cols-2'>
-            {footerGroups.slice(0, 4).map((group) => (
-              <nav key={group.title}>
-                <p className='text-sm font-semibold text-[#111827]'>{group.title}</p>
-                <ul className='mt-2 space-y-2'>
-                  {group.links.map((item) => (
-                    <li key={`${group.title}-${item.label}`}>
-                      <Link href={item.href} className='text-sm text-[#4b5563] hover:text-[#111827]'>
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            ))}
-          </div>
+          {footerGroups.slice(0, 4).map((group) => (
+            <nav key={group.title}>
+              <p className='text-sm font-semibold text-[#111827]'>{group.title}</p>
+              <ul className='mt-2 space-y-2'>
+                {group.links.map((item) => (
+                  <li key={`${group.title}-${item.label}`}>
+                    <Link href={item.href} className='text-sm text-[#4b5563] hover:text-[#111827]'>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
       </footer>
     </div>
