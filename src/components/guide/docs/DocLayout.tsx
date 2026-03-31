@@ -180,6 +180,12 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                 <div className="space-y-10">
                   {sections.map((section) => (
                     <section key={section.id} id={section.id} className="scroll-mt-24">
+                      {section.timestamp ? (
+                        <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                          <span className="inline-block h-2 w-2 rounded-full bg-[var(--primary)]" />
+                          <span>{section.timestamp}</span>
+                        </div>
+                      ) : null}
                       {section.eyebrow ? (
                         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">{section.eyebrow}</p>
                       ) : null}

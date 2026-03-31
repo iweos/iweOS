@@ -613,6 +613,7 @@ export async function GET() {
       {
         id: "result-improvements",
         eyebrow: "Results",
+        timestamp: "Mar 31, 2026 · 8:40 PM WAT",
         title: "Result exports and sharing improved",
         bullets: [
           "Dedicated export routes no longer inherit the admin shell.",
@@ -624,6 +625,7 @@ export async function GET() {
       {
         id: "teacher-quality",
         eyebrow: "Teacher workflow",
+        timestamp: "Mar 31, 2026 · 6:15 PM WAT",
         title: "Autosave flows became safer",
         bullets: [
           "Grade entry no longer overwrites another in-progress field when one save completes.",
@@ -634,6 +636,7 @@ export async function GET() {
       {
         id: "operations-quality",
         eyebrow: "Operations",
+        timestamp: "Mar 30, 2026 · 9:10 PM WAT",
         title: "Operational visibility improved",
         bullets: [
           "Bell notifications now reflect real events instead of static items.",
