@@ -92,7 +92,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
   const sections = activePage?.sections ?? [];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900 dark:bg-[#0d1117] dark:text-white">
+    <div className="guide-hornbill min-h-screen bg-[#fafafa] text-slate-900 dark:bg-[#0d1117] dark:text-white">
       <Header
         tabs={tabs}
         activeTab={activeTab}
