@@ -18,10 +18,6 @@ type DocLayoutProps = {
   pages: DocPage[];
 };
 
-function hornbillStyle() {
-  return { fontFamily: "var(--font-guide-hornbill), var(--font-display), ui-serif, Georgia, serif" };
-}
-
 function HelpfulPrompt({ label = "Was this helpful?" }: { label?: string }) {
   const [selection, setSelection] = useState<"yes" | "no" | null>(null);
 
@@ -130,7 +126,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                   <LifeBuoy className="h-4 w-4" />
                   Help Center
                 </span>
-                <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[2.6rem] dark:text-white" style={hornbillStyle()}>
+                <h1 className="guide-hornbill mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[2.6rem] dark:text-white">
                   {activePage.heroTitle ?? activePage.title}
                 </h1>
                 <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-7 text-slate-600 dark:text-slate-300">
@@ -161,7 +157,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                       {activePage.badge}
                     </span>
                   ) : null}
-                  <h1 className="mt-2.5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[2.5rem] dark:text-white" style={hornbillStyle()}>
+                  <h1 className="guide-hornbill mt-2.5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[2.5rem] dark:text-white">
                     {activePage.title}
                   </h1>
                   <p className="mt-3 max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-slate-300">{activePage.description}</p>
@@ -187,7 +183,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                       {section.eyebrow ? (
                         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">{section.eyebrow}</p>
                       ) : null}
-                      <h2 className="text-[1.45rem] font-semibold tracking-tight text-slate-950 dark:text-white" style={hornbillStyle()}>
+                      <h2 className="guide-hornbill text-[1.45rem] font-semibold tracking-tight text-slate-950 dark:text-white">
                         {section.title}
                       </h2>
                       {section.body?.map((paragraph) => (

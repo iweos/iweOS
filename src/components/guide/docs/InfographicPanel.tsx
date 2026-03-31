@@ -23,7 +23,7 @@ export default function InfographicPanel({ infographic }: InfographicPanelProps)
       <div className={`grid gap-6 ${infographic.imageSrc ? "xl:grid-cols-[1.25fr_0.95fr]" : ""}`}>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Infographic</p>
-          <h3 className="mt-2 text-[1.35rem] font-semibold tracking-tight text-slate-950 dark:text-white">{infographic.title}</h3>
+          <h3 className="guide-hornbill mt-2 text-[1.35rem] font-semibold tracking-tight text-slate-950 dark:text-white">{infographic.title}</h3>
           <p className="mt-3 max-w-2xl text-[13px] leading-6 text-slate-600 dark:text-slate-300">{infographic.description}</p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

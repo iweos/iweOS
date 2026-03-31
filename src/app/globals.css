@@ -3183,6 +3183,10 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   color: #12212e;
 }
 
+.guide-hornbill {
+  font-family: var(--font-guide-hornbill), var(--font-display), ui-serif, Georgia, serif;
+}
+
 .guide-docs-topbar {
   position: sticky;
   top: 0;

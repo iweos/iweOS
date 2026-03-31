@@ -154,7 +154,7 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
           <div className="space-y-7">
             {groups.map((group) => (
               <section key={group.id}>
-                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">{group.title}</p>
+                <p className="guide-hornbill mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">{group.title}</p>
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <SidebarItemNode key={item.id} item={item} activePageId={activePageId} onOpenPage={onOpenPage} />
