@@ -1,6 +1,10 @@
 export type NavItem = {
   label: string;
   href: string;
+  children?: Array<{
+    label: string;
+    href: string;
+  }>;
 };
 
 export type Outcome = {
@@ -52,9 +56,15 @@ export const siteName = "ìwéOS";
 
 export const navItems: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: "Product", href: "/product" },
-  { label: "Grading", href: "/grading" },
-  { label: "Payments", href: "/payments" },
+  {
+    label: "Features",
+    href: "/product",
+    children: [
+      { label: "Manage School", href: "/product" },
+      { label: "Grading", href: "/grading" },
+      { label: "Result", href: "/results" },
+    ],
+  },
   { label: "Guide", href: "/guide" },
   { label: "Pricing", href: "/pricing" },
   { label: "FAQ", href: "/faq" },
