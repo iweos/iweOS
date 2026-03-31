@@ -90,6 +90,22 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
   }
 
   const sections = activePage?.sections ?? [];
+  const isChangelogPage = activePage?.kind === "changelog";
+
+  function timelineTone(eyebrow?: string) {
+    switch ((eyebrow ?? "").toLowerCase()) {
+      case "results":
+        return "bg-emerald-500";
+      case "teacher workflow":
+        return "bg-sky-500";
+      case "operations":
+        return "bg-amber-500";
+      case "security":
+        return "bg-rose-500";
+      default:
+        return "bg-[var(--primary)]";
+    }
+  }
 
   return (
     <div className="guide-hornbill min-h-screen bg-[#fafafa] text-slate-900 dark:bg-[#0d1117] dark:text-white">
@@ -177,45 +193,80 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
                   </div>
                 ) : null}
 
-                <div className="space-y-10">
-                  {sections.map((section) => (
-                    <section key={section.id} id={section.id} className="scroll-mt-24">
-                      {section.timestamp ? (
-                        <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
-                          <span className="inline-block h-2 w-2 rounded-full bg-[var(--primary)]" />
-                          <span>{section.timestamp}</span>
-                        </div>
-                      ) : null}
-                      {section.eyebrow ? (
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">{section.eyebrow}</p>
-                      ) : null}
-                      <h2 className="guide-hornbill text-[1.45rem] font-semibold tracking-tight text-slate-950 dark:text-white">
-                        {section.title}
-                      </h2>
-                      {section.body?.map((paragraph) => (
-                        <p key={paragraph} className="mt-3 text-[14px] leading-7 text-slate-600 dark:text-slate-300">
-                          {paragraph}
-                        </p>
-                      ))}
-                      {section.bullets?.length ? (
-                        <ul className="mt-5 space-y-3">
-                          {section.bullets.map((bullet) => (
-                            <li key={bullet} className="flex gap-3 text-[14px] leading-6 text-slate-600 dark:text-slate-300">
-                              <span className="mt-2 inline-block h-2 w-2 rounded-full bg-[var(--primary)]" />
-                              <span>{bullet}</span>
-                            </li>
+                <div className={isChangelogPage ? "space-y-0" : "space-y-10"}>
+                  {sections.map((section, index) => {
+                    const groupLabel = section.timelineGroup;
+                    const previousGroup = index > 0 ? sections[index - 1]?.timelineGroup : undefined;
+                    const showGroupLabel = isChangelogPage && groupLabel && groupLabel !== previousGroup;
+
+                    return (
+                      <div key={section.id} className={isChangelogPage ? "relative pl-10" : ""}>
+                        {isChangelogPage ? (
+                          <>
+                            <span
+                              aria-hidden="true"
+                              className={`absolute left-[0.62rem] top-10 bottom-[-1.75rem] w-px bg-slate-200 dark:bg-slate-800 ${
+                                index === sections.length - 1 ? "hidden" : ""
+                              }`}
+                            />
+                            <span
+                              aria-hidden="true"
+                              className={`absolute left-0 top-[2.45rem] inline-flex h-5 w-5 items-center justify-center rounded-full border-4 border-[#fafafa] dark:border-[#0d1117] ${timelineTone(
+                                section.eyebrow,
+                              )}`}
+                            />
+                          </>
+                        ) : null}
+
+                        {showGroupLabel ? (
+                          <div className="mb-4 pt-2">
+                            <span className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:border-slate-700 dark:bg-[#13161c] dark:text-slate-300">
+                              {groupLabel}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        <section
+                          id={section.id}
+                          className={isChangelogPage ? "scroll-mt-24 pb-7 mb-7 border-b border-slate-200/80 dark:border-slate-800/90" : "scroll-mt-24"}
+                        >
+                          {section.timestamp ? (
+                            <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                              <span>{section.timestamp}</span>
+                            </div>
+                          ) : null}
+                          {section.eyebrow ? (
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">{section.eyebrow}</p>
+                          ) : null}
+                          <h2 className="guide-hornbill text-[1.45rem] font-semibold tracking-tight text-slate-950 dark:text-white">
+                            {section.title}
+                          </h2>
+                          {section.body?.map((paragraph) => (
+                            <p key={paragraph} className="mt-3 text-[14px] leading-7 text-slate-600 dark:text-slate-300">
+                              {paragraph}
+                            </p>
                           ))}
-                        </ul>
-                      ) : null}
-                      {section.codeBlocks?.length ? (
-                        <div className="mt-6 space-y-5">
-                          {section.codeBlocks.map((block) => (
-                            <CodeBlock key={`${section.id}-${block.language}-${block.code.slice(0, 12)}`} block={block} />
-                          ))}
-                        </div>
-                      ) : null}
-                    </section>
-                  ))}
+                          {section.bullets?.length ? (
+                            <ul className="mt-5 space-y-3">
+                              {section.bullets.map((bullet) => (
+                                <li key={bullet} className="flex gap-3 text-[14px] leading-6 text-slate-600 dark:text-slate-300">
+                                  <span className={`mt-2 inline-block h-2 w-2 rounded-full ${isChangelogPage ? timelineTone(section.eyebrow) : "bg-[var(--primary)]"}`} />
+                                  <span>{bullet}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {section.codeBlocks?.length ? (
+                            <div className="mt-6 space-y-5">
+                              {section.codeBlocks.map((block) => (
+                                <CodeBlock key={`${section.id}-${block.language}-${block.code.slice(0, 12)}`} block={block} />
+                              ))}
+                            </div>
+                          ) : null}
+                        </section>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <HelpfulPrompt label={activePage.helpfulPrompt} />

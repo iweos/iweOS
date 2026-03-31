@@ -17,6 +17,7 @@ export type DocContentSection = {
   title: string;
   eyebrow?: string;
   timestamp?: string;
+  timelineGroup?: string;
   body?: string[];
   bullets?: string[];
   codeBlocks?: DocCodeBlock[];

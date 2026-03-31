@@ -614,6 +614,7 @@ export async function GET() {
         id: "result-improvements",
         eyebrow: "Results",
         timestamp: "Mar 31, 2026 · 8:40 PM WAT",
+        timelineGroup: "Today",
         title: "Result exports and sharing improved",
         bullets: [
           "Dedicated export routes no longer inherit the admin shell.",
@@ -626,6 +627,7 @@ export async function GET() {
         id: "teacher-quality",
         eyebrow: "Teacher workflow",
         timestamp: "Mar 31, 2026 · 6:15 PM WAT",
+        timelineGroup: "Today",
         title: "Autosave flows became safer",
         bullets: [
           "Grade entry no longer overwrites another in-progress field when one save completes.",
@@ -637,11 +639,24 @@ export async function GET() {
         id: "operations-quality",
         eyebrow: "Operations",
         timestamp: "Mar 30, 2026 · 9:10 PM WAT",
+        timelineGroup: "Yesterday",
         title: "Operational visibility improved",
         bullets: [
           "Bell notifications now reflect real events instead of static items.",
           "Duplicate students in the same class are blocked at the server layer.",
           "Guide and in-app help are being rebuilt into a stronger documentation experience.",
+        ],
+      },
+      {
+        id: "docs-evolution",
+        eyebrow: "Documentation",
+        timestamp: "Mar 28, 2026 · 4:30 PM WAT",
+        timelineGroup: "Earlier",
+        title: "Guide experience became more product-oriented",
+        bullets: [
+          "The guide was rebuilt into a documentation-style workspace with sidebar navigation and search.",
+          "Hornbill typography, infographics, and a changelog view were introduced to make updates easier to track.",
+          "Public navigation was split into dedicated pages so product, pricing, payments, and help content are easier to browse.",
         ],
       },
     ],
