@@ -167,6 +167,19 @@ const howToGuides = [
       "Use a different preset next term if the school changes from one CA pattern to another.",
     ],
   },
+  {
+    id: "how-to-use-results",
+    title: "How to use result",
+    description: "Review, publish, export, and share results in the clean admin flow without mixing up preview pages and document pages.",
+    icon: "docs",
+    bullets: [
+      "Open Results under Grading and filter by term, class, and student.",
+      "Review the result preview before changing its publication status.",
+      "Use draft, published, and unpublished states deliberately so shared links only expose approved results.",
+      "Open the export route for clean print, PDF download, and mobile sharing.",
+      "Use class export when you need multiple result sheets in one document flow.",
+    ],
+  },
 ] as const;
 
 const trickGuides = [
@@ -247,22 +260,76 @@ const groups: SidebarGroup[] = [
   {
     id: "how-to",
     title: "How-To",
-    items: howToGuides.map((guide) => ({
-      id: guide.id,
-      title: guide.title.replace(/^How to\s+/i, ""),
-      icon: "compass",
-      pageId: guide.id,
-    })),
+    items: [
+      {
+        id: "how-to-manage-school",
+        title: "Manage School",
+        icon: "school",
+        children: [
+          { id: "how-to-sign-up-school-link", title: "Sign up as a school", icon: "school", pageId: "how-to-sign-up-school" },
+          { id: "how-to-add-session-link", title: "Add session", icon: "compass", pageId: "how-to-add-session" },
+          { id: "how-to-set-up-grading-link", title: "Set up grading system", icon: "docs", pageId: "how-to-set-up-grading" },
+          { id: "how-to-add-grades-link", title: "Add grades", icon: "docs", pageId: "how-to-add-grades" },
+          { id: "how-to-add-conduct-link", title: "Add conduct", icon: "book", pageId: "how-to-add-conduct" },
+          { id: "how-to-add-assessment-link", title: "Add assessment", icon: "flask", pageId: "how-to-add-assessment" },
+        ],
+      },
+      {
+        id: "how-to-manage-teacher",
+        title: "Manage Teacher",
+        icon: "users",
+        children: [
+          { id: "how-to-add-teachers-link", title: "Add teachers", icon: "users", pageId: "how-to-add-teachers" },
+          {
+            id: "how-to-assign-teacher-class-link",
+            title: "Assign teacher to class",
+            icon: "users",
+            pageId: "how-to-assign-teacher-class",
+          },
+        ],
+      },
+      {
+        id: "how-to-manage-student",
+        title: "Manage Student",
+        icon: "student",
+        children: [
+          { id: "how-to-add-student-link", title: "Add student to school", icon: "student", pageId: "how-to-add-student" },
+          { id: "how-to-manage-students-link", title: "Manage students", icon: "users", pageId: "how-to-manage-students" },
+        ],
+      },
+      {
+        id: "how-to-manage-class",
+        title: "Manage Class",
+        icon: "compass",
+        children: [
+          { id: "how-to-enroll-student-link", title: "Add student to class", icon: "student", pageId: "how-to-enroll-student" },
+          { id: "how-to-add-subjects-link", title: "Add subjects", icon: "docs", pageId: "how-to-add-subjects" },
+        ],
+      },
+      {
+        id: "how-to-use-result-group",
+        title: "Use Result",
+        icon: "docs",
+        children: [{ id: "how-to-use-results-link", title: "Use result", icon: "docs", pageId: "how-to-use-results" }],
+      },
+    ],
   },
   {
     id: "tricks",
     title: "iweOS Tricks",
-    items: trickGuides.map((guide) => ({
-      id: guide.id,
-      title: guide.title,
-      icon: "sparkles",
-      pageId: guide.id,
-    })),
+    items: [
+      {
+        id: "tricks-group",
+        title: "Smart shortcuts",
+        icon: "sparkles",
+        children: trickGuides.map((guide) => ({
+          id: `${guide.id}-link`,
+          title: guide.title,
+          icon: "sparkles",
+          pageId: guide.id,
+        })),
+      },
+    ],
   },
   {
     id: "support",
