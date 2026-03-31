@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, type MouseEventHandler } from "react";
+import { useEffect, useRef, useState, type MouseEventHandler } from "react";
 import { useRouter } from "next/navigation";
 
 type BrandLogoProps = {
@@ -33,11 +33,23 @@ export default function BrandLogo({
 }: BrandLogoProps) {
   const router = useRouter();
   const logoClickTimerRef = useRef<number | null>(null);
+  const quoteHideTimerRef = useRef<number | null>(null);
+  const quoteIndexRef = useRef(0);
+  const [activeQuote, setActiveQuote] = useState<string | null>(null);
+
+  const logoQuotes = [
+    "Calm systems build confident schools.",
+    "Better records. Faster results. Less stress.",
+    "Good school operations should feel effortless.",
+  ];
 
   useEffect(
     () => () => {
       if (logoClickTimerRef.current !== null) {
         window.clearTimeout(logoClickTimerRef.current);
+      }
+      if (quoteHideTimerRef.current !== null) {
+        window.clearTimeout(quoteHideTimerRef.current);
       }
     },
     [],
@@ -60,20 +72,41 @@ export default function BrandLogo({
     event.preventDefault();
 
     if (logoClickTimerRef.current !== null) {
-      window.clearTimeout(logoClickTimerRef.current);
-      logoClickTimerRef.current = null;
-      router.push("/");
       return;
     }
 
     logoClickTimerRef.current = window.setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("iweos:pending-indicator", {
-          detail: { durationMs: loaderDurationMs },
-        }),
-      );
+      const quote = logoQuotes[quoteIndexRef.current % logoQuotes.length];
+      quoteIndexRef.current += 1;
+      setActiveQuote(quote);
+      if (quoteHideTimerRef.current !== null) {
+        window.clearTimeout(quoteHideTimerRef.current);
+      }
+      quoteHideTimerRef.current = window.setTimeout(() => {
+        setActiveQuote(null);
+        quoteHideTimerRef.current = null;
+      }, Math.min(Math.max(loaderDurationMs, 2200), 4200));
       logoClickTimerRef.current = null;
     }, 250);
+  };
+
+  const handleLogoDoubleClick: MouseEventHandler<HTMLAnchorElement> = (event) => {
+    if (!href || !interactiveLoader) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (logoClickTimerRef.current !== null) {
+      window.clearTimeout(logoClickTimerRef.current);
+      logoClickTimerRef.current = null;
+    }
+    if (quoteHideTimerRef.current !== null) {
+      window.clearTimeout(quoteHideTimerRef.current);
+      quoteHideTimerRef.current = null;
+    }
+    setActiveQuote(null);
+    router.push("/");
   };
 
   const content = (
@@ -85,14 +118,22 @@ export default function BrandLogo({
 
   if (href) {
     return (
-      <Link
-        href={href}
-        className={rootClass}
-        data-loading-indicator={interactiveLoader ? "off" : undefined}
-        onClick={handleLogoClick}
-      >
-        {content}
-      </Link>
+      <span className="relative inline-flex">
+        <Link
+          href={href}
+          className={rootClass}
+          data-loading-indicator={interactiveLoader ? "off" : undefined}
+          onClick={handleLogoClick}
+          onDoubleClick={handleLogoDoubleClick}
+        >
+          {content}
+        </Link>
+        {activeQuote ? (
+          <span className="pointer-events-none absolute left-1/2 top-[calc(100%+0.55rem)] z-50 w-max max-w-[220px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-[11px] font-medium leading-5 text-slate-700 shadow-[0_14px_30px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-[#161922] dark:text-slate-100">
+            {activeQuote}
+          </span>
+        ) : null}
+      </span>
     );
   }
 
