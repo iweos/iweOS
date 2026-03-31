@@ -557,6 +557,24 @@ textarea:focus {
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
+.site-hornbill,
+.site-hornbill button,
+.site-hornbill a,
+.site-hornbill input,
+.site-hornbill textarea,
+.site-hornbill select,
+.site-hornbill p,
+.site-hornbill span,
+.site-hornbill li,
+.site-hornbill h1,
+.site-hornbill h2,
+.site-hornbill h3,
+.site-hornbill h4,
+.site-hornbill h5,
+.site-hornbill h6 {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
 .site-theme-toggle {
   border-color: rgba(148, 163, 184, 0.35);
   background: rgba(255, 255, 255, 0.72);

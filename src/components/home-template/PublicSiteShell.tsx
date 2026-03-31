@@ -29,7 +29,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
   const primaryNav = useMemo(() => navItems, [])
 
   return (
-    <div className='bg-[#f8f6f2] text-[#1f2a37]'>
+    <div className='site-hornbill bg-[#f8f6f2] text-[#1f2a37]'>
       <header className='sticky top-0 z-50 border-b border-[#e6dfd3] bg-[#f8f6f2]/95 backdrop-blur'>
         <div className='mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3'>
           <BrandLogo href='/' variant='dark' className='text-xl' textClassName='font-semibold text-[#111827]' iconClassName='text-[#111827]' />
@@ -37,7 +37,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
           <nav className='hidden items-center gap-6 lg:flex'>
             {primaryNav.map((item) =>
               item.children?.length ? (
-                <div key={item.label} className='group relative'>
+                <div key={item.label} className='group relative py-2'>
                   <button
                     type='button'
                     className={`inline-flex items-center gap-1 text-sm font-medium transition ${
@@ -47,7 +47,8 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                     <span>{item.label}</span>
                     <ChevronDown className='h-4 w-4' />
                   </button>
-                  <div className='invisible absolute left-0 top-[calc(100%+0.7rem)] z-40 min-w-[190px] rounded-2xl border border-[#d7dfe9] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(15,23,42,0.12)] transition duration-150 group-hover:visible group-hover:opacity-100'>
+                  <div className='invisible absolute left-0 top-full z-40 min-w-[190px] pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100'>
+                    <div className='rounded-2xl border border-[#d7dfe9] bg-white p-2 shadow-[0_18px_45px_rgba(15,23,42,0.12)]'>
                     {item.children.map((child) => (
                       <Link
                         key={`${item.label}-${child.label}`}
@@ -59,6 +60,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                         {child.label}
                       </Link>
                     ))}
+                    </div>
                   </div>
                 </div>
               ) : (
