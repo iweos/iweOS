@@ -905,6 +905,24 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "subject-exemptions-and-catalog-editing",
+        eyebrow: "Academics",
+        timestamp: "Apr 1, 2026 · 11:55 AM WAT",
+        timelineGroup: "Today",
+        title: "Subject editing and student subject exemptions were added",
+        body: [
+          "iweOS now supports a cleaner elective workflow for schools where not every student in a class offers every class subject. This update also improves subject maintenance from the admin side so schools can correct subject names without deleting and recreating them.",
+        ],
+        bullets: [
+          "Admins can now edit existing subjects directly from the Subject Catalog instead of deleting and recreating them.",
+          "Duplicate subject names are blocked during editing so the subject list stays clean and consistent.",
+          "A new student subject exemption flow was added so admins and teachers can exempt a student from a subject the student does not offer.",
+          "Teachers can now use Grade Entry to mark a student as exempt for the selected subject, and admins can do the same through admin override in the teacher portal.",
+          "Exempted subjects no longer appear as zero-scored rows in result calculations, so they do not unfairly reduce student averages, grades, or rankings.",
+          "Teacher analytics, teacher results, admin results, exported PDFs, and shared result documents now stay aligned with the same exemption rule.",
+        ],
+      },
+      {
         id: "result-improvements",
         eyebrow: "Results",
         timestamp: "Mar 31, 2026 · 8:40 PM WAT",
