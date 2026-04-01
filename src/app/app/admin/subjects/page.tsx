@@ -1,4 +1,4 @@
-import { addSubjectsToClassAction, deleteSubjectAction, removeClassSubjectAction } from "@/lib/server/admin-actions";
+import { addSubjectsToClassAction, deleteSubjectAction, removeClassSubjectAction, updateSubjectAction } from "@/lib/server/admin-actions";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
@@ -144,13 +144,27 @@ export default async function AdminSubjectsPage({
           <thead>
             <tr>
               <Th>Subject</Th>
-              <Th />
+              <Th>Actions</Th>
             </tr>
           </thead>
           <tbody>
             {subjects.map((subject) => (
               <tr key={subject.id}>
-                <Td>{subject.name}</Td>
+                <Td>
+                  <form action={updateSubjectAction} className="d-flex flex-wrap gap-2 align-items-center">
+                    <input type="hidden" name="subjectId" value={subject.id} />
+                    <input
+                      type="text"
+                      name="name"
+                      className="form-control"
+                      defaultValue={subject.name}
+                      aria-label={`Edit ${subject.name}`}
+                    />
+                    <button className="btn btn-secondary" type="submit">
+                      Save
+                    </button>
+                  </form>
+                </Td>
                 <Td>
                   <form action={deleteSubjectAction}>
                     <input type="hidden" name="subjectId" value={subject.id} />

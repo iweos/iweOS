@@ -6,6 +6,7 @@ import GradeEntryTable from "@/components/teacher/GradeEntryTable";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
+import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 type GradeEntrySearchParams = {
   teacherProfileId?: string;
@@ -192,6 +193,7 @@ export default async function TeacherGradeEntryPage({
       value: number;
     }>;
   }> = [];
+  let exemptionKeys = new Set<string>();
 
   try {
     classSubjects = selectedClassId
@@ -229,6 +231,16 @@ export default async function TeacherGradeEntryPage({
             orderBy: { student: { fullName: "asc" } },
           })
         : [];
+
+    exemptionKeys =
+      selectedClassId && selectedSubjectId && enrollments.length > 0
+        ? await getStudentSubjectExemptionKeySet({
+            schoolId: context.actorProfile.schoolId,
+            classId: selectedClassId,
+            subjectIds: [selectedSubjectId],
+            studentIds: enrollments.map((enrollment) => enrollment.studentId),
+          })
+        : new Set<string>();
 
     if (selectedTermId && selectedSubjectId && selectedClassId) {
       const rawExistingScores = await prisma.score.findMany({
@@ -392,17 +404,22 @@ export default async function TeacherGradeEntryPage({
             }))}
             initialRows={enrollments.map((enrollment) => {
               const score = scoreMap.get(enrollment.studentId);
+              const isExempt =
+                selectedClassId && selectedSubjectId
+                  ? isStudentSubjectExempt(exemptionKeys, selectedClassId, enrollment.studentId, selectedSubjectId)
+                  : false;
               return {
                 enrollmentId: enrollment.id,
                 studentId: enrollment.studentId,
                 studentCode: enrollment.student.studentCode,
                 fullName: enrollment.student.fullName,
-                total: score?.total ?? null,
-                grade: score?.grade ?? null,
+                total: isExempt ? null : score?.total ?? null,
+                grade: isExempt ? null : score?.grade ?? null,
+                isExempt,
                 values: Object.fromEntries(
                   assessmentTypes.map((assessment) => [
                     assessment.id,
-                    score?.values.get(assessment.id)?.toString() ?? "",
+                    isExempt ? "" : score?.values.get(assessment.id)?.toString() ?? "",
                   ]),
                 ),
               };

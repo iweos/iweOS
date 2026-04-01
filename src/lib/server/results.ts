@@ -1,6 +1,7 @@
 import type { GradeScale, ResultPublication, ResultPublicationStatus } from "@prisma/client";
 import { getGradeForTotal } from "@/lib/server/grading";
 import { prisma } from "@/lib/server/prisma";
+import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 function toNumber(value: unknown) {
   return Number(value ?? 0);
@@ -119,7 +120,7 @@ export async function getStudentResultSheet(params: {
   classId: string;
   studentId: string;
 }): Promise<ResultSheetData | null> {
-  const [school, term, klass, student, gradeScale, publication, assessmentTemplate, studentConducts, allScores, gradingSettings, attendance, comment] =
+  const [school, term, klass, student, gradeScale, publication, assessmentTemplate, studentConducts, allScores, gradingSettings, attendance, comment, exemptionKeys] =
     await Promise.all([
       prisma.school.findUnique({
         where: { id: params.schoolId },
@@ -266,17 +267,25 @@ export async function getStudentResultSheet(params: {
           comment: true,
         },
       }),
+      getStudentSubjectExemptionKeySet({
+        schoolId: params.schoolId,
+        classId: params.classId,
+      }),
     ]);
 
   if (!school || !term || !klass || !student) {
     return null;
   }
 
+  const filteredScores = allScores.filter(
+    (score) => !isStudentSubjectExempt(exemptionKeys, params.classId, score.studentId, score.subjectId),
+  );
+
   const assessmentColumns =
     assessmentTemplate?.types.map((item) => item.name) ??
     Array.from(
       new Set(
-        allScores
+        filteredScores
           .flatMap((row) =>
             row.assessmentValues
               .slice()
@@ -288,7 +297,7 @@ export async function getStudentResultSheet(params: {
     );
 
   const classScoresByStudent = new Map<string, typeof allScores>();
-  for (const score of allScores) {
+  for (const score of filteredScores) {
     const bucket = classScoresByStudent.get(score.studentId) ?? [];
     bucket.push(score);
     classScoresByStudent.set(score.studentId, bucket);
@@ -309,7 +318,7 @@ export async function getStudentResultSheet(params: {
   const classSize = classAverages.length;
 
   const studentRows = (classScoresByStudent.get(student.id) ?? []).map((score) => {
-    const subjectScores = allScores
+    const subjectScores = filteredScores
       .filter((item) => item.subjectId === score.subjectId)
       .sort((a, b) => toNumber(b.total) - toNumber(a.total));
     const subjectPositionIndex = subjectScores.findIndex((item) => item.studentId === student.id);

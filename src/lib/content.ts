@@ -65,8 +65,8 @@ export const navItems: NavItem[] = [
       { label: "Result", href: "/results" },
     ],
   },
-  { label: "Guide", href: "/guide" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Guide", href: "/guide" },
 ];
 
 export const heroContent = {

@@ -35,6 +35,7 @@ import {
   studentSchema,
   studentUpdateSchema,
   subjectSchema,
+  subjectUpdateSchema,
   teacherAssignmentSchema,
   teacherSchema,
   termAssessmentTemplateSchema,
@@ -1425,6 +1426,18 @@ export async function createSubjectAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid subject payload.");
   }
 
+  const existing = await prisma.subject.findFirst({
+    where: {
+      schoolId: profile.schoolId,
+      name: { equals: parsed.data.name, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
+
+  if (existing) {
+    redirectSubjectsStatus("error", "That subject already exists in your catalog.");
+  }
+
   await prisma.subject.create({
     data: {
       schoolId: profile.schoolId,
@@ -1433,6 +1446,48 @@ export async function createSubjectAction(formData: FormData) {
   });
 
   revalidateAdminPages();
+}
+
+export async function updateSubjectAction(formData: FormData) {
+  const profile = await requireRole("admin");
+  const parsed = subjectUpdateSchema.safeParse({
+    subjectId: formValue(formData, "subjectId"),
+    name: formValue(formData, "name"),
+  });
+
+  if (!parsed.success) {
+    redirectSubjectsStatus("error", parsed.error.issues[0]?.message ?? "Invalid subject update payload.");
+  }
+
+  const duplicate = await prisma.subject.findFirst({
+    where: {
+      schoolId: profile.schoolId,
+      id: { not: parsed.data.subjectId },
+      name: { equals: parsed.data.name, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
+
+  if (duplicate) {
+    redirectSubjectsStatus("error", "Another subject already uses that name.");
+  }
+
+  const result = await prisma.subject.updateMany({
+    where: {
+      id: parsed.data.subjectId,
+      schoolId: profile.schoolId,
+    },
+    data: {
+      name: parsed.data.name,
+    },
+  });
+
+  if (result.count === 0) {
+    redirectSubjectsStatus("error", "Subject not found in this school.");
+  }
+
+  revalidateAdminPages();
+  redirectSubjectsStatus("success", "Subject updated.");
 }
 
 export async function addSubjectsToClassAction(formData: FormData) {

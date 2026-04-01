@@ -7,7 +7,13 @@ import { calculateAssessmentTotal, getGradeForTotal } from "@/lib/server/grading
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
-import { conductValueSchema, scoreValueSchema, studentAttendanceSchema, studentCommentSchema } from "@/lib/validation/schemas";
+import {
+  conductValueSchema,
+  scoreValueSchema,
+  studentAttendanceSchema,
+  studentCommentSchema,
+  studentSubjectExemptionSchema,
+} from "@/lib/validation/schemas";
 
 export type SaveStudentScoresInput = {
   teacherProfileId?: string;
@@ -27,6 +33,28 @@ export type SaveStudentScoresResult =
       message: string;
       total: number;
       grade: string;
+      values: Record<string, string>;
+    }
+  | {
+      ok: false;
+      message: string;
+    };
+
+export type ToggleStudentSubjectExemptionInput = {
+  teacherProfileId?: string;
+  termId: string;
+  classId: string;
+  subjectId: string;
+  studentId: string;
+};
+
+export type ToggleStudentSubjectExemptionResult =
+  | {
+      ok: true;
+      message: string;
+      isExempt: boolean;
+      total: number | null;
+      grade: string | null;
       values: Record<string, string>;
     }
   | {
@@ -634,6 +662,165 @@ export async function saveStudentCommentAction(input: SaveStudentCommentInput): 
   }
 }
 
+export async function toggleStudentSubjectExemptionAction(
+  input: ToggleStudentSubjectExemptionInput,
+): Promise<ToggleStudentSubjectExemptionResult> {
+  try {
+    const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
+    const context = await requireTeacherPortalContext(requestedTeacherId);
+    const actorProfile = context.actorProfile;
+    const parsed = studentSubjectExemptionSchema.safeParse({
+      studentId: input.studentId.trim(),
+      classId: input.classId.trim(),
+      subjectId: input.subjectId.trim(),
+    });
+    const termId = input.termId.trim();
+
+    if (!parsed.success || !termId) {
+      return { ok: false, message: "Term, class, subject, and student are required." };
+    }
+
+    const assignmentPromise =
+      context.mode === "admin_override"
+        ? Promise.resolve({ id: "admin-override" })
+        : prisma.teacherClassAssignment.findFirst({
+            where: {
+              schoolId: actorProfile.schoolId,
+              teacherProfileId: context.effectiveTeacherProfile.id,
+              classId: parsed.data.classId,
+            },
+            select: { id: true },
+          });
+
+    const [assignment, term, classSubject, enrollment, existingExemption, existingScore, assessmentSetup] = await Promise.all([
+      assignmentPromise,
+      prisma.term.findFirst({
+        where: {
+          id: termId,
+          schoolId: actorProfile.schoolId,
+        },
+        select: { id: true },
+      }),
+      prisma.classSubject.findFirst({
+        where: {
+          schoolId: actorProfile.schoolId,
+          classId: parsed.data.classId,
+          subjectId: parsed.data.subjectId,
+        },
+        select: { id: true },
+      }),
+      prisma.enrollment.findFirst({
+        where: {
+          schoolId: actorProfile.schoolId,
+          studentId: parsed.data.studentId,
+          classId: parsed.data.classId,
+          termId,
+          student: {
+            is: {
+              status: "active",
+            },
+          },
+        },
+        select: { id: true },
+      }),
+      prisma.studentSubjectExemption.findFirst({
+        where: {
+          schoolId: actorProfile.schoolId,
+          studentId: parsed.data.studentId,
+          classId: parsed.data.classId,
+          subjectId: parsed.data.subjectId,
+        },
+        select: { id: true },
+      }),
+      prisma.score.findUnique({
+        where: {
+          studentId_subjectId_termId: {
+            studentId: parsed.data.studentId,
+            subjectId: parsed.data.subjectId,
+            termId,
+          },
+        },
+        include: {
+          assessmentValues: true,
+        },
+      }),
+      getAssessmentTypesForTerm(actorProfile.schoolId, termId),
+    ]);
+
+    if (!assignment) {
+      return { ok: false, message: "Selected teacher is not assigned to this class." };
+    }
+    if (!term) {
+      return { ok: false, message: "Selected term does not belong to your school." };
+    }
+    if (!classSubject) {
+      return { ok: false, message: "Selected subject is not assigned to this class." };
+    }
+    if (!enrollment) {
+      return { ok: false, message: "This student is not enrolled for the selected class and term." };
+    }
+
+    if (existingExemption) {
+      await prisma.studentSubjectExemption.delete({
+        where: { id: existingExemption.id },
+      });
+
+      const restoredValues = Object.fromEntries(
+        assessmentSetup.types.map((assessment) => [
+          assessment.id,
+          existingScore?.assessmentValues.find((item) => item.assessmentTypeId === assessment.id)?.value?.toString() ?? "",
+        ]),
+      );
+
+      revalidatePath("/app/teacher/grade-entry");
+      revalidatePath("/app/teacher/results");
+      revalidatePath("/app/teacher/students");
+      revalidatePath("/app/admin/grading/results");
+
+      return {
+        ok: true,
+        message: "Subject restored for this student.",
+        isExempt: false,
+        total: existingScore ? Number(existingScore.total) : null,
+        grade: existingScore?.grade ?? null,
+        values: restoredValues,
+      };
+    }
+
+    await prisma.studentSubjectExemption.create({
+      data: {
+        schoolId: actorProfile.schoolId,
+        studentId: parsed.data.studentId,
+        classId: parsed.data.classId,
+        subjectId: parsed.data.subjectId,
+      },
+    });
+
+    revalidatePath("/app/teacher/grade-entry");
+    revalidatePath("/app/teacher/results");
+    revalidatePath("/app/teacher/students");
+    revalidatePath("/app/admin/grading/results");
+
+    return {
+      ok: true,
+      message: "Student exempted from this subject.",
+      isExempt: true,
+      total: null,
+      grade: null,
+      values: Object.fromEntries(assessmentSetup.types.map((assessment) => [assessment.id, ""])),
+    };
+  } catch (error) {
+    if (isPrismaSchemaMismatchError(error)) {
+      return { ok: false, message: "The latest elective/exemption schema is not deployed yet." };
+    }
+
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to update this student's subject status right now.",
+    };
+  }
+}
+
 export async function saveStudentScoresAction(input: SaveStudentScoresInput): Promise<SaveStudentScoresResult> {
   try {
     const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
@@ -659,7 +846,7 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
             },
           });
 
-    const [assignment, term, classSubject, gradeScale, enrollment, existingScore] = await Promise.all([
+    const [assignment, term, classSubject, gradeScale, enrollment, existingScore, existingExemption] = await Promise.all([
       assignmentPromise,
       prisma.term.findFirst({
         where: {
@@ -704,6 +891,15 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
           assessmentValues: true,
         },
       }),
+      prisma.studentSubjectExemption.findFirst({
+        where: {
+          schoolId: actorProfile.schoolId,
+          studentId,
+          classId,
+          subjectId,
+        },
+        select: { id: true },
+      }),
     ]);
     const assessmentSetup = await getAssessmentTypesForTerm(actorProfile.schoolId, termId);
     const assessmentTypes = assessmentSetup.types;
@@ -719,6 +915,9 @@ export async function saveStudentScoresAction(input: SaveStudentScoresInput): Pr
     }
     if (!enrollment) {
       return { ok: false, message: "This student is not enrolled for the selected class and term." };
+    }
+    if (existingExemption) {
+      return { ok: false, message: "This student is exempt from the selected subject." };
     }
     if (gradeScale.length === 0) {
       return { ok: false, message: "Grade scale is not configured." };

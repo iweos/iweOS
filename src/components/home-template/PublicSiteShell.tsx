@@ -23,6 +23,10 @@ function isActivePath(currentPath: string, href: string) {
   return currentPath.startsWith(href)
 }
 
+function linkTargetProps(href: string) {
+  return href === '/guide' ? { target: '_blank', rel: 'noreferrer noopener' } : {}
+}
+
 export default function PublicSiteShell({ currentPath = '/', children }: PublicSiteShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -53,6 +57,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                       <Link
                         key={`${item.label}-${child.label}`}
                         href={child.href}
+                        {...linkTargetProps(child.href)}
                         className={`block rounded-xl px-3 py-2 text-sm transition ${
                           isActivePath(currentPath, child.href) ? 'bg-[#eef3f9] text-[#111827]' : 'text-[#374151] hover:bg-[#f6f9fc] hover:text-[#111827]'
                         }`}
@@ -67,6 +72,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                 <Link
                   key={item.label}
                   href={item.href}
+                  {...linkTargetProps(item.href)}
                   className={`text-sm font-medium transition ${
                     isActivePath(currentPath, item.href) ? 'text-[#111827]' : 'text-[#374151] hover:text-[#111827]'
                   }`}
@@ -113,6 +119,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                         <Link
                           key={`mobile-${item.label}-${child.label}`}
                           href={child.href}
+                          {...linkTargetProps(child.href)}
                           className={`text-sm ${isActivePath(currentPath, child.href) ? 'text-[#111827]' : 'text-[#374151]'}`}
                           onClick={() => setMobileOpen(false)}
                         >
@@ -125,6 +132,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                   <Link
                     key={`mobile-${item.label}`}
                     href={item.href}
+                    {...linkTargetProps(item.href)}
                     className={`text-sm font-medium ${isActivePath(currentPath, item.href) ? 'text-[#111827]' : 'text-[#374151]'}`}
                     onClick={() => setMobileOpen(false)}
                   >
@@ -154,10 +162,25 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
             <p className='mt-2 max-w-md text-sm leading-7 text-[#4b5563]'>
               Run grading, school fees, receipts, and reconciliation in one workflow.
             </p>
-            <div className='mt-4 flex gap-4'>
+            <div className='mt-4 flex items-center gap-3 text-[#1e3a5f]'>
+              <i className='fas fa-dove text-sm' aria-hidden='true' />
+              <i className='fas fa-dove text-sm' aria-hidden='true' />
+            </div>
+            <div className='mt-4 flex items-center gap-4'>
               {socialLinks.map((social) => (
-                <Link key={social.label} href={social.href} className='text-sm font-medium text-[#1e3a5f] underline underline-offset-4'>
-                  {social.label}
+                <Link
+                  key={social.label}
+                  href={social.href}
+                  aria-label={social.label}
+                  className='inline-flex items-center text-[#1e3a5f] transition hover:text-[#132b45]'
+                >
+                  {social.label === 'LinkedIn' ? (
+                    <i className='fab fa-linkedin-in text-sm' aria-hidden='true' />
+                  ) : social.label === 'YouTube' ? (
+                    <i className='fab fa-youtube text-sm' aria-hidden='true' />
+                  ) : (
+                    <span className='text-sm font-medium underline underline-offset-4'>{social.label}</span>
+                  )}
                 </Link>
               ))}
             </div>

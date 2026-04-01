@@ -13,6 +13,7 @@ import { requireRole } from "@/lib/server/auth";
 import { setResultPublicationStatusAction } from "@/lib/server/admin-actions";
 import { buildResultSharePath, getStudentResultSheet } from "@/lib/server/results";
 import { prisma } from "@/lib/server/prisma";
+import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 type AdminResultsSearchParams = {
   termId?: string;
@@ -95,7 +96,7 @@ export default async function AdminGradingResultsPage({
   const selectedStudentId =
     params.studentId && students.some((student) => student.id === params.studentId) ? params.studentId : students[0]?.id ?? "";
 
-  const [scores, publicationRows, resultSheet] =
+  const [scores, publicationRows, resultSheet, exemptionKeys] =
     selectedTermId && selectedClassId
       ? await Promise.all([
           prisma.score.findMany({
@@ -107,6 +108,7 @@ export default async function AdminGradingResultsPage({
             },
             select: {
               studentId: true,
+              subjectId: true,
               total: true,
               grade: true,
             },
@@ -132,12 +134,21 @@ export default async function AdminGradingResultsPage({
                 studentId: selectedStudentId,
               })
             : Promise.resolve(null),
+          getStudentSubjectExemptionKeySet({
+            schoolId: profile.schoolId,
+            classId: selectedClassId,
+            studentIds: students.map((student) => student.id),
+          }),
         ])
-      : [[], [], null];
+      : [[], [], null, new Set<string>()];
+
+  const filteredScores = scores.filter(
+    (score) => !isStudentSubjectExempt(exemptionKeys, selectedClassId, score.studentId, score.subjectId),
+  );
 
   const scoreMap = new Map<string, { average: number; grade: string }>();
   for (const student of students) {
-    const rows = scores.filter((row) => row.studentId === student.id);
+    const rows = filteredScores.filter((row) => row.studentId === student.id);
     const average = rows.length > 0 ? rows.reduce((sum, row) => sum + Number(row.total), 0) / rows.length : 0;
     scoreMap.set(student.id, {
       average,

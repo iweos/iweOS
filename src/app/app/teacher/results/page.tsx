@@ -4,6 +4,7 @@ import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorks
 import { ProfileRole } from "@prisma/client";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { prisma } from "@/lib/server/prisma";
+import { isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 type TeacherResultsSearchParams = {
   teacherProfileId?: string;
@@ -48,9 +49,32 @@ export default async function TeacherResultsPage({
     take: 300,
   });
 
+  const exemptionKeys =
+    rows.length > 0
+      ? await prisma.studentSubjectExemption.findMany({
+          where: {
+            schoolId: context.actorProfile.schoolId,
+            classId: { in: Array.from(new Set(rows.map((row) => row.class.id))) },
+            studentId: { in: Array.from(new Set(rows.map((row) => row.studentId))) },
+            subjectId: { in: Array.from(new Set(rows.map((row) => row.subjectId))) },
+          },
+          select: {
+            classId: true,
+            studentId: true,
+            subjectId: true,
+          },
+        }).then(
+          (items) => new Set(items.map((item) => `${item.classId}:${item.studentId}:${item.subjectId}`)),
+        )
+      : new Set<string>();
+
+  const filteredRows = rows.filter(
+    (row) => !isStudentSubjectExempt(exemptionKeys, row.class.id, row.studentId, row.subjectId),
+  );
+
   const dynamicColumns = Array.from(
     new Set(
-      rows
+      filteredRows
         .flatMap((row) =>
           row.assessmentValues
             .slice()
@@ -112,7 +136,7 @@ export default async function TeacherResultsPage({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {filteredRows.map((row) => (
             <tr key={row.id}>
               <Td>
                 {row.term.sessionLabel} {row.term.termLabel}
@@ -130,7 +154,7 @@ export default async function TeacherResultsPage({
               <Td>{row.teacherProfile.fullName}</Td>
             </tr>
           ))}
-          {rows.length === 0 && (
+          {filteredRows.length === 0 && (
             <tr>
               <Td colSpan={dynamicColumns.length + 7}>No score rows in this view.</Td>
             </tr>

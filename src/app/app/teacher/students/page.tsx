@@ -9,6 +9,7 @@ import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { getGradeForTotal } from "@/lib/server/grading";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
+import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 type TeacherStudentsSearchParams = {
   teacherProfileId?: string;
@@ -72,7 +73,7 @@ export default async function TeacherStudentsPage({
   const selectedClassId =
     params.classId && classesInView.some((klass) => klass.id === params.classId) ? params.classId : classesInView[0]?.id;
 
-  const [enrollments, classSubjects, scores, gradeScale] =
+  const [enrollments, classSubjects, scores, gradeScale, exemptionKeys] =
     selectedClassId && selectedTermId
       ? await Promise.all([
           prisma.enrollment.findMany({
@@ -134,8 +135,33 @@ export default async function TeacherStudentsPage({
             where: { schoolId: context.actorProfile.schoolId },
             orderBy: { orderIndex: "asc" },
           }),
+          prisma.enrollment
+            .findMany({
+              where: {
+                schoolId: context.actorProfile.schoolId,
+                classId: selectedClassId,
+                termId: selectedTermId,
+                student: {
+                  is: {
+                    status: "active",
+                  },
+                },
+              },
+              select: { studentId: true },
+            })
+            .then((rows) =>
+              getStudentSubjectExemptionKeySet({
+                schoolId: context.actorProfile.schoolId,
+                classId: selectedClassId,
+                studentIds: rows.map((row) => row.studentId),
+              }),
+            ),
         ])
-      : [[], [], [], []];
+      : [[], [], [], [], new Set<string>()];
+
+  const filteredScores = scores.filter(
+    (score) => !isStudentSubjectExempt(exemptionKeys, selectedClassId ?? "", score.studentId, score.subjectId),
+  );
 
   const selectedStudentId =
     params.studentId && enrollments.some((enrollment) => enrollment.studentId === params.studentId)
@@ -145,12 +171,16 @@ export default async function TeacherStudentsPage({
 
   const scoresBySubjectId = new Map(
     classSubjects.map((row) => {
-      const subjectScores = scores.filter((score) => score.subjectId === row.subject.id);
+      const subjectScores = filteredScores.filter((score) => score.subjectId === row.subject.id);
       return [row.subject.id, subjectScores] as const;
     }),
   );
 
-  const subjectComparisonRows = classSubjects.map((row) => {
+  const subjectComparisonRows = classSubjects.flatMap((row) => {
+    if (selectedStudentId && isStudentSubjectExempt(exemptionKeys, selectedClassId ?? "", selectedStudentId, row.subject.id)) {
+      return [];
+    }
+
     const subjectScores = scoresBySubjectId.get(row.subject.id) ?? [];
     const studentScore = subjectScores.find((score) => score.studentId === selectedStudentId);
     const numericScores = subjectScores.map((score) => Number(score.total));
@@ -170,7 +200,7 @@ export default async function TeacherStudentsPage({
     const subjectPosition =
       studentTotal !== null && subjectPositionIndex >= 0 ? `${subjectPositionIndex + 1} / ${subjectRanking.length}` : null;
 
-    return {
+    return [{
       subjectId: row.subject.id,
       subjectName: row.subject.name,
       studentTotal,
@@ -179,7 +209,7 @@ export default async function TeacherStudentsPage({
       subjectPosition,
       grade,
       updatedAt: studentScore?.updatedAt ?? null,
-    };
+    }];
   });
 
   const scoredRows = subjectComparisonRows.filter((row) => row.studentTotal !== null);
@@ -195,7 +225,7 @@ export default async function TeacherStudentsPage({
 
   const classStudentAverageRows = enrollments
     .map((enrollment) => {
-      const studentSubjectScores = scores.filter((score) => score.studentId === enrollment.studentId);
+      const studentSubjectScores = filteredScores.filter((score) => score.studentId === enrollment.studentId);
       const average =
         studentSubjectScores.length > 0
           ? studentSubjectScores.reduce((sum, score) => sum + Number(score.total), 0) / studentSubjectScores.length

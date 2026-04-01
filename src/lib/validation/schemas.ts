@@ -80,9 +80,20 @@ export const subjectSchema = z.object({
   name: z.string().trim().min(1).max(120),
 });
 
+export const subjectUpdateSchema = z.object({
+  subjectId: z.string().uuid(),
+  name: z.string().trim().min(1).max(120),
+});
+
 export const classSubjectBatchSchema = z.object({
   classId: z.string().uuid(),
   subjectList: z.string().trim().min(1, "Enter at least one subject."),
+});
+
+export const studentSubjectExemptionSchema = z.object({
+  studentId: z.string().uuid(),
+  classId: z.string().uuid(),
+  subjectId: z.string().uuid(),
 });
 
 export const termSchema = z.object({

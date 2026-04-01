@@ -94,6 +94,7 @@ model School {
   studentConducts         StudentConduct[]
   studentAttendances      StudentAttendance[]
   studentComments         StudentComment[]
+  studentSubjectExemptions StudentSubjectExemption[]
   scoreAssessmentValues   ScoreAssessmentValue[]
   resultPublications      ResultPublication[]
   feeItemCatalogs         FeeItemCatalog[]
@@ -147,6 +148,7 @@ model Class {
   studentConducts          StudentConduct[]
   studentAttendances       StudentAttendance[]
   studentComments          StudentComment[]
+  studentSubjectExemptions StudentSubjectExemption[]
   scores                   Score[]
   resultPublications       ResultPublication[]
 
@@ -200,6 +202,7 @@ model Student {
   studentConducts  StudentConduct[]
   studentAttendances StudentAttendance[]
   studentComments  StudentComment[]
+  subjectExemptions StudentSubjectExemption[]
   scores           Score[]
   resultPublications ResultPublication[]
   invoiceLineItems InvoiceLineItem[]
@@ -222,6 +225,7 @@ model Subject {
   school        School         @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   classSubjects ClassSubject[]
   promotionRules PromotionPolicySubject[]
+  studentSubjectExemptions StudentSubjectExemption[]
   scores        Score[]
 
   @@index([schoolId])
@@ -262,6 +266,26 @@ model Enrollment {
   @@index([termId])
   @@index([classId])
   @@map("enrollments")
+}
+
+model StudentSubjectExemption {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String   @map("school_id") @db.Uuid
+  studentId String   @map("student_id") @db.Uuid
+  classId   String   @map("class_id") @db.Uuid
+  subjectId String   @map("subject_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Restrict)
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, classId, subjectId])
+  @@index([schoolId])
+  @@index([classId, subjectId])
+  @@map("student_subject_exemptions")
 }
 
 model TeacherClassAssignment {

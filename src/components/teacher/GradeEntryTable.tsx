@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
-import { saveStudentScoresAction, type SaveStudentScoresInput, type SaveStudentScoresResult } from "@/lib/server/teacher-actions";
+import {
+  saveStudentScoresAction,
+  toggleStudentSubjectExemptionAction,
+  type SaveStudentScoresInput,
+  type SaveStudentScoresResult,
+  type ToggleStudentSubjectExemptionInput,
+  type ToggleStudentSubjectExemptionResult,
+} from "@/lib/server/teacher-actions";
 
 type AssessmentTypeRow = {
   id: string;
@@ -18,6 +25,7 @@ type GradeEntryStudentRow = {
   total: number | null;
   grade: string | null;
   values: Record<string, string>;
+  isExempt: boolean;
 };
 
 type GradeEntryTableProps = {
@@ -61,7 +69,7 @@ export default function GradeEntryTable({
   const requestVersionRef = useRef<Record<string, number>>({});
   const rowsRef = useRef(initialRows);
 
-  const totalColumns = assessmentTypes.length + 4;
+  const totalColumns = assessmentTypes.length + 5;
 
   useEffect(() => {
     setRows(initialRows);
@@ -131,7 +139,7 @@ export default function GradeEntryTable({
 
   function saveRow(studentId: string) {
     const row = rowsRef.current.find((currentRow) => currentRow.studentId === studentId);
-    if (!row) {
+    if (!row || row.isExempt) {
       return;
     }
 
@@ -215,6 +223,67 @@ export default function GradeEntryTable({
     });
   }
 
+  function toggleExemption(studentId: string) {
+    const row = rowsRef.current.find((currentRow) => currentRow.studentId === studentId);
+    if (!row) {
+      return;
+    }
+
+    const payload: ToggleStudentSubjectExemptionInput = {
+      teacherProfileId,
+      termId,
+      classId,
+      subjectId,
+      studentId,
+    };
+
+    const nextRequestVersion = (requestVersionRef.current[studentId] ?? 0) + 1;
+    requestVersionRef.current[studentId] = nextRequestVersion;
+    clearStatusClearTimer(studentId);
+    setRowStatus(studentId, { tone: "saving", message: row.isExempt ? "Restoring..." : "Exempting..." });
+
+    startTransition(() => {
+      void toggleStudentSubjectExemptionAction(payload)
+        .then((result: ToggleStudentSubjectExemptionResult) => {
+          if (requestVersionRef.current[studentId] !== nextRequestVersion) {
+            return;
+          }
+
+          if (!result.ok) {
+            setRowStatus(studentId, { tone: "error", message: result.message });
+            return;
+          }
+
+          const nextRows = rowsRef.current.map((currentRow) =>
+            currentRow.studentId === studentId
+              ? {
+                  ...currentRow,
+                  isExempt: result.isExempt,
+                  total: result.total,
+                  grade: result.grade,
+                  values: result.values,
+                }
+              : currentRow,
+          );
+
+          rowsRef.current = nextRows;
+          setRows(nextRows);
+          setRowStatus(studentId, { tone: "saved", message: result.isExempt ? "Exempted" : "Restored" });
+          scheduleStatusClear(studentId);
+        })
+        .catch((error: unknown) => {
+          if (requestVersionRef.current[studentId] !== nextRequestVersion) {
+            return;
+          }
+
+          setRowStatus(studentId, {
+            tone: "error",
+            message: error instanceof Error ? error.message : "Unable to update this student's subject status right now.",
+          });
+        });
+    });
+  }
+
   return (
     <div className="space-y-3">
       <div className="rounded-[0.8rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-3">
@@ -238,6 +307,7 @@ export default function GradeEntryTable({
               ))}
               <Th>Total</Th>
               <Th>Grade</Th>
+              <Th>Elective</Th>
               <Th>Status</Th>
             </tr>
           </thead>
@@ -258,6 +328,7 @@ export default function GradeEntryTable({
                         step={0.01}
                         className="input"
                         value={row.values[assessment.id] ?? ""}
+                        disabled={row.isExempt}
                         onChange={(event) => handleValueChange(row.studentId, assessment.id, event.target.value)}
                         onBlur={() => saveRow(row.studentId)}
                         onKeyDown={(event) => {
@@ -271,6 +342,15 @@ export default function GradeEntryTable({
                   ))}
                   <Td>{row.total?.toString() ?? "-"}</Td>
                   <Td>{row.grade ?? "-"}</Td>
+                  <Td>
+                    <button
+                      type="button"
+                      className={row.isExempt ? "btn btn-outline-secondary btn-sm" : "btn btn-secondary btn-sm"}
+                      onClick={() => toggleExemption(row.studentId)}
+                    >
+                      {row.isExempt ? "Restore" : "Exempt"}
+                    </button>
+                  </Td>
                   <Td>
                     {rowStatus.tone === "saving" ? (
                       <span className="inline-flex items-center gap-2 text-xs text-[var(--muted)]">
@@ -292,7 +372,7 @@ export default function GradeEntryTable({
                               : "text-[var(--muted)] text-xs"
                         }
                       >
-                        {rowStatus.message || (isPending ? "" : "Ready")}
+                        {rowStatus.message || (row.isExempt ? "Exempted" : isPending ? "" : "Ready")}
                       </span>
                     )}
                   </Td>

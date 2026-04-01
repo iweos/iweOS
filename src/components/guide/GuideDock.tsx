@@ -85,7 +85,6 @@ export default function GuideDock() {
         </span>
         <span className="guide-dock-copy">
           <strong>FAQs</strong>
-          <small>Quick help</small>
         </span>
       </button>
     </div>
