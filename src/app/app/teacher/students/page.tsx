@@ -1,4 +1,5 @@
 import { ProfileRole } from "@prisma/client";
+import Link from "next/link";
 import Card from "@/components/admin/Card";
 import PageHeader from "@/components/admin/PageHeader";
 import StatCard from "@/components/admin/ui/StatCard";
@@ -296,7 +297,21 @@ export default async function TeacherStudentsPage({
               ? "Admin override: view student academic analytics across classes."
               : `Working as: ${context.effectiveTeacherProfile.fullName}`
           }
-          rightActions={<AdminTeacherWorkspaceActions mode={context.mode} />}
+          rightActions={
+            <>
+              <AdminTeacherWorkspaceActions mode={context.mode} />
+              <Link
+                href={
+                  params.teacherProfileId
+                    ? `/app/teacher/students/manage?teacherProfileId=${params.teacherProfileId}`
+                    : "/app/teacher/students/manage"
+                }
+                className="btn btn-secondary"
+              >
+                Student Directory
+              </Link>
+            </>
+          }
         />
 
         <form method="get" className="grid gap-2 md:grid-cols-5">

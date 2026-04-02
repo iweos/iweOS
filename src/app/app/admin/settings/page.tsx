@@ -59,6 +59,7 @@ export default async function AdminSettingsPage({
           {activeTab === "school" ? (
             <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
               <input type="hidden" name="resultTemplate" value={gradingSettings?.resultTemplate ?? "classic_report"} />
+              <input type="hidden" name="showOverallPosition" value={gradingSettings?.showOverallPosition === false ? "" : "on"} />
               <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
               <input type="hidden" name="currentPrincipalSignatureUrl" value={school.principalSignatureUrl ?? ""} />
               <label className="d-grid gap-1">
@@ -194,6 +195,19 @@ export default async function AdminSettingsPage({
                       <option value="summary">Simple Summary Sheet</option>
                     </select>
                   </label>
+                  <label className="d-grid gap-2 align-content-start">
+                    <span className="field-label">Overall position on result</span>
+                    <label className="form-check m-0">
+                      <input
+                        name="showOverallPosition"
+                        type="checkbox"
+                        value="on"
+                        defaultChecked={gradingSettings?.showOverallPosition ?? true}
+                        className="form-check-input"
+                      />
+                      <span className="form-check-label">Show overall class position on result sheets and exports</span>
+                    </label>
+                  </label>
 
                   <label className="d-grid gap-1">
                     <span className="field-label">Upload School Logo</span>
@@ -277,6 +291,12 @@ export default async function AdminSettingsPage({
                     <p className="field-label mb-2">Active Template</p>
                     <p className="mb-0 fw-semibold">
                       {gradingSettings?.resultTemplate === "summary" ? "Simple Summary Sheet" : "Classic Report Card"}
+                    </p>
+                  </div>
+                  <div className="rounded border bg-white px-3 py-3">
+                    <p className="field-label mb-2">Overall Position</p>
+                    <p className="mb-0 fw-semibold">
+                      {gradingSettings?.showOverallPosition === false ? "Hidden on result sheets" : "Shown on result sheets"}
                     </p>
                   </div>
                   <div className="rounded border bg-white px-3 py-3">

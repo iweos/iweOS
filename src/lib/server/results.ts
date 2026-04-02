@@ -72,6 +72,9 @@ export type ResultSheetData = {
     shareToken: string | null;
     publishedAt: string | null;
   } | null;
+  display: {
+    showOverallPosition: boolean;
+  };
   summary: {
     subjectsOffered: number;
     average: number;
@@ -241,7 +244,7 @@ export async function getStudentResultSheet(params: {
       }),
       prisma.gradingSetting.findUnique({
         where: { schoolId: params.schoolId },
-        select: { resultTemplate: true },
+        select: { resultTemplate: true, showOverallPosition: true },
       }),
       prisma.studentAttendance.findUnique({
         where: {
@@ -402,6 +405,9 @@ export async function getStudentResultSheet(params: {
           publishedAt: formatDate(publication.publishedAt),
         }
       : null,
+    display: {
+      showOverallPosition: gradingSettings?.showOverallPosition ?? true,
+    },
     summary: {
       subjectsOffered: studentRows.length,
       average: selectedStudentAverage,

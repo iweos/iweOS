@@ -62,22 +62,6 @@ function toOrdinal(position: string) {
   }
 }
 
-function getPositionTone(position: string) {
-  const [rawRank, rawTotal] = position.split("/").map((item) => Number.parseInt(item?.trim() ?? "", 10));
-  if (!Number.isFinite(rawRank) || !Number.isFinite(rawTotal) || rawRank <= 0 || rawTotal <= 0) {
-    return "neutral";
-  }
-
-  const percentile = rawRank / rawTotal;
-  if (percentile <= 0.33) {
-    return "good";
-  }
-  if (percentile <= 0.66) {
-    return "mid";
-  }
-  return "fail";
-}
-
 function toneClass(tone: string) {
   return `result-tone result-tone-${tone}`;
 }
@@ -126,7 +110,6 @@ function DefaultResultSheet({
   chartMode: "interactive" | "print";
 }) {
   const averageTone = getGradeBandTone(data.summary.grade);
-  const positionTone = getPositionTone(data.summary.position);
   const studentFirstName = getFirstName(data.student.fullName);
 
   return (
@@ -168,12 +151,14 @@ function DefaultResultSheet({
             </p>
           </article>
         </div>
-        <div className="col-12 col-md-6 col-xl-3">
-          <article className="card card-body h-100">
-            <p className="small text-muted mb-1">Position</p>
-            <p className={`h3 fw-bold mb-0 ${toneClass(positionTone)}`}>{toOrdinal(getPositionOnly(data.summary.position))}</p>
-          </article>
-        </div>
+        {data.display.showOverallPosition ? (
+          <div className="col-12 col-md-6 col-xl-3">
+            <article className="card card-body h-100">
+              <p className="small text-muted mb-1">Position</p>
+              <p className="h3 fw-bold mb-0">{toOrdinal(getPositionOnly(data.summary.position))}</p>
+            </article>
+          </div>
+        ) : null}
         <div className="col-12 col-md-6 col-xl-3">
           <article className="card card-body h-100">
             <p className="small text-muted mb-1">Subjects offered</p>
@@ -247,7 +232,7 @@ function DefaultResultSheet({
                     <span className={getGradeTone(row.grade) ? toneClass(getGradeTone(row.grade)) : ""}>{row.grade}</span>
                   </td>
                   <td>
-                    <span className={toneClass(getPositionTone(row.subjectPosition))}>{toOrdinal(getPositionOnly(row.subjectPosition))}</span>
+                    <span>{toOrdinal(getPositionOnly(row.subjectPosition))}</span>
                   </td>
                   <td>{formatNumber(row.classAverage)}</td>
                 </tr>
@@ -339,7 +324,6 @@ function ReportCardResultSheet({
   const schoolAddress = buildSchoolAddress(data.school);
   const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
   const overallAverageTone = getGradeBandTone(data.summary.grade);
-  const overallPositionTone = getPositionTone(data.summary.position);
   const studentFirstName = getFirstName(data.student.fullName);
 
   return (
@@ -396,10 +380,12 @@ function ReportCardResultSheet({
               <span className="label">No in class</span>
               <strong>{data.summary.classSize}</strong>
             </div>
-            <div className="result-report-meta">
-              <span className="label">Position</span>
-              <strong className={toneClass(overallPositionTone)}>{toOrdinal(getPositionOnly(data.summary.position))}</strong>
-            </div>
+            {data.display.showOverallPosition ? (
+              <div className="result-report-meta">
+                <span className="label">Position</span>
+                <strong>{toOrdinal(getPositionOnly(data.summary.position))}</strong>
+              </div>
+            ) : null}
             <div className="result-report-meta">
               <span className="label">Overall percentage</span>
               <strong className={toneClass(overallAverageTone)}>{formatNumber(data.summary.average, 2)}%</strong>
@@ -525,7 +511,7 @@ function ReportCardResultSheet({
                       <td>{formatNumber(row.classLowest, 0)}</td>
                       <td>{formatNumber(row.classAverage, 2)}</td>
                       <td>
-                        <span className={toneClass(getPositionTone(row.subjectPosition))}>{toOrdinal(getPositionOnly(row.subjectPosition))}</span>
+                        <span>{toOrdinal(getPositionOnly(row.subjectPosition))}</span>
                       </td>
                       <td>
                         <span className={getGradeTone(row.remark) ? toneClass(getGradeTone(row.remark)) : ""}>{row.remark}</span>

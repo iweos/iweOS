@@ -24,6 +24,7 @@ export const schoolSchema = z.object({
   phone: z.string().trim().max(30).optional().or(z.literal("")),
   website: z.string().trim().url().max(255).optional().or(z.literal("")),
   resultTemplate: z.enum(["classic_report", "summary"]).optional().default("classic_report"),
+  showOverallPosition: z.boolean().optional().default(true),
   processingFeePercent: z.coerce.number().int().min(0).max(20).optional(),
   currency: z.string().trim().min(3).max(8).optional(),
   settlementBankName: z.string().trim().max(120).optional().or(z.literal("")),

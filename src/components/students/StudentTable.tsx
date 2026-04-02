@@ -7,6 +7,7 @@ import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { deleteStudentAction, updateStudentAction } from "@/lib/server/admin-actions";
+import { updateStudentFromTeacherAction } from "@/lib/server/teacher-actions";
 
 type StudentRow = {
   id: string;
@@ -32,6 +33,8 @@ type StudentClassOption = {
 type StudentTableProps = {
   rows: StudentRow[];
   classes: StudentClassOption[];
+  mode?: "admin" | "teacher";
+  teacherProfileId?: string;
 };
 
 function toSentenceCase(value: string | null | undefined, fallback = "-") {
@@ -109,7 +112,7 @@ function TrashIcon() {
   );
 }
 
-export default function StudentTable({ rows, classes }: StudentTableProps) {
+export default function StudentTable({ rows, classes, mode = "admin", teacherProfileId }: StudentTableProps) {
   const router = useRouter();
   const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
   const [isModalEditing, setIsModalEditing] = useState(false);
@@ -208,6 +211,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
   const activeStudentFullName = activeStudent ? toDisplayName(activeStudent.fullName, "") : "";
   const activeGuardianName = activeStudent ? toDisplayName(activeStudent.guardianName) : "-";
   const visiblePhotoUrl = activeStudent?.photoUrl?.startsWith("data:image/") ? "" : activeStudent?.photoUrl ?? "";
+  const canDelete = mode === "admin";
 
   return (
     <>
@@ -311,34 +315,36 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                           >
                             <EyeIcon />
                           </Button>
-                          <form
-                            action={(formData) => {
-                              runAction(async () => {
-                                await deleteStudentAction(formData);
-                              }, {
-                                successMessage: `${toDisplayName(student.fullName, "Student")} deleted successfully.`,
-                                onSuccess: () => {
-                                  if (activeStudentId === student.id) {
-                                    setActiveStudentId(null);
-                                    setIsModalEditing(false);
-                                  }
-                                },
-                              });
-                            }}
-                          >
-                            <input type="hidden" name="studentId" value={student.id} />
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              className="btn-icon-square"
-                              type="submit"
-                              aria-label="Delete student"
-                              title="Delete student"
-                              disabled={isPending}
+                          {canDelete ? (
+                            <form
+                              action={(formData) => {
+                                runAction(async () => {
+                                  await deleteStudentAction(formData);
+                                }, {
+                                  successMessage: `${toDisplayName(student.fullName, "Student")} deleted successfully.`,
+                                  onSuccess: () => {
+                                    if (activeStudentId === student.id) {
+                                      setActiveStudentId(null);
+                                      setIsModalEditing(false);
+                                    }
+                                  },
+                                });
+                              }}
                             >
-                              <TrashIcon />
-                            </Button>
-                          </form>
+                              <input type="hidden" name="studentId" value={student.id} />
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                className="btn-icon-square"
+                                type="submit"
+                                aria-label="Delete student"
+                                title="Delete student"
+                                disabled={isPending}
+                              >
+                                <TrashIcon />
+                              </Button>
+                            </form>
+                          ) : null}
                         </Td>
                       </tr>
                     );
@@ -428,6 +434,10 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                 <form
                   action={(formData) => {
                     runAction(async () => {
+                      if (mode === "teacher") {
+                        await updateStudentFromTeacherAction(formData);
+                        return;
+                      }
                       await updateStudentAction(formData);
                     }, {
                       successMessage: `${activeStudentFullName || "Student"} updated successfully.`,
@@ -440,6 +450,7 @@ export default function StudentTable({ rows, classes }: StudentTableProps) {
                   className="row g-2"
                 >
                   <input type="hidden" name="studentId" value={activeStudent.id} />
+                  {mode === "teacher" && teacherProfileId ? <input type="hidden" name="teacherProfileId" value={teacherProfileId} /> : null}
                   <input type="hidden" name="currentPhotoUrl" value={activeStudent.photoUrl ?? ""} />
                   <div className="col-md-6">
                     <Input

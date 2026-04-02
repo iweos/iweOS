@@ -7,12 +7,14 @@ import { calculateAssessmentTotal, getGradeForTotal } from "@/lib/server/grading
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
+import { storeUploadedImage } from "@/lib/server/uploads";
 import {
   conductValueSchema,
   scoreValueSchema,
   studentAttendanceSchema,
   studentCommentSchema,
   studentSubjectExemptionSchema,
+  studentUpdateSchema,
 } from "@/lib/validation/schemas";
 
 export type SaveStudentScoresInput = {
@@ -127,6 +129,222 @@ export type SaveStudentCommentResult =
       ok: false;
       message: string;
     };
+
+export async function updateStudentFromTeacherAction(formData: FormData) {
+  const requestedTeacherId = formValue(formData, "teacherProfileId") || undefined;
+  const context = await requireTeacherPortalContext(requestedTeacherId);
+  const actorProfile = context.actorProfile;
+  const studentId = formValue(formData, "studentId");
+  const resolvedPhotoUrl = await resolveUploadedImage(formData, {
+    fileKey: "photoFile",
+    valueKey: "photoUrl",
+    removeKey: "removePhoto",
+    currentValue: formValue(formData, "currentPhotoUrl"),
+    folder: ["students", actorProfile.schoolId],
+    fileStem: `student-${studentId || "record"}`,
+  });
+
+  const parsed = studentUpdateSchema.safeParse({
+    studentId,
+    firstName: formValue(formData, "firstName"),
+    lastName: formValue(formData, "lastName"),
+    className: formValue(formData, "className"),
+    address: formValue(formData, "address"),
+    guardianName: formValue(formData, "guardianName"),
+    guardianPhone: formValue(formData, "guardianPhone"),
+    guardianEmail: formValue(formData, "guardianEmail"),
+    status: formValue(formData, "status") || "active",
+    gender: formValue(formData, "gender"),
+    photoUrl: resolvedPhotoUrl,
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid student update payload.");
+  }
+
+  const fullName = `${parsed.data.firstName} ${parsed.data.lastName}`.trim();
+
+  await assertTeacherCanManageStudentRecord({
+    schoolId: actorProfile.schoolId,
+    effectiveTeacherProfileId: context.effectiveTeacherProfile.id,
+    mode: context.mode,
+    studentId: parsed.data.studentId,
+    targetClassName: parsed.data.className,
+  });
+
+  await assertNoDuplicateStudentInClass({
+    schoolId: actorProfile.schoolId,
+    className: parsed.data.className,
+    fullName,
+    excludeStudentId: parsed.data.studentId,
+  });
+
+  const result = await prisma.student.updateMany({
+    where: {
+      id: parsed.data.studentId,
+      schoolId: actorProfile.schoolId,
+    },
+    data: {
+      firstName: parsed.data.firstName,
+      lastName: parsed.data.lastName,
+      fullName,
+      className: parsed.data.className || null,
+      address: parsed.data.address || null,
+      guardianName: parsed.data.guardianName || null,
+      guardianPhone: parsed.data.guardianPhone || null,
+      guardianEmail: parsed.data.guardianEmail || null,
+      status: parsed.data.status,
+      gender: parsed.data.gender || null,
+      photoUrl: parsed.data.photoUrl || null,
+    },
+  });
+
+  if (result.count === 0) {
+    throw new Error("Student record not found.");
+  }
+
+  revalidatePath("/app/teacher/students");
+  revalidatePath("/app/teacher/students/manage");
+  revalidatePath("/app/teacher/dashboard");
+  revalidatePath("/app/teacher/grade-entry");
+  revalidatePath("/app/teacher/attendance");
+  revalidatePath("/app/teacher/comment");
+  revalidatePath("/app/teacher/conduct");
+  revalidatePath("/app/teacher/results");
+  revalidatePath("/app/admin/students/manage");
+}
+
+async function resolveUploadedImage(
+  formData: FormData,
+  options: {
+    fileKey: string;
+    valueKey: string;
+    removeKey?: string;
+    currentValue?: string;
+    folder: string[];
+    fileStem: string;
+  },
+) {
+  if (options.removeKey && formValue(formData, options.removeKey) === "on") {
+    return "";
+  }
+
+  const uploadedFile = formData.get(options.fileKey);
+  if (uploadedFile instanceof File && uploadedFile.size > 0) {
+    return storeUploadedImage({
+      file: uploadedFile,
+      folder: options.folder,
+      fileStem: options.fileStem,
+    });
+  }
+
+  const directValue = formValue(formData, options.valueKey);
+  if (directValue) {
+    return directValue;
+  }
+
+  return options.currentValue ?? "";
+}
+
+function normalizeStudentIdentityValue(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+async function assertTeacherCanManageStudentRecord(options: {
+  schoolId: string;
+  effectiveTeacherProfileId: string;
+  mode: "teacher" | "admin_override" | "admin_as_teacher";
+  studentId: string;
+  targetClassName?: string | null;
+}) {
+  if (options.mode === "admin_override") {
+    return;
+  }
+
+  const assignments = await prisma.teacherClassAssignment.findMany({
+    where: {
+      schoolId: options.schoolId,
+      teacherProfileId: options.effectiveTeacherProfileId,
+    },
+    select: {
+      classId: true,
+      class: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const allowedClassIds = assignments.map((item) => item.classId);
+  const allowedClassNames = assignments.map((item) => item.class.name);
+  const allowedClassNamesLower = new Set(allowedClassNames.map((name) => name.toLowerCase()));
+
+  const student = await prisma.student.findFirst({
+    where: {
+      id: options.studentId,
+      schoolId: options.schoolId,
+      OR: [
+        {
+          className: {
+            in: allowedClassNames,
+          },
+        },
+        {
+          enrollments: {
+            some: {
+              classId: { in: allowedClassIds },
+            },
+          },
+        },
+      ],
+    },
+    select: { id: true },
+  });
+
+  if (!student) {
+    throw new Error("You can only update students in your assigned classes.");
+  }
+
+  if (options.targetClassName?.trim() && !allowedClassNamesLower.has(options.targetClassName.trim().toLowerCase())) {
+    throw new Error("You can only move students into classes assigned to you.");
+  }
+}
+
+async function assertNoDuplicateStudentInClass(options: {
+  schoolId: string;
+  className?: string | null;
+  fullName: string;
+  excludeStudentId?: string;
+}) {
+  if (!options.className?.trim()) {
+    return;
+  }
+
+  const normalizedFullName = normalizeStudentIdentityValue(options.fullName);
+  const students = await prisma.student.findMany({
+    where: {
+      schoolId: options.schoolId,
+      className: { equals: options.className.trim(), mode: "insensitive" },
+      ...(options.excludeStudentId ? { id: { not: options.excludeStudentId } } : {}),
+    },
+    select: {
+      id: true,
+      fullName: true,
+    },
+  });
+
+  const duplicateStudent = students.find(
+    (student) => normalizeStudentIdentityValue(student.fullName) === normalizedFullName,
+  );
+
+  if (duplicateStudent) {
+    throw new Error(`A student with this name already exists in ${options.className.trim()}.`);
+  }
+}
 
 function formValue(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();

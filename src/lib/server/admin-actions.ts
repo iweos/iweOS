@@ -570,6 +570,10 @@ function parseStudentGender(value: string) {
 
 export async function updateSchoolAction(formData: FormData) {
   const profile = await requireRole("admin");
+  const currentGradingSettings = await prisma.gradingSetting.findUnique({
+    where: { schoolId: profile.schoolId },
+    select: { showOverallPosition: true },
+  });
   const resolvedLogoUrl = await resolveUploadedImage(formData, {
     fileKey: "logoFile",
     valueKey: "logoUrl",
@@ -601,6 +605,9 @@ export async function updateSchoolAction(formData: FormData) {
     phone: formValue(formData, "phone"),
     website: formValue(formData, "website"),
     resultTemplate: formValue(formData, "resultTemplate") || "classic_report",
+    showOverallPosition: formData.has("showOverallPosition")
+      ? formValue(formData, "showOverallPosition") === "on"
+      : currentGradingSettings?.showOverallPosition ?? true,
   });
 
   if (!parsed.success) {
@@ -644,9 +651,11 @@ export async function updateSchoolAction(formData: FormData) {
       create: {
         schoolId: profile.schoolId,
         resultTemplate: parsed.data.resultTemplate,
+        showOverallPosition: parsed.data.showOverallPosition,
       },
       update: {
         resultTemplate: parsed.data.resultTemplate,
+        showOverallPosition: parsed.data.showOverallPosition,
       },
     }),
   ]);
