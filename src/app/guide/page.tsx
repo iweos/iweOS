@@ -909,10 +909,7 @@ export async function GET() {
         eyebrow: "Operations",
         timestamp: "Apr 2, 2026 · 11:42 AM GMT+1",
         timelineGroup: "Today",
-        title: "Attendance balancing and result settings became smarter",
-        body: [
-          "Today’s update tightened two areas schools use every term: attendance entry and result sign-off. The platform now helps staff keep attendance records mathematically correct while also giving admins more control over the default result messaging shown to parents and students.",
-        ],
+        title: "Attendance auto-balance and result defaults",
         bullets: [
           "Attendance now auto-balances when any two values are entered, because Times school opened must always equal Times present plus Times absent.",
           "The same attendance balancing rule now runs on the server too, so admin and teacher saves stay consistent even if the browser state is stale.",
@@ -927,7 +924,7 @@ export async function GET() {
         eyebrow: "Results",
         timestamp: "Apr 2, 2026 · 11:12 AM GMT+1",
         timelineGroup: "Today",
-        title: "Result sheet grading and report formatting were corrected",
+        title: "Result grading and PDF layout fixes",
         bullets: [
           "The academic report table was tightened so long column titles can use vertical headers while Subjects stays horizontal for readability.",
           "Overall percentage is now displayed in neutral black instead of inheriting conditional tone styling.",
@@ -940,10 +937,7 @@ export async function GET() {
         eyebrow: "Academics",
         timestamp: "Apr 1, 2026 · 5:13 PM GMT+1",
         timelineGroup: "Yesterday",
-        title: "Subject editing and student subject exemptions were added",
-        body: [
-          "iweOS now supports a cleaner elective workflow for schools where not every student in a class offers every class subject. This update also improves subject maintenance from the admin side so schools can correct subject names without deleting and recreating them.",
-        ],
+        title: "Subject editing and exemptions",
         bullets: [
           "Admins can now edit existing subjects directly from the Subject Catalog instead of deleting and recreating them.",
           "Duplicate subject names are blocked during editing so the subject list stays clean and consistent.",
@@ -958,7 +952,7 @@ export async function GET() {
         eyebrow: "Results",
         timestamp: "Mar 24, 2026 · 7:29 PM GMT+1",
         timelineGroup: "Earlier",
-        title: "Result exports and sharing improved",
+        title: "Result export and sharing upgrade",
         bullets: [
           "Dedicated export routes no longer inherit the admin shell.",
           "PDF download and mobile sharing flows were added.",
@@ -971,7 +965,7 @@ export async function GET() {
         eyebrow: "Teacher workflow",
         timestamp: "Mar 27, 2026 · 2:28 PM GMT+1",
         timelineGroup: "Earlier",
-        title: "Autosave flows became safer",
+        title: "Safer teacher autosave flow",
         bullets: [
           "Grade entry no longer overwrites another in-progress field when one save completes.",
           "Attendance and comments now save on blur like grade entry.",
@@ -983,7 +977,7 @@ export async function GET() {
         eyebrow: "Operations",
         timestamp: "Mar 28, 2026 · 4:42 PM GMT+1",
         timelineGroup: "Earlier",
-        title: "Operational visibility improved",
+        title: "Notifications and operational visibility",
         bullets: [
           "Bell notifications now reflect real events instead of static items.",
           "Duplicate students in the same class are blocked at the server layer.",
@@ -995,7 +989,7 @@ export async function GET() {
         eyebrow: "Documentation",
         timestamp: "Mar 31, 2026 · 1:40 PM GMT+1",
         timelineGroup: "Earlier",
-        title: "Guide experience became more product-oriented",
+        title: "Guide and documentation refresh",
         bullets: [
           "The guide was rebuilt into a documentation-style workspace with sidebar navigation and search.",
           "Hornbill typography, infographics, and a changelog view were introduced to make updates easier to track.",
