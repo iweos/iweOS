@@ -244,7 +244,7 @@ export async function getStudentResultSheet(params: {
       }),
       prisma.gradingSetting.findUnique({
         where: { schoolId: params.schoolId },
-        select: { resultTemplate: true, showOverallPosition: true },
+        select: { resultTemplate: true, showOverallPosition: true, defaultPrincipalComment: true },
       }),
       prisma.studentAttendance.findUnique({
         where: {
@@ -395,7 +395,7 @@ export async function getStudentResultSheet(params: {
     },
     comments: {
       teacherComment: comment?.comment?.trim() ? comment.comment.trim() : null,
-      principalComment: null,
+      principalComment: gradingSettings?.defaultPrincipalComment?.trim() ? gradingSettings.defaultPrincipalComment.trim() : null,
       issuedDate: formatDate(publication?.publishedAt ?? new Date()),
     },
     publication: publication

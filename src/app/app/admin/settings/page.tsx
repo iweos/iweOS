@@ -60,6 +60,7 @@ export default async function AdminSettingsPage({
             <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
               <input type="hidden" name="resultTemplate" value={gradingSettings?.resultTemplate ?? "classic_report"} />
               <input type="hidden" name="showOverallPosition" value={gradingSettings?.showOverallPosition === false ? "" : "on"} />
+              <input type="hidden" name="defaultPrincipalComment" value={gradingSettings?.defaultPrincipalComment ?? ""} />
               <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
               <input type="hidden" name="currentPrincipalSignatureUrl" value={school.principalSignatureUrl ?? ""} />
               <label className="d-grid gap-1">
@@ -209,6 +210,17 @@ export default async function AdminSettingsPage({
                     </label>
                   </label>
 
+                  <label className="d-grid gap-1 md:col-span-2">
+                    <span className="field-label">Default principal comment</span>
+                    <textarea
+                      name="defaultPrincipalComment"
+                      defaultValue={gradingSettings?.defaultPrincipalComment ?? ""}
+                      className="form-control"
+                      rows={4}
+                      placeholder="Enter the default principal comment used on result sheets when no custom admin comment is provided."
+                    />
+                  </label>
+
                   <label className="d-grid gap-1">
                     <span className="field-label">Upload School Logo</span>
                     <input name="logoFile" type="file" accept="image/*" className="form-control" />
@@ -297,6 +309,12 @@ export default async function AdminSettingsPage({
                     <p className="field-label mb-2">Overall Position</p>
                     <p className="mb-0 fw-semibold">
                       {gradingSettings?.showOverallPosition === false ? "Hidden on result sheets" : "Shown on result sheets"}
+                    </p>
+                  </div>
+                  <div className="rounded border bg-white px-3 py-3">
+                    <p className="field-label mb-2">Default Principal Comment</p>
+                    <p className="small mb-0">
+                      {gradingSettings?.defaultPrincipalComment?.trim() || "No default principal comment added yet."}
                     </p>
                   </div>
                   <div className="rounded border bg-white px-3 py-3">

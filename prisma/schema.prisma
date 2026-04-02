@@ -312,6 +312,7 @@ model GradingSetting {
   examWeight Int    @default(60) @map("exam_weight")
   resultTemplate String @default("classic_report") @map("result_template")
   showOverallPosition Boolean @default(true) @map("show_overall_position")
+  defaultPrincipalComment String @default("") @map("default_principal_comment")
 
   school     School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
 

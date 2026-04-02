@@ -4,7 +4,6 @@ import { requireProfile } from "@/lib/server/auth";
 
 export default async function TeacherAreaLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
-  const settingsHref = profile.role === ProfileRole.ADMIN ? "/app/admin/settings" : undefined;
 
   return (
     <>
@@ -16,7 +15,6 @@ export default async function TeacherAreaLayout({ children }: { children: React.
       <AdminShell
         mode="teacher"
         homeHref="/app/teacher/dashboard"
-        settingsHref={settingsHref}
         profileName={profile.fullName}
         profileEmail={profile.email}
         teacherPortalAdmin={profile.role === ProfileRole.ADMIN}

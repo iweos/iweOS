@@ -14,6 +14,8 @@ type StudentAttendanceRow = {
   timesAbsent: number;
 };
 
+type AttendanceField = "timesSchoolOpened" | "timesPresent" | "timesAbsent";
+
 type SortKey = "studentCode" | "fullName" | "timesSchoolOpened" | "timesPresent" | "timesAbsent";
 
 type RowStatus = {
@@ -35,6 +37,44 @@ function compareValues(a: StudentAttendanceRow, b: StudentAttendanceRow, key: So
     return a[key].localeCompare(b[key], undefined, { sensitivity: "base" });
   }
   return a[key] - b[key];
+}
+
+function normalizeAttendanceRow(
+  row: StudentAttendanceRow,
+  key: AttendanceField,
+  nextValue: number,
+): StudentAttendanceRow {
+  const nextRow = { ...row, [key]: nextValue };
+
+  if (key === "timesPresent") {
+    if (nextRow.timesSchoolOpened > 0) {
+      nextRow.timesAbsent = Math.max(nextRow.timesSchoolOpened - nextRow.timesPresent, 0);
+    } else if (nextRow.timesAbsent > 0) {
+      nextRow.timesSchoolOpened = nextRow.timesPresent + nextRow.timesAbsent;
+    }
+    return nextRow;
+  }
+
+  if (key === "timesAbsent") {
+    if (nextRow.timesSchoolOpened > 0) {
+      nextRow.timesPresent = Math.max(nextRow.timesSchoolOpened - nextRow.timesAbsent, 0);
+    } else if (nextRow.timesPresent > 0) {
+      nextRow.timesSchoolOpened = nextRow.timesPresent + nextRow.timesAbsent;
+    }
+    return nextRow;
+  }
+
+  if (nextRow.timesPresent > 0 || nextRow.timesAbsent > 0) {
+    if (nextRow.timesPresent > 0 && nextRow.timesAbsent === 0) {
+      nextRow.timesAbsent = Math.max(nextRow.timesSchoolOpened - nextRow.timesPresent, 0);
+    } else if (nextRow.timesAbsent > 0 && nextRow.timesPresent === 0) {
+      nextRow.timesPresent = Math.max(nextRow.timesSchoolOpened - nextRow.timesAbsent, 0);
+    } else {
+      nextRow.timesAbsent = Math.max(nextRow.timesSchoolOpened - nextRow.timesPresent, 0);
+    }
+  }
+
+  return nextRow;
 }
 
 export default function StudentAttendanceTable({ rows: initialRows, termId, classId, saveAction }: StudentAttendanceTableProps) {
@@ -106,14 +146,11 @@ export default function StudentAttendanceTable({ rows: initialRows, termId, clas
     }, 2200);
   }
 
-  function handleValueChange(studentId: string, key: "timesSchoolOpened" | "timesPresent" | "timesAbsent", nextValue: string) {
+  function handleValueChange(studentId: string, key: AttendanceField, nextValue: string) {
     setRows((current) =>
       current.map((row) =>
         row.studentId === studentId
-          ? {
-              ...row,
-              [key]: Number.parseInt(nextValue || "0", 10) || 0,
-            }
+          ? normalizeAttendanceRow(row, key, Number.parseInt(nextValue || "0", 10) || 0)
           : row,
       ),
     );

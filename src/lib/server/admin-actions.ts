@@ -11,6 +11,7 @@ import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
 import { createNotifications, notifyProfile, notifyTeachersForClass, notifyTeachersForClassId } from "@/lib/server/notifications";
 import { buildResultPublicationPayload } from "@/lib/server/results";
+import { normalizeAttendanceInput } from "@/lib/server/attendance";
 import { storeUploadedImage } from "@/lib/server/uploads";
 import {
   assessmentTemplateActivateSchema,
@@ -572,7 +573,7 @@ export async function updateSchoolAction(formData: FormData) {
   const profile = await requireRole("admin");
   const currentGradingSettings = await prisma.gradingSetting.findUnique({
     where: { schoolId: profile.schoolId },
-    select: { showOverallPosition: true },
+    select: { showOverallPosition: true, defaultPrincipalComment: true },
   });
   const resolvedLogoUrl = await resolveUploadedImage(formData, {
     fileKey: "logoFile",
@@ -608,6 +609,7 @@ export async function updateSchoolAction(formData: FormData) {
     showOverallPosition: formData.has("showOverallPosition")
       ? formValue(formData, "showOverallPosition") === "on"
       : currentGradingSettings?.showOverallPosition ?? true,
+    defaultPrincipalComment: formValue(formData, "defaultPrincipalComment"),
   });
 
   if (!parsed.success) {
@@ -652,10 +654,12 @@ export async function updateSchoolAction(formData: FormData) {
         schoolId: profile.schoolId,
         resultTemplate: parsed.data.resultTemplate,
         showOverallPosition: parsed.data.showOverallPosition,
+        defaultPrincipalComment: parsed.data.defaultPrincipalComment || "",
       },
       update: {
         resultTemplate: parsed.data.resultTemplate,
         showOverallPosition: parsed.data.showOverallPosition,
+        defaultPrincipalComment: parsed.data.defaultPrincipalComment || "",
       },
     }),
   ]);
@@ -2309,14 +2313,19 @@ export async function upsertStudentAttendanceAction(formData: FormData) {
   const termId = formValue(formData, "termId");
   const classId = formValue(formData, "classId");
   const studentId = formValue(formData, "studentId");
+  const normalizedAttendance = normalizeAttendanceInput({
+    timesSchoolOpened: formValue(formData, "timesSchoolOpened"),
+    timesPresent: formValue(formData, "timesPresent"),
+    timesAbsent: formValue(formData, "timesAbsent"),
+  });
 
   const parsed = studentAttendanceSchema.safeParse({
     studentId,
     termId,
     classId,
-    timesSchoolOpened: formValue(formData, "timesSchoolOpened"),
-    timesPresent: formValue(formData, "timesPresent"),
-    timesAbsent: formValue(formData, "timesAbsent"),
+    timesSchoolOpened: normalizedAttendance.timesSchoolOpened,
+    timesPresent: normalizedAttendance.timesPresent,
+    timesAbsent: normalizedAttendance.timesAbsent,
   });
 
   if (!parsed.success) {
@@ -2418,7 +2427,17 @@ export type SaveStudentAttendanceResult = {
 export async function saveStudentAttendanceAdminAction(input: SaveStudentAttendanceInput): Promise<SaveStudentAttendanceResult> {
   try {
     const profile = await requireRole("admin");
-    const parsed = studentAttendanceSchema.safeParse(input);
+    const normalizedAttendance = normalizeAttendanceInput({
+      timesSchoolOpened: input.timesSchoolOpened,
+      timesPresent: input.timesPresent,
+      timesAbsent: input.timesAbsent,
+    });
+    const parsed = studentAttendanceSchema.safeParse({
+      ...input,
+      timesSchoolOpened: normalizedAttendance.timesSchoolOpened,
+      timesPresent: normalizedAttendance.timesPresent,
+      timesAbsent: normalizedAttendance.timesAbsent,
+    });
 
     if (!parsed.success) {
       return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid attendance record." };

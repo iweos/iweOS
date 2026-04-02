@@ -4,6 +4,7 @@ import { ProfileRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { calculateAssessmentTotal, getGradeForTotal } from "@/lib/server/grading";
+import { normalizeAttendanceInput } from "@/lib/server/attendance";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
@@ -644,13 +645,18 @@ export async function saveStudentConductAction(input: SaveStudentConductInput): 
 export async function saveStudentAttendanceAction(input: SaveStudentAttendanceInput): Promise<SaveStudentAttendanceResult> {
   try {
     const requestedTeacherId = input.teacherProfileId?.trim() || undefined;
+    const normalizedAttendance = normalizeAttendanceInput({
+      timesSchoolOpened: input.timesSchoolOpened,
+      timesPresent: input.timesPresent,
+      timesAbsent: input.timesAbsent,
+    });
     const parsed = studentAttendanceSchema.safeParse({
       studentId: input.studentId,
       termId: input.termId,
       classId: input.classId,
-      timesSchoolOpened: input.timesSchoolOpened,
-      timesPresent: input.timesPresent,
-      timesAbsent: input.timesAbsent,
+      timesSchoolOpened: normalizedAttendance.timesSchoolOpened,
+      timesPresent: normalizedAttendance.timesPresent,
+      timesAbsent: normalizedAttendance.timesAbsent,
     });
 
     if (!parsed.success) {

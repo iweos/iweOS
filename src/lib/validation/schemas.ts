@@ -25,6 +25,7 @@ export const schoolSchema = z.object({
   website: z.string().trim().url().max(255).optional().or(z.literal("")),
   resultTemplate: z.enum(["classic_report", "summary"]).optional().default("classic_report"),
   showOverallPosition: z.boolean().optional().default(true),
+  defaultPrincipalComment: z.string().trim().max(1000).optional().or(z.literal("")),
   processingFeePercent: z.coerce.number().int().min(0).max(20).optional(),
   currency: z.string().trim().min(3).max(8).optional(),
   settlementBankName: z.string().trim().max(120).optional().or(z.literal("")),
@@ -290,6 +291,14 @@ export const studentAttendanceSchema = z
         code: z.ZodIssueCode.custom,
         path: ["timesAbsent"],
         message: "Times absent cannot be greater than times school opened.",
+      });
+    }
+
+    if (value.timesPresent + value.timesAbsent !== value.timesSchoolOpened) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timesAbsent"],
+        message: "Times school opened must equal times present plus times absent.",
       });
     }
   });
