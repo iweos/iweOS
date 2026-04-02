@@ -547,7 +547,7 @@ export default function StudentTable({ rows, classes, mode = "admin", teacherPro
                   </div>
                   <div className="col-md-3">
                     <Select name="gender" defaultValue={activeStudent.gender ?? ""}>
-                      <option value="">-</option>
+                      <option value="">Select gender</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                     </Select>
