@@ -905,6 +905,37 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "attendance-and-result-settings",
+        eyebrow: "Operations",
+        timestamp: "Apr 2, 2026 · 5:05 PM WAT",
+        timelineGroup: "Today",
+        title: "Attendance balancing and result settings became smarter",
+        body: [
+          "Today’s update tightened two areas schools use every term: attendance entry and result sign-off. The platform now helps staff keep attendance records mathematically correct while also giving admins more control over the default result messaging shown to parents and students.",
+        ],
+        bullets: [
+          "Attendance now auto-balances when any two values are entered, because Times school opened must always equal Times present plus Times absent.",
+          "The same attendance balancing rule now runs on the server too, so admin and teacher saves stay consistent even if the browser state is stale.",
+          "Attendance validation now rejects broken combinations instead of saving records that do not add up correctly.",
+          "Admins can now set a default principal comment from Settings so result sheets have a school-level fallback comment when no custom admin remark is provided for a student.",
+          "Result sheets, print exports, and shared result links now use that default principal comment automatically when a custom one is not present.",
+          "Teacher-mode settings links were removed so school-level settings remain clearly owned by admins instead of appearing like teacher settings.",
+        ],
+      },
+      {
+        id: "result-sheet-grading-fixes",
+        eyebrow: "Results",
+        timestamp: "Apr 2, 2026 · 2:20 PM WAT",
+        timelineGroup: "Today",
+        title: "Result sheet grading and report formatting were corrected",
+        bullets: [
+          "The academic report table was tightened so long column titles can use vertical headers while Subjects stays horizontal for readability.",
+          "Overall percentage is now displayed in neutral black instead of inheriting conditional tone styling.",
+          "PDF and print spacing was adjusted so table text no longer sits on the bottom border or overlaps cell lines as easily.",
+          "Decimal overall averages now map into the correct grade band, so values like 69.12 no longer fall through grading gaps and incorrectly show F or Poor.",
+        ],
+      },
+      {
         id: "subject-exemptions-and-catalog-editing",
         eyebrow: "Academics",
         timestamp: "Apr 1, 2026 · 11:55 AM WAT",
