@@ -100,6 +100,17 @@ function getFirstName(fullName: string) {
   return trimmed.split(/\s+/)[0] ?? "Student";
 }
 
+function renderReportHeader(label: string, key?: string) {
+  const normalizedLabelLength = label.replace(/\s+/g, "").length;
+  const isVertical = normalizedLabelLength > 4;
+
+  return (
+    <th key={key ?? label} className={isVertical ? "result-report-vertical-head" : undefined}>
+      <span className="result-report-head-label">{label}</span>
+    </th>
+  );
+}
+
 function DefaultResultSheet({
   data,
   mode,
@@ -109,7 +120,6 @@ function DefaultResultSheet({
   mode: "admin" | "public";
   chartMode: "interactive" | "print";
 }) {
-  const averageTone = getGradeBandTone(data.summary.grade);
   const studentFirstName = getFirstName(data.student.fullName);
 
   return (
@@ -140,7 +150,7 @@ function DefaultResultSheet({
         <div className="col-12 col-md-6 col-xl-3">
           <article className="card card-body h-100">
             <p className="small text-muted mb-1">Average</p>
-            <p className={`h3 fw-bold mb-0 ${toneClass(averageTone)}`}>{formatNumber(data.summary.average)}</p>
+            <p className="h3 fw-bold mb-0">{formatNumber(data.summary.average)}</p>
           </article>
         </div>
         <div className="col-12 col-md-6 col-xl-3">
@@ -323,7 +333,6 @@ function ReportCardResultSheet({
 }) {
   const schoolAddress = buildSchoolAddress(data.school);
   const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
-  const overallAverageTone = getGradeBandTone(data.summary.grade);
   const studentFirstName = getFirstName(data.student.fullName);
 
   return (
@@ -388,7 +397,7 @@ function ReportCardResultSheet({
             ) : null}
             <div className="result-report-meta">
               <span className="label">Overall percentage</span>
-              <strong className={toneClass(overallAverageTone)}>{formatNumber(data.summary.average, 2)}%</strong>
+              <strong>{formatNumber(data.summary.average, 2)}%</strong>
             </div>
             <div className="result-report-meta">
               <span className="label">Class average</span>
@@ -485,16 +494,14 @@ function ReportCardResultSheet({
                 </colgroup>
                 <thead>
                   <tr>
-                    <th>Subjects</th>
-                    {data.assessmentColumns.map((column) => (
-                      <th key={column}>{column}</th>
-                    ))}
-                    <th>Total</th>
-                    <th>Class highest</th>
-                    <th>Class lowest</th>
-                    <th>Class average</th>
-                    <th>Position</th>
-                    <th>Remarks</th>
+                    {renderReportHeader("Subjects")}
+                    {data.assessmentColumns.map((column) => renderReportHeader(column, column))}
+                    {renderReportHeader("Total")}
+                    {renderReportHeader("Class highest")}
+                    {renderReportHeader("Class lowest")}
+                    {renderReportHeader("Class average")}
+                    {renderReportHeader("Position")}
+                    {renderReportHeader("Remarks")}
                   </tr>
                 </thead>
                 <tbody>
