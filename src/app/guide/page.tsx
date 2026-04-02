@@ -907,7 +907,7 @@ export async function GET() {
       {
         id: "attendance-and-result-settings",
         eyebrow: "Operations",
-        timestamp: "Apr 2, 2026 · 5:05 PM WAT",
+        timestamp: "Apr 2, 2026 · 11:42 AM GMT+1",
         timelineGroup: "Today",
         title: "Attendance balancing and result settings became smarter",
         body: [
@@ -925,7 +925,7 @@ export async function GET() {
       {
         id: "result-sheet-grading-fixes",
         eyebrow: "Results",
-        timestamp: "Apr 2, 2026 · 2:20 PM WAT",
+        timestamp: "Apr 2, 2026 · 11:12 AM GMT+1",
         timelineGroup: "Today",
         title: "Result sheet grading and report formatting were corrected",
         bullets: [
@@ -938,8 +938,8 @@ export async function GET() {
       {
         id: "subject-exemptions-and-catalog-editing",
         eyebrow: "Academics",
-        timestamp: "Apr 1, 2026 · 11:55 AM WAT",
-        timelineGroup: "Today",
+        timestamp: "Apr 1, 2026 · 5:13 PM GMT+1",
+        timelineGroup: "Yesterday",
         title: "Subject editing and student subject exemptions were added",
         body: [
           "iweOS now supports a cleaner elective workflow for schools where not every student in a class offers every class subject. This update also improves subject maintenance from the admin side so schools can correct subject names without deleting and recreating them.",
@@ -956,8 +956,8 @@ export async function GET() {
       {
         id: "result-improvements",
         eyebrow: "Results",
-        timestamp: "Mar 31, 2026 · 8:40 PM WAT",
-        timelineGroup: "Today",
+        timestamp: "Mar 24, 2026 · 7:29 PM GMT+1",
+        timelineGroup: "Earlier",
         title: "Result exports and sharing improved",
         bullets: [
           "Dedicated export routes no longer inherit the admin shell.",
@@ -969,8 +969,8 @@ export async function GET() {
       {
         id: "teacher-quality",
         eyebrow: "Teacher workflow",
-        timestamp: "Mar 31, 2026 · 6:15 PM WAT",
-        timelineGroup: "Today",
+        timestamp: "Mar 27, 2026 · 2:28 PM GMT+1",
+        timelineGroup: "Earlier",
         title: "Autosave flows became safer",
         bullets: [
           "Grade entry no longer overwrites another in-progress field when one save completes.",
@@ -981,8 +981,8 @@ export async function GET() {
       {
         id: "operations-quality",
         eyebrow: "Operations",
-        timestamp: "Mar 30, 2026 · 9:10 PM WAT",
-        timelineGroup: "Yesterday",
+        timestamp: "Mar 28, 2026 · 4:42 PM GMT+1",
+        timelineGroup: "Earlier",
         title: "Operational visibility improved",
         bullets: [
           "Bell notifications now reflect real events instead of static items.",
@@ -993,7 +993,7 @@ export async function GET() {
       {
         id: "docs-evolution",
         eyebrow: "Documentation",
-        timestamp: "Mar 28, 2026 · 4:30 PM WAT",
+        timestamp: "Mar 31, 2026 · 1:40 PM GMT+1",
         timelineGroup: "Earlier",
         title: "Guide experience became more product-oriented",
         bullets: [
