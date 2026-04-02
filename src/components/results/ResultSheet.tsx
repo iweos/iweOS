@@ -102,7 +102,7 @@ function getFirstName(fullName: string) {
 
 function renderReportHeader(label: string, key?: string) {
   const normalizedLabelLength = label.replace(/\s+/g, "").length;
-  const isVertical = normalizedLabelLength > 4;
+  const isVertical = label.trim().toLowerCase() !== "subjects" && normalizedLabelLength > 4;
 
   return (
     <th key={key ?? label} className={isVertical ? "result-report-vertical-head" : undefined}>

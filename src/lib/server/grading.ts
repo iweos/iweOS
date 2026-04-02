@@ -10,10 +10,11 @@ export function calculateAssessmentTotal(items: ScoreItem[]) {
 }
 
 export function getGradeForTotal(total: number, scale: GradeScale[]) {
+  const normalizedTotal = Math.floor(Number(total) + Number.EPSILON);
   const matched = scale
     .slice()
     .sort((a, b) => b.minScore - a.minScore)
-    .find((item) => total >= item.minScore && total <= item.maxScore);
+    .find((item) => normalizedTotal >= item.minScore && normalizedTotal <= item.maxScore);
 
   return matched?.gradeLetter ?? "F";
 }
