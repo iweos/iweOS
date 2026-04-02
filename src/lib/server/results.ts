@@ -1,6 +1,7 @@
 import type { GradeScale, ResultPublication, ResultPublicationStatus } from "@prisma/client";
 import { getGradeForTotal } from "@/lib/server/grading";
 import { prisma } from "@/lib/server/prisma";
+import { normalizeAttendanceInput } from "@/lib/server/attendance";
 import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 function toNumber(value: unknown) {
@@ -280,6 +281,12 @@ export async function getStudentResultSheet(params: {
     return null;
   }
 
+  const normalizedAttendance = normalizeAttendanceInput({
+    timesSchoolOpened: attendance?.timesSchoolOpened ?? 0,
+    timesPresent: attendance?.timesPresent ?? 0,
+    timesAbsent: attendance?.timesAbsent ?? 0,
+  });
+
   const filteredScores = allScores.filter(
     (score) => !isStudentSubjectExempt(exemptionKeys, params.classId, score.studentId, score.subjectId),
   );
@@ -389,9 +396,9 @@ export async function getStudentResultSheet(params: {
     class: klass,
     student,
     attendance: {
-      timesSchoolOpened: attendance?.timesSchoolOpened ?? 0,
-      timesPresent: attendance?.timesPresent ?? 0,
-      timesAbsent: attendance?.timesAbsent ?? 0,
+      timesSchoolOpened: normalizedAttendance.timesSchoolOpened,
+      timesPresent: normalizedAttendance.timesPresent,
+      timesAbsent: normalizedAttendance.timesAbsent,
     },
     comments: {
       teacherComment: comment?.comment?.trim() ? comment.comment.trim() : null,

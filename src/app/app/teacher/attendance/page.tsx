@@ -9,6 +9,7 @@ import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorks
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { saveStudentAttendanceAction } from "@/lib/server/teacher-actions";
+import { normalizeAttendanceInput } from "@/lib/server/attendance";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 
@@ -121,13 +122,18 @@ export default async function TeacherAttendancePage({
   const recordMap = new Map(records.map((item) => [item.studentId, item]));
   const rows = enrollments.map((entry) => {
     const record = recordMap.get(entry.student.id);
+    const normalizedAttendance = normalizeAttendanceInput({
+      timesSchoolOpened: record?.timesSchoolOpened ?? 0,
+      timesPresent: record?.timesPresent ?? 0,
+      timesAbsent: record?.timesAbsent ?? 0,
+    });
     return {
       studentId: entry.student.id,
       studentCode: entry.student.studentCode,
       fullName: entry.student.fullName,
-      timesSchoolOpened: record?.timesSchoolOpened ?? 0,
-      timesPresent: record?.timesPresent ?? 0,
-      timesAbsent: record?.timesAbsent ?? 0,
+      timesSchoolOpened: normalizedAttendance.timesSchoolOpened,
+      timesPresent: normalizedAttendance.timesPresent,
+      timesAbsent: normalizedAttendance.timesAbsent,
     };
   });
 

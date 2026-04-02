@@ -8,6 +8,7 @@ import StudentAttendanceTable from "@/components/grading/StudentAttendanceTable"
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
 import { saveStudentAttendanceAdminAction } from "@/lib/server/admin-actions";
+import { normalizeAttendanceInput } from "@/lib/server/attendance";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 
@@ -119,13 +120,18 @@ export default async function AdminGradingAttendancePage({
   const recordMap = new Map(records.map((item) => [item.studentId, item]));
   const rows = enrollments.map((entry) => {
     const record = recordMap.get(entry.student.id);
+    const normalizedAttendance = normalizeAttendanceInput({
+      timesSchoolOpened: record?.timesSchoolOpened ?? 0,
+      timesPresent: record?.timesPresent ?? 0,
+      timesAbsent: record?.timesAbsent ?? 0,
+    });
     return {
       studentId: entry.student.id,
       studentCode: entry.student.studentCode,
       fullName: entry.student.fullName,
-      timesSchoolOpened: record?.timesSchoolOpened ?? 0,
-      timesPresent: record?.timesPresent ?? 0,
-      timesAbsent: record?.timesAbsent ?? 0,
+      timesSchoolOpened: normalizedAttendance.timesSchoolOpened,
+      timesPresent: normalizedAttendance.timesPresent,
+      timesAbsent: normalizedAttendance.timesAbsent,
     };
   });
 
