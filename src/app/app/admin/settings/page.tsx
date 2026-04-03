@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import Card from "@/components/admin/Card";
 import PageHeader from "@/components/admin/PageHeader";
 import Section from "@/components/admin/ui/Section";
@@ -8,6 +9,8 @@ import { prisma } from "@/lib/server/prisma";
 
 type SettingsSearchParams = {
   tab?: string;
+  status?: string;
+  message?: string;
 };
 
 const settingTabs = [
@@ -33,11 +36,14 @@ export default async function AdminSettingsPage({
   }
 
   const activeTab = settingTabs.some((tab) => tab.id === params.tab) ? params.tab! : "school";
+  const status = params.status === "success" || params.status === "error" ? params.status : null;
+  const message = (params.message ?? "").trim();
   const logoInputValue = school.logoUrl?.startsWith("data:image/") ? "" : school.logoUrl ?? "";
   const principalSignatureInputValue = school.principalSignatureUrl?.startsWith("data:image/") ? "" : school.principalSignatureUrl ?? "";
 
   return (
     <Section>
+      {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <PageHeader title="Settings" subtitle="Manage school identity, result branding, and academic policies from one place." />
 
       <Card>
@@ -58,6 +64,7 @@ export default async function AdminSettingsPage({
         <div className="card-body">
           {activeTab === "school" ? (
             <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
+              <input type="hidden" name="settingsTab" value="school" />
               <input type="hidden" name="resultTemplate" value={gradingSettings?.resultTemplate ?? "classic_report"} />
               <input type="hidden" name="showOverallPosition" value={gradingSettings?.showOverallPosition === false ? "" : "on"} />
               <input type="hidden" name="defaultPrincipalComment" value={gradingSettings?.defaultPrincipalComment ?? ""} />
@@ -176,18 +183,9 @@ export default async function AdminSettingsPage({
             <div className="grid gap-3 lg:grid-cols-[1.4fr_0.9fr]">
               <Card title="Result Branding" subtitle="Choose the report template and school branding used for exports.">
                 <form action={updateSchoolAction} encType="multipart/form-data" className="grid gap-3 md:grid-cols-2">
-                  <input type="hidden" name="name" value={school.name} />
-                  <input type="hidden" name="code" value={school.code} />
-                  <input type="hidden" name="country" value={school.country ?? ""} />
+                  <input type="hidden" name="settingsTab" value="results" />
                   <input type="hidden" name="currentLogoUrl" value={school.logoUrl ?? ""} />
                   <input type="hidden" name="currentPrincipalSignatureUrl" value={school.principalSignatureUrl ?? ""} />
-                  <input type="hidden" name="addressLine1" value={school.addressLine1 ?? ""} />
-                  <input type="hidden" name="addressLine2" value={school.addressLine2 ?? ""} />
-                  <input type="hidden" name="city" value={school.city ?? ""} />
-                  <input type="hidden" name="state" value={school.state ?? ""} />
-                  <input type="hidden" name="postalCode" value={school.postalCode ?? ""} />
-                  <input type="hidden" name="phone" value={school.phone ?? ""} />
-                  <input type="hidden" name="website" value={school.website ?? ""} />
 
                   <label className="d-grid gap-1">
                     <span className="field-label">Result Template</span>

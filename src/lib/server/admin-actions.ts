@@ -222,6 +222,18 @@ function redirectTeachersStatus(status: "success" | "error", message: string, op
   redirect(`/app/admin/teachers?${query.toString()}`);
 }
 
+function redirectSettingsStatus(
+  status: "success" | "error",
+  message: string,
+  options?: { tab?: string },
+): never {
+  const query = new URLSearchParams({ status, message });
+  if (options?.tab) {
+    query.set("tab", options.tab);
+  }
+  redirect(`/app/admin/settings?${query.toString()}`);
+}
+
 function revalidateAdminPages() {
   revalidatePath("/app/admin/dashboard");
   revalidatePath("/app/admin/settings");
@@ -571,100 +583,128 @@ function parseStudentGender(value: string) {
 
 export async function updateSchoolAction(formData: FormData) {
   const profile = await requireRole("admin");
-  const currentGradingSettings = await prisma.gradingSetting.findUnique({
-    where: { schoolId: profile.schoolId },
-    select: { showOverallPosition: true, defaultPrincipalComment: true },
-  });
-  const resolvedLogoUrl = await resolveUploadedImage(formData, {
-    fileKey: "logoFile",
-    valueKey: "logoUrl",
-    removeKey: "removeLogo",
-    currentValue: formValue(formData, "currentLogoUrl"),
-    folder: ["schools", profile.schoolId],
-    fileStem: "school-logo",
-  });
-  const resolvedPrincipalSignatureUrl = await resolveUploadedImage(formData, {
-    fileKey: "principalSignatureFile",
-    valueKey: "principalSignatureUrl",
-    removeKey: "removePrincipalSignature",
-    currentValue: formValue(formData, "currentPrincipalSignatureUrl"),
-    folder: ["schools", profile.schoolId],
-    fileStem: "principal-signature",
-  });
+  const activeTab = formValue(formData, "settingsTab") || "school";
 
-  const parsed = schoolSchema.safeParse({
-    name: formValue(formData, "name"),
-    code: formValue(formData, "code") || undefined,
-    country: formValue(formData, "country"),
-    logoUrl: resolvedLogoUrl,
-    principalSignatureUrl: resolvedPrincipalSignatureUrl,
-    addressLine1: formValue(formData, "addressLine1"),
-    addressLine2: formValue(formData, "addressLine2"),
-    city: formValue(formData, "city"),
-    state: formValue(formData, "state"),
-    postalCode: formValue(formData, "postalCode"),
-    phone: formValue(formData, "phone"),
-    website: formValue(formData, "website"),
-    resultTemplate: formValue(formData, "resultTemplate") || "classic_report",
-    showOverallPosition: formData.has("showOverallPosition")
-      ? formValue(formData, "showOverallPosition") === "on"
-      : currentGradingSettings?.showOverallPosition ?? true,
-    defaultPrincipalComment: formValue(formData, "defaultPrincipalComment"),
-  });
+  try {
+    const [currentSchool, currentGradingSettings] = await Promise.all([
+      prisma.school.findUnique({ where: { id: profile.schoolId } }),
+      prisma.gradingSetting.findUnique({
+        where: { schoolId: profile.schoolId },
+        select: { resultTemplate: true, showOverallPosition: true, defaultPrincipalComment: true },
+      }),
+    ]);
 
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid school payload.");
-  }
+    if (!currentSchool) {
+      throw new Error("School not found.");
+    }
 
-  if (parsed.data.code) {
-    const codeTaken = await prisma.school.findFirst({
-      where: {
-        code: { equals: parsed.data.code, mode: "insensitive" },
-        id: { not: profile.schoolId },
-      },
-      select: { id: true },
+    const resolvedLogoUrl = await resolveUploadedImage(formData, {
+      fileKey: "logoFile",
+      valueKey: "logoUrl",
+      removeKey: "removeLogo",
+      currentValue: formValue(formData, "currentLogoUrl") || (currentSchool.logoUrl ?? ""),
+      folder: ["schools", profile.schoolId],
+      fileStem: "school-logo",
+    });
+    const resolvedPrincipalSignatureUrl = await resolveUploadedImage(formData, {
+      fileKey: "principalSignatureFile",
+      valueKey: "principalSignatureUrl",
+      removeKey: "removePrincipalSignature",
+      currentValue: formValue(formData, "currentPrincipalSignatureUrl") || (currentSchool.principalSignatureUrl ?? ""),
+      folder: ["schools", profile.schoolId],
+      fileStem: "principal-signature",
     });
 
-    if (codeTaken) {
-      throw new Error("School code is already in use.");
+    const parsed = schoolSchema.safeParse({
+      name: activeTab === "school" ? formValue(formData, "name") : currentSchool.name,
+      code: activeTab === "school" ? formValue(formData, "code") || undefined : currentSchool.code,
+      country: activeTab === "school" ? formValue(formData, "country") : currentSchool.country ?? "",
+      logoUrl: resolvedLogoUrl,
+      principalSignatureUrl: resolvedPrincipalSignatureUrl,
+      addressLine1: activeTab === "school" ? formValue(formData, "addressLine1") : currentSchool.addressLine1 ?? "",
+      addressLine2: activeTab === "school" ? formValue(formData, "addressLine2") : currentSchool.addressLine2 ?? "",
+      city: activeTab === "school" ? formValue(formData, "city") : currentSchool.city ?? "",
+      state: activeTab === "school" ? formValue(formData, "state") : currentSchool.state ?? "",
+      postalCode: activeTab === "school" ? formValue(formData, "postalCode") : currentSchool.postalCode ?? "",
+      phone: activeTab === "school" ? formValue(formData, "phone") : currentSchool.phone ?? "",
+      website: activeTab === "school" ? formValue(formData, "website") : currentSchool.website ?? "",
+      resultTemplate: activeTab === "results"
+        ? formValue(formData, "resultTemplate") || currentGradingSettings?.resultTemplate || "classic_report"
+        : currentGradingSettings?.resultTemplate || "classic_report",
+      showOverallPosition:
+        activeTab === "results"
+          ? formData.has("showOverallPosition")
+          : currentGradingSettings?.showOverallPosition ?? true,
+      defaultPrincipalComment:
+        activeTab === "results"
+          ? formValue(formData, "defaultPrincipalComment")
+          : currentGradingSettings?.defaultPrincipalComment ?? "",
+    });
+
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0]?.message ?? "Invalid school payload.");
     }
+
+    if (parsed.data.code) {
+      const codeTaken = await prisma.school.findFirst({
+        where: {
+          code: { equals: parsed.data.code, mode: "insensitive" },
+          id: { not: profile.schoolId },
+        },
+        select: { id: true },
+      });
+
+      if (codeTaken) {
+        throw new Error("School code is already in use.");
+      }
+    }
+
+    await prisma.$transaction([
+      prisma.school.update({
+        where: { id: profile.schoolId },
+        data: {
+          name: parsed.data.name,
+          code: parsed.data.code?.toUpperCase(),
+          country: parsed.data.country || null,
+          logoUrl: parsed.data.logoUrl || null,
+          principalSignatureUrl: parsed.data.principalSignatureUrl || null,
+          addressLine1: parsed.data.addressLine1 || null,
+          addressLine2: parsed.data.addressLine2 || null,
+          city: parsed.data.city || null,
+          state: parsed.data.state || null,
+          postalCode: parsed.data.postalCode || null,
+          phone: parsed.data.phone || null,
+          website: parsed.data.website || null,
+        },
+      }),
+      prisma.gradingSetting.upsert({
+        where: { schoolId: profile.schoolId },
+        create: {
+          schoolId: profile.schoolId,
+          resultTemplate: parsed.data.resultTemplate,
+          showOverallPosition: parsed.data.showOverallPosition,
+          defaultPrincipalComment: parsed.data.defaultPrincipalComment || "",
+        },
+        update: {
+          resultTemplate: parsed.data.resultTemplate,
+          showOverallPosition: parsed.data.showOverallPosition,
+          defaultPrincipalComment: parsed.data.defaultPrincipalComment || "",
+        },
+      }),
+    ]);
+
+    revalidateAdminPages();
+    redirectSettingsStatus("success", activeTab === "results" ? "Result settings saved." : "School profile saved.", {
+      tab: activeTab,
+    });
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    redirectSettingsStatus("error", error instanceof Error ? error.message : "Unable to save settings.", {
+      tab: activeTab,
+    });
   }
-
-  await prisma.$transaction([
-    prisma.school.update({
-      where: { id: profile.schoolId },
-      data: {
-        name: parsed.data.name,
-        code: parsed.data.code?.toUpperCase(),
-        country: parsed.data.country || null,
-        logoUrl: parsed.data.logoUrl || null,
-        principalSignatureUrl: parsed.data.principalSignatureUrl || null,
-        addressLine1: parsed.data.addressLine1 || null,
-        addressLine2: parsed.data.addressLine2 || null,
-        city: parsed.data.city || null,
-        state: parsed.data.state || null,
-        postalCode: parsed.data.postalCode || null,
-        phone: parsed.data.phone || null,
-        website: parsed.data.website || null,
-      },
-    }),
-    prisma.gradingSetting.upsert({
-      where: { schoolId: profile.schoolId },
-      create: {
-        schoolId: profile.schoolId,
-        resultTemplate: parsed.data.resultTemplate,
-        showOverallPosition: parsed.data.showOverallPosition,
-        defaultPrincipalComment: parsed.data.defaultPrincipalComment || "",
-      },
-      update: {
-        resultTemplate: parsed.data.resultTemplate,
-        showOverallPosition: parsed.data.showOverallPosition,
-        defaultPrincipalComment: parsed.data.defaultPrincipalComment || "",
-      },
-    }),
-  ]);
-
-  revalidateAdminPages();
 }
 
 export async function addTeacherAction(formData: FormData) {
