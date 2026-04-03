@@ -257,6 +257,39 @@ html[data-theme="dark"].kai-admin .btn-outline-secondary {
   color: #edf2fb !important;
 }
 
+html[data-theme="dark"].kai-admin .nav-tabs {
+  border-bottom-color: #2b303b !important;
+}
+
+html[data-theme="dark"].kai-admin .nav-tabs .nav-link {
+  color: #dce3ee !important;
+}
+
+html[data-theme="dark"].kai-admin .nav-tabs .nav-link:hover,
+html[data-theme="dark"].kai-admin .nav-tabs .nav-link:focus {
+  color: #edf2fb !important;
+  border-color: #2b303b #2b303b transparent !important;
+  background: #1d222b !important;
+}
+
+html[data-theme="dark"].kai-admin .nav-tabs .nav-link.active {
+  color: #edf2fb !important;
+  background: #171a21 !important;
+  border-color: #2b303b #2b303b #171a21 !important;
+}
+
+html[data-theme="dark"].kai-admin .table a,
+html[data-theme="dark"].kai-admin table a {
+  color: #edf2fb !important;
+}
+
+html[data-theme="dark"].kai-admin .table a:hover,
+html[data-theme="dark"].kai-admin .table a:focus,
+html[data-theme="dark"].kai-admin table a:hover,
+html[data-theme="dark"].kai-admin table a:focus {
+  color: #7bc792 !important;
+}
+
 html[data-theme="dark"].kai-admin .main-header .navbar-header,
 html[data-theme="dark"].kai-admin .main-header .navbar-header-transparent {
   background: #171a21 !important;
@@ -360,6 +393,31 @@ html.kai-admin .btn-danger {
   background: #fff !important;
   border-color: #f2cbcb !important;
   color: #cb3e3e !important;
+}
+
+html.kai-admin .nav-tabs {
+  border-bottom-color: #e6ebf0 !important;
+}
+
+html.kai-admin .nav-tabs .nav-link {
+  color: #111827 !important;
+  border: 1px solid transparent !important;
+  border-top-left-radius: 0.75rem !important;
+  border-top-right-radius: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+html.kai-admin .nav-tabs .nav-link:hover,
+html.kai-admin .nav-tabs .nav-link:focus {
+  color: var(--iwe-primary) !important;
+  border-color: #e6ebf0 #e6ebf0 transparent !important;
+  background: #f8fafc !important;
+}
+
+html.kai-admin .nav-tabs .nav-link.active {
+  color: #111827 !important;
+  background: #fff !important;
+  border-color: #e6ebf0 #e6ebf0 #fff !important;
 }
 
 html.kai-admin .btn-brown {
@@ -627,6 +685,19 @@ html.kai-admin table td {
   color: #1f2638;
   border-color: #edf1f4;
   vertical-align: middle;
+}
+
+html.kai-admin .table a,
+html.kai-admin table a {
+  color: #111827 !important;
+  text-decoration: none !important;
+}
+
+html.kai-admin .table a:hover,
+html.kai-admin .table a:focus,
+html.kai-admin table a:hover,
+html.kai-admin table a:focus {
+  color: var(--iwe-primary) !important;
 }
 
 html.kai-admin .dataTables_wrapper .dataTables_length label,
