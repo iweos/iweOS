@@ -8,6 +8,7 @@ html.kai-admin,
 html.kai-admin body {
   background: #f5f7fd !important;
   color: #1f2638 !important;
+  min-height: 100svh;
 }
 
 html.kai-admin body {
@@ -15,7 +16,7 @@ html.kai-admin body {
 }
 
 html.kai-admin .wrapper {
-  min-height: 100vh;
+  min-height: 100svh;
   background: #f5f7fd !important;
 }
 
@@ -32,7 +33,7 @@ html.kai-admin .main-panel > .container {
   margin-left: auto !important;
   margin-right: auto !important;
   padding: 0 1rem !important;
-  min-height: calc(100% - 123px) !important;
+  min-height: calc(100svh - 123px) !important;
 }
 
 html.kai-admin .page-inner {
@@ -1036,10 +1037,8 @@ html.kai-admin .student-rows-input {
   html.kai-admin .sidebar .sidebar-wrapper {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 75px) !important;
-    height: calc(100dvh - 75px) !important;
-    max-height: calc(100vh - 75px) !important;
-    max-height: calc(100dvh - 75px) !important;
+    height: calc(100svh - 75px) !important;
+    max-height: calc(100svh - 75px) !important;
     overflow: hidden;
   }
 
@@ -1107,6 +1106,61 @@ html.kai-admin .student-rows-input {
   }
 
   html.kai-admin .settings-tabs {
-    display: none !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    gap: 0.45rem !important;
+    padding-top: 0.8rem !important;
+    padding-bottom: 0.55rem !important;
+  }
+
+  html.kai-admin .settings-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  html.kai-admin .settings-tabs .settings-tab-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 0.55rem 0.8rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #e6ebf0 !important;
+    background: #fff !important;
+    font-size: 0.8rem !important;
+    line-height: 1.15 !important;
+  }
+
+  html.kai-admin .settings-tabs .settings-tab-link:hover,
+  html.kai-admin .settings-tabs .settings-tab-link:focus {
+    border-color: #d4dae2 !important;
+    background: #f8fafc !important;
+  }
+
+  html.kai-admin .settings-tabs .settings-tab-link.active {
+    border-color: var(--iwe-primary) !important;
+    background: rgba(47, 107, 63, 0.08) !important;
+    color: var(--iwe-primary) !important;
+  }
+
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link {
+    border-color: #2b303b !important;
+    background: #171a21 !important;
+    color: #dce3ee !important;
+  }
+
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link:hover,
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link:focus {
+    border-color: #38404d !important;
+    background: #1d222b !important;
+    color: #edf2fb !important;
+  }
+
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link.active {
+    border-color: rgba(123, 199, 146, 0.5) !important;
+    background: rgba(123, 199, 146, 0.12) !important;
+    color: #edf9f0 !important;
   }
 }

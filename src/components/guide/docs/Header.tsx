@@ -77,7 +77,7 @@ export default function Header({ tabs, activeTab, onSelectTab, onOpenSearch, onO
           </div>
         </div>
 
-        <div className="hidden border-t border-slate-200/80 lg:block dark:border-slate-800/80">
+        <div className="hidden lg:block">
           <div className="flex h-11 items-center">
             <nav className="flex items-end gap-1">
               {tabs.map((tab) => (
