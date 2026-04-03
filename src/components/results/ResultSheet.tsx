@@ -88,7 +88,7 @@ type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
   variant?: "default" | "report-card";
-  chartMode?: "interactive" | "print";
+  chartMode?: "interactive" | "print" | "bulk-print";
 };
 
 function getFirstName(fullName: string) {
@@ -118,7 +118,7 @@ function DefaultResultSheet({
 }: {
   data: ResultSheetData;
   mode: "admin" | "public";
-  chartMode: "interactive" | "print";
+  chartMode: "interactive" | "print" | "bulk-print";
 }) {
   const studentFirstName = getFirstName(data.student.fullName);
 
@@ -198,20 +198,22 @@ function DefaultResultSheet({
         </div>
       </section>
 
-      <section className="card card-body">
-        <ResultPerformanceLineChart
-          studentFirstName={studentFirstName}
-          rows={data.rows.map((row) => ({
-            subjectId: row.subjectId,
-            subjectName: row.subjectName,
-            total: row.total,
-            classAverage: row.classAverage,
-            classHighest: row.classHighest,
-            classLowest: row.classLowest,
-          }))}
-          showExtendedBenchmarks={chartMode !== "print"}
-        />
-      </section>
+      {chartMode !== "bulk-print" ? (
+        <section className="card card-body">
+          <ResultPerformanceLineChart
+            studentFirstName={studentFirstName}
+            rows={data.rows.map((row) => ({
+              subjectId: row.subjectId,
+              subjectName: row.subjectName,
+              total: row.total,
+              classAverage: row.classAverage,
+              classHighest: row.classHighest,
+              classLowest: row.classLowest,
+            }))}
+            showExtendedBenchmarks={chartMode !== "print"}
+          />
+        </section>
+      ) : null}
 
       <section className="card card-body">
         <div className="table-responsive">
@@ -329,7 +331,7 @@ function ReportCardResultSheet({
 }: {
   data: ResultSheetData;
   mode: "admin" | "public";
-  chartMode: "interactive" | "print";
+  chartMode: "interactive" | "print" | "bulk-print";
 }) {
   const schoolAddress = buildSchoolAddress(data.school);
   const assessmentColumnWidth = data.assessmentColumns.length > 0 ? 30 / data.assessmentColumns.length : 0;
@@ -548,21 +550,23 @@ function ReportCardResultSheet({
           </section>
         </section>
 
-        <section className="result-report-performance">
-          <ResultPerformanceLineChart
-            studentFirstName={studentFirstName}
-            rows={data.rows.map((row) => ({
-              subjectId: row.subjectId,
-              subjectName: row.subjectName,
-              total: row.total,
-              classAverage: row.classAverage,
-              classHighest: row.classHighest,
-              classLowest: row.classLowest,
-            }))}
-            compact
-            showExtendedBenchmarks={chartMode !== "print"}
-          />
-        </section>
+        {chartMode !== "bulk-print" ? (
+          <section className="result-report-performance">
+            <ResultPerformanceLineChart
+              studentFirstName={studentFirstName}
+              rows={data.rows.map((row) => ({
+                subjectId: row.subjectId,
+                subjectName: row.subjectName,
+                total: row.total,
+                classAverage: row.classAverage,
+                classHighest: row.classHighest,
+                classLowest: row.classLowest,
+              }))}
+              compact
+              showExtendedBenchmarks={chartMode !== "print"}
+            />
+          </section>
+        ) : null}
 
         <section className="result-report-grade-key">
           <div className="result-report-box-title">Grade key</div>

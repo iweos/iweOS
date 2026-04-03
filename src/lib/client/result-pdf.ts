@@ -56,12 +56,16 @@ function getResultExportNodes() {
 }
 
 async function buildPdfDocumentFromNode(node: HTMLElement) {
+  return buildPdfDocumentFromNodeWithScale(node, 2);
+}
+
+async function buildPdfDocumentFromNodeWithScale(node: HTMLElement, scale: number) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
   const pdfWidth = pdf.internal.pageSize.getWidth();
   const pdfHeight = pdf.internal.pageSize.getHeight();
 
   const canvas = await html2canvas(node, {
-    scale: 2,
+    scale,
     useCORS: true,
     backgroundColor: "#ffffff",
     logging: false,
@@ -127,7 +131,7 @@ export async function buildResultPdfZip(
       total: pageNodes.length,
       label: fileNames[index],
     });
-    const pdf = await buildPdfDocumentFromNode(pageNodes[index]);
+    const pdf = await buildPdfDocumentFromNodeWithScale(pageNodes[index], 1.45);
     const safeName = `${sanitizePdfFileName(fileNames[index])}.pdf`;
     const blob = pdf.output("blob");
     zip.file(safeName, blob);

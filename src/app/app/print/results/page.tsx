@@ -125,7 +125,7 @@ export default async function AdminResultExportPage({
           key={`${resultSheet.student.id}-${resultSheet.term.id}`}
           className={`result-print-preview ${index > 0 ? "result-print-page-break" : ""}`}
         >
-          <ResultSheet data={resultSheet} mode="admin" chartMode="print" />
+          <ResultSheet data={resultSheet} mode="admin" chartMode={isBulkExport ? "bulk-print" : "print"} />
         </div>
       ))}
     </main>
