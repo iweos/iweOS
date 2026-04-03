@@ -1886,6 +1886,9 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
 }
 
 .result-print-preview .result-report-vertical-head .result-report-head-label {
+  writing-mode: vertical-lr;
+  transform: none;
+  text-orientation: mixed;
   min-height: 68px;
 }
 
@@ -2129,6 +2132,9 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   }
 
   .result-print-preview .result-report-vertical-head .result-report-head-label {
+    writing-mode: vertical-lr;
+    transform: none;
+    text-orientation: mixed;
     min-height: 64px;
   }
 
