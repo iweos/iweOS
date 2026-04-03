@@ -4,6 +4,24 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
 
+export type ResultPdfProgress =
+  | {
+      stage: "capturing";
+      current: number;
+      total: number;
+      label?: string;
+    }
+  | {
+      stage: "zipping";
+      current: number;
+      total: number;
+    }
+  | {
+      stage: "complete";
+      current: number;
+      total: number;
+    };
+
 export function sanitizePdfFileName(value: string) {
   return value.replace(/[^a-z0-9-_]+/gi, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "result";
 }
@@ -69,22 +87,28 @@ async function buildPdfDocumentFromNode(node: HTMLElement) {
   return pdf;
 }
 
-export async function buildResultPdfBlob(fileName: string) {
+export async function buildResultPdfBlob(fileName: string, onProgress?: (progress: ResultPdfProgress) => void) {
   const pageNodes = getResultExportNodes();
   if (pageNodes.length === 0) {
     throw new Error("No result pages are available to export.");
   }
 
+  onProgress?.({ stage: "capturing", current: 0, total: 1, label: fileName });
   const pdf = await buildPdfDocumentFromNode(pageNodes[0]);
   const safeName = `${sanitizePdfFileName(fileName)}.pdf`;
   const blob = pdf.output("blob");
+  onProgress?.({ stage: "complete", current: 1, total: 1 });
   return {
     blob,
     fileName: safeName,
   };
 }
 
-export async function buildResultPdfZip(bundleName: string, fileNames: string[]) {
+export async function buildResultPdfZip(
+  bundleName: string,
+  fileNames: string[],
+  onProgress?: (progress: ResultPdfProgress) => void,
+) {
   const pageNodes = getResultExportNodes();
   if (pageNodes.length === 0) {
     throw new Error("No result pages are available to export.");
@@ -97,13 +121,21 @@ export async function buildResultPdfZip(bundleName: string, fileNames: string[])
   const zip = new JSZip();
 
   for (let index = 0; index < pageNodes.length; index += 1) {
+    onProgress?.({
+      stage: "capturing",
+      current: index + 1,
+      total: pageNodes.length,
+      label: fileNames[index],
+    });
     const pdf = await buildPdfDocumentFromNode(pageNodes[index]);
     const safeName = `${sanitizePdfFileName(fileNames[index])}.pdf`;
     const blob = pdf.output("blob");
     zip.file(safeName, blob);
   }
 
+  onProgress?.({ stage: "zipping", current: pageNodes.length, total: pageNodes.length });
   const archiveBlob = await zip.generateAsync({ type: "blob" });
+  onProgress?.({ stage: "complete", current: pageNodes.length, total: pageNodes.length });
   return {
     blob: archiveBlob,
     fileName: `${sanitizePdfFileName(bundleName)}.zip`,
