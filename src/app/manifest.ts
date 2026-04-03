@@ -15,22 +15,16 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en-NG",
     icons: [
       {
-        src: "/icons/iweos-app-icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icon",
+        sizes: "512x512",
+        type: "image/png",
         purpose: "any",
-      },
-      {
-        src: "/icons/iweos-app-icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "maskable",
       },
       {
         src: "/icon",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any",
+        purpose: "maskable",
       },
     ],
   };

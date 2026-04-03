@@ -57,12 +57,8 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: [
-      { media: "(prefers-color-scheme: light)", url: "/favicon-dove.svg" },
-      { media: "(prefers-color-scheme: dark)", url: "/favicon-dove-white.svg" },
-      { url: "/favicon-dove.svg" },
-    ],
-    shortcut: "/favicon-dove.svg",
+    icon: [{ url: "/icon", sizes: "512x512", type: "image/png" }],
+    shortcut: [{ url: "/icon", sizes: "512x512", type: "image/png" }],
     apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
   },
 };
@@ -77,9 +73,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
-          <link rel="icon" href="/favicon-dove.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
-          <link rel="icon" href="/favicon-dove-white.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
-          <link rel="shortcut icon" href="/favicon-dove.svg" />
+          <link rel="manifest" href="/manifest.webmanifest" />
+          <link rel="icon" href="/icon" sizes="512x512" type="image/png" />
+          <link rel="shortcut icon" href="/icon" type="image/png" />
+          <link rel="apple-touch-icon" href="/apple-icon" />
           <script
             dangerouslySetInnerHTML={{
               __html: `
