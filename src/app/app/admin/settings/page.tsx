@@ -48,7 +48,19 @@ export default async function AdminSettingsPage({
 
       <Card>
         <div className="border-bottom">
-          <nav className="nav nav-tabs card-header-tabs settings-tabs gap-2 px-3 pt-3">
+          <nav className="d-flex d-md-none flex-column gap-2 px-3 pt-3 pb-3">
+            {settingTabs.map((tab) => (
+              <Link
+                key={`mobile-${tab.id}`}
+                href={`/app/admin/settings?tab=${tab.id}`}
+                className={`settings-mobile-link ${activeTab === tab.id ? "is-active" : ""}`}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </nav>
+
+          <nav className="nav nav-tabs card-header-tabs settings-tabs gap-2 px-3 pt-3 d-none d-md-flex">
             {settingTabs.map((tab) => (
               <Link
                 key={tab.id}

@@ -282,6 +282,25 @@ html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link {
   color: #dce3ee !important;
 }
 
+html[data-theme="dark"].kai-admin .settings-mobile-link {
+  border-color: #2b303b;
+  background: #171a21;
+  color: #dce3ee !important;
+}
+
+html[data-theme="dark"].kai-admin .settings-mobile-link:hover,
+html[data-theme="dark"].kai-admin .settings-mobile-link:focus {
+  border-color: #38404d;
+  background: #1d222b;
+  color: #edf2fb !important;
+}
+
+html[data-theme="dark"].kai-admin .settings-mobile-link.is-active {
+  border-color: rgba(123, 199, 146, 0.5);
+  background: rgba(123, 199, 146, 0.12);
+  color: #edf9f0 !important;
+}
+
 html[data-theme="dark"].kai-admin .table a,
 html[data-theme="dark"].kai-admin table a {
   color: #edf2fb !important;
@@ -439,6 +458,33 @@ html.kai-admin .settings-tabs::-webkit-scrollbar {
 html.kai-admin .settings-tabs .settings-tab-link {
   white-space: nowrap;
   flex: 0 0 auto;
+}
+
+html.kai-admin .settings-mobile-link {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid #e6ebf0;
+  border-radius: 0.9rem;
+  background: #fff;
+  color: #111827 !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none !important;
+}
+
+html.kai-admin .settings-mobile-link:hover,
+html.kai-admin .settings-mobile-link:focus {
+  border-color: #d4dae2;
+  background: #f8fafc;
+  color: #111827 !important;
+}
+
+html.kai-admin .settings-mobile-link.is-active {
+  border-color: var(--iwe-primary);
+  background: rgba(47, 107, 63, 0.08);
+  color: var(--iwe-primary) !important;
 }
 
 html.kai-admin .btn-brown {
@@ -1061,48 +1107,6 @@ html.kai-admin .student-rows-input {
   }
 
   html.kai-admin .settings-tabs {
-    gap: 0.5rem !important;
-    padding-top: 0.85rem !important;
-    padding-bottom: 0.5rem !important;
-  }
-
-  html.kai-admin .settings-tabs .settings-tab-link {
-    padding: 0.55rem 0.85rem !important;
-    border-radius: 999px !important;
-    border: 1px solid #e6ebf0 !important;
-    background: #fff !important;
-    font-size: 0.82rem !important;
-    line-height: 1.2 !important;
-  }
-
-  html.kai-admin .settings-tabs .settings-tab-link:hover,
-  html.kai-admin .settings-tabs .settings-tab-link:focus {
-    border-color: #d4dae2 !important;
-    background: #f8fafc !important;
-  }
-
-  html.kai-admin .settings-tabs .settings-tab-link.active {
-    border-color: var(--iwe-primary) !important;
-    background: rgba(47, 107, 63, 0.08) !important;
-    color: var(--iwe-primary) !important;
-  }
-
-  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link {
-    border-color: #2b303b !important;
-    background: #171a21 !important;
-    color: #dce3ee !important;
-  }
-
-  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link:hover,
-  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link:focus {
-    border-color: #38404d !important;
-    background: #1d222b !important;
-    color: #edf2fb !important;
-  }
-
-  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link.active {
-    border-color: rgba(123, 199, 146, 0.5) !important;
-    background: rgba(123, 199, 146, 0.12) !important;
-    color: #edf9f0 !important;
+    display: none !important;
   }
 }
