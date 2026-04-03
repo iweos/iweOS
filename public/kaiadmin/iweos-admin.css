@@ -278,6 +278,10 @@ html[data-theme="dark"].kai-admin .nav-tabs .nav-link.active {
   border-color: #2b303b #2b303b #171a21 !important;
 }
 
+html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link {
+  color: #dce3ee !important;
+}
+
 html[data-theme="dark"].kai-admin .table a,
 html[data-theme="dark"].kai-admin table a {
   color: #edf2fb !important;
@@ -418,6 +422,23 @@ html.kai-admin .nav-tabs .nav-link.active {
   color: #111827 !important;
   background: #fff !important;
   border-color: #e6ebf0 #e6ebf0 #fff !important;
+}
+
+html.kai-admin .settings-tabs {
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+html.kai-admin .settings-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+html.kai-admin .settings-tabs .settings-tab-link {
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 html.kai-admin .btn-brown {
@@ -1037,5 +1058,51 @@ html.kai-admin .student-rows-input {
   html.kai-admin .main-header .dropdown-menu.dropdown-user .dropdown-user-scroll {
     max-height: min(60vh, 420px);
     overflow-y: auto;
+  }
+
+  html.kai-admin .settings-tabs {
+    gap: 0.5rem !important;
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  html.kai-admin .settings-tabs .settings-tab-link {
+    padding: 0.55rem 0.85rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #e6ebf0 !important;
+    background: #fff !important;
+    font-size: 0.82rem !important;
+    line-height: 1.2 !important;
+  }
+
+  html.kai-admin .settings-tabs .settings-tab-link:hover,
+  html.kai-admin .settings-tabs .settings-tab-link:focus {
+    border-color: #d4dae2 !important;
+    background: #f8fafc !important;
+  }
+
+  html.kai-admin .settings-tabs .settings-tab-link.active {
+    border-color: var(--iwe-primary) !important;
+    background: rgba(47, 107, 63, 0.08) !important;
+    color: var(--iwe-primary) !important;
+  }
+
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link {
+    border-color: #2b303b !important;
+    background: #171a21 !important;
+    color: #dce3ee !important;
+  }
+
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link:hover,
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link:focus {
+    border-color: #38404d !important;
+    background: #1d222b !important;
+    color: #edf2fb !important;
+  }
+
+  html[data-theme="dark"].kai-admin .settings-tabs .settings-tab-link.active {
+    border-color: rgba(123, 199, 146, 0.5) !important;
+    background: rgba(123, 199, 146, 0.12) !important;
+    color: #edf9f0 !important;
   }
 }

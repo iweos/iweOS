@@ -48,12 +48,12 @@ export default async function AdminSettingsPage({
 
       <Card>
         <div className="border-bottom">
-          <nav className="nav nav-tabs card-header-tabs gap-2 px-3 pt-3">
+          <nav className="nav nav-tabs card-header-tabs settings-tabs gap-2 px-3 pt-3">
             {settingTabs.map((tab) => (
               <Link
                 key={tab.id}
                 href={`/app/admin/settings?tab=${tab.id}`}
-                className={`nav-link ${activeTab === tab.id ? "active" : ""}`}
+                className={`nav-link settings-tab-link ${activeTab === tab.id ? "active" : ""}`}
               >
                 {tab.label}
               </Link>
