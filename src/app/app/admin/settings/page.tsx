@@ -210,6 +210,13 @@ export default async function AdminSettingsPage({
                     </label>
                   </label>
 
+                  {gradingSettings?.defaultPrincipalComment?.trim() ? (
+                    <div className="rounded border bg-white px-3 py-3 d-grid gap-2 md:col-span-2">
+                      <span className="field-label">Current saved principal comment</span>
+                      <p className="small mb-0">{gradingSettings.defaultPrincipalComment.trim()}</p>
+                    </div>
+                  ) : null}
+
                   <label className="d-grid gap-1 md:col-span-2">
                     <span className="field-label">Default principal comment</span>
                     <textarea
@@ -217,7 +224,11 @@ export default async function AdminSettingsPage({
                       defaultValue={gradingSettings?.defaultPrincipalComment ?? ""}
                       className="form-control"
                       rows={4}
-                      placeholder="Enter the default principal comment used on result sheets when no custom admin comment is provided."
+                      placeholder={
+                        gradingSettings?.defaultPrincipalComment?.trim()
+                          ? "Update the saved principal comment if you want to replace it."
+                          : "Enter the default principal comment used on result sheets when no custom admin comment is provided."
+                      }
                     />
                   </label>
 

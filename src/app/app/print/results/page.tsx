@@ -4,6 +4,7 @@ import PrintButton from "@/components/results/PrintButton";
 import ResultSheet from "@/components/results/ResultSheet";
 import SharePdfButton from "@/components/results/SharePdfButton";
 import { requireRole } from "@/lib/server/auth";
+import { buildClassResultFileName, buildStudentResultFileName } from "@/lib/result-export-name";
 import { getStudentResultSheet } from "@/lib/server/results";
 import { prisma } from "@/lib/server/prisma";
 
@@ -66,8 +67,26 @@ export default async function AdminResultExportPage({
 
   const exportTitle =
     resultSheets.length === 1
-      ? `${resultSheets[0].student.fullName} ${resultSheets[0].term.termLabel} result`
-      : `${resultSheets[0]?.class.name ?? "class"} ${resultSheets[0]?.term.termLabel ?? "result"} reports`;
+      ? buildStudentResultFileName({
+          studentName: resultSheets[0].student.fullName,
+          className: resultSheets[0].class.name,
+          sessionLabel: resultSheets[0].term.sessionLabel,
+          termLabel: resultSheets[0].term.termLabel,
+        })
+      : buildClassResultFileName({
+          className: resultSheets[0]?.class.name ?? "class",
+          sessionLabel: resultSheets[0]?.term.sessionLabel ?? "session",
+          termLabel: resultSheets[0]?.term.termLabel ?? "term",
+        });
+  const studentFileNames = resultSheets.map((resultSheet) =>
+    buildStudentResultFileName({
+      studentName: resultSheet.student.fullName,
+      className: resultSheet.class.name,
+      sessionLabel: resultSheet.term.sessionLabel,
+      termLabel: resultSheet.term.termLabel,
+    }),
+  );
+  const isBulkExport = resultSheets.length > 1;
 
   return (
     <main className="container py-4 py-md-5 d-grid gap-4">
@@ -89,8 +108,12 @@ export default async function AdminResultExportPage({
                 >
                   Back to results
                 </Link>
-                <SharePdfButton fileName={exportTitle} />
-                <DownloadPdfButton fileName={exportTitle} />
+                {!isBulkExport ? <SharePdfButton fileName={exportTitle} /> : null}
+                <DownloadPdfButton
+                  fileName={isBulkExport ? undefined : exportTitle}
+                  fileNames={isBulkExport ? studentFileNames : undefined}
+                  bundleName={isBulkExport ? exportTitle : undefined}
+                />
                 <PrintButton />
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import JSZip from "jszip";
 
 export function sanitizePdfFileName(value: string) {
   return value.replace(/[^a-z0-9-_]+/gi, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "result";
@@ -28,52 +29,84 @@ function chunkCanvas(sourceCanvas: HTMLCanvasElement, sliceHeight: number) {
   return chunks;
 }
 
-export async function buildResultPdfBlob(fileName: string) {
-  const pageNodes = Array.from(
+function getResultExportNodes() {
+  return Array.from(
     document.querySelectorAll<HTMLElement>(
       ".result-report-card[data-result-export-page='true'], .result-sheet-admin[data-result-export-page='true'], .result-sheet-public[data-result-export-page='true']",
     ),
   );
-  if (pageNodes.length === 0) {
-    throw new Error("No result pages are available to export.");
-  }
+}
 
+async function buildPdfDocumentFromNode(node: HTMLElement) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
   const pdfWidth = pdf.internal.pageSize.getWidth();
   const pdfHeight = pdf.internal.pageSize.getHeight();
 
+  const canvas = await html2canvas(node, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    logging: false,
+    width: node.scrollWidth,
+    windowWidth: node.scrollWidth,
+  });
+
+  const sliceHeightPx = Math.floor((canvas.width * pdfHeight) / pdfWidth);
+  const chunks = chunkCanvas(canvas, sliceHeightPx);
+
   let isFirstPage = true;
-
-  for (const node of pageNodes) {
-    const canvas = await html2canvas(node, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      width: node.scrollWidth,
-      windowWidth: node.scrollWidth,
-    });
-
-    const sliceHeightPx = Math.floor((canvas.width * pdfHeight) / pdfWidth);
-    const chunks = chunkCanvas(canvas, sliceHeightPx);
-
-    for (const chunk of chunks) {
-      if (!isFirstPage) {
-        pdf.addPage();
-      }
-
-      const imageData = chunk.toDataURL("image/png");
-      const renderedHeight = (chunk.height * pdfWidth) / chunk.width;
-      pdf.addImage(imageData, "PNG", 0, 0, pdfWidth, renderedHeight, undefined, "FAST");
-      isFirstPage = false;
+  for (const chunk of chunks) {
+    if (!isFirstPage) {
+      pdf.addPage();
     }
+
+    const imageData = chunk.toDataURL("image/png");
+    const renderedHeight = (chunk.height * pdfWidth) / chunk.width;
+    pdf.addImage(imageData, "PNG", 0, 0, pdfWidth, renderedHeight, undefined, "FAST");
+    isFirstPage = false;
   }
 
+  return pdf;
+}
+
+export async function buildResultPdfBlob(fileName: string) {
+  const pageNodes = getResultExportNodes();
+  if (pageNodes.length === 0) {
+    throw new Error("No result pages are available to export.");
+  }
+
+  const pdf = await buildPdfDocumentFromNode(pageNodes[0]);
   const safeName = `${sanitizePdfFileName(fileName)}.pdf`;
   const blob = pdf.output("blob");
   return {
     blob,
     fileName: safeName,
+  };
+}
+
+export async function buildResultPdfZip(bundleName: string, fileNames: string[]) {
+  const pageNodes = getResultExportNodes();
+  if (pageNodes.length === 0) {
+    throw new Error("No result pages are available to export.");
+  }
+
+  if (pageNodes.length !== fileNames.length) {
+    throw new Error("The number of result pages does not match the number of student file names.");
+  }
+
+  const zip = new JSZip();
+
+  for (let index = 0; index < pageNodes.length; index += 1) {
+    const pdf = await buildPdfDocumentFromNode(pageNodes[index]);
+    const safeName = `${sanitizePdfFileName(fileNames[index])}.pdf`;
+    const blob = pdf.output("blob");
+    zip.file(safeName, blob);
+  }
+
+  const archiveBlob = await zip.generateAsync({ type: "blob" });
+  return {
+    blob: archiveBlob,
+    fileName: `${sanitizePdfFileName(bundleName)}.zip`,
   };
 }
 

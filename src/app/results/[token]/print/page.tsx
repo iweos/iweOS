@@ -3,6 +3,7 @@ import DownloadPdfButton from "@/components/results/DownloadPdfButton";
 import PrintButton from "@/components/results/PrintButton";
 import ResultSheet from "@/components/results/ResultSheet";
 import SharePdfButton from "@/components/results/SharePdfButton";
+import { buildStudentResultFileName } from "@/lib/result-export-name";
 import { getPublishedResultSheetByToken } from "@/lib/server/results";
 
 export default async function SharedResultPrintPage({
@@ -21,6 +22,13 @@ export default async function SharedResultPrintPage({
     );
   }
 
+  const exportTitle = buildStudentResultFileName({
+    studentName: resultSheet.student.fullName,
+    className: resultSheet.class.name,
+    sessionLabel: resultSheet.term.sessionLabel,
+    termLabel: resultSheet.term.termLabel,
+  });
+
   return (
     <main className="container py-4 py-md-5 d-grid gap-4">
       <section className="shared-result-shell admin-page-wrap">
@@ -38,8 +46,8 @@ export default async function SharedResultPrintPage({
                 <Link href={`/results/${token}`} className="btn btn-secondary">
                   Back to result
                 </Link>
-                <SharePdfButton fileName={`${resultSheet.student.fullName} ${resultSheet.term.termLabel} result`} />
-                <DownloadPdfButton fileName={`${resultSheet.student.fullName} ${resultSheet.term.termLabel} result`} />
+                <SharePdfButton fileName={exportTitle} />
+                <DownloadPdfButton fileName={exportTitle} />
                 <PrintButton />
               </div>
             </div>
