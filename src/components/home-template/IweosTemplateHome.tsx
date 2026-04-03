@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { ArrowRight, BadgeCheck, BellRing, CreditCard, FileText, GraduationCap, Receipt, ShieldCheck, Sparkles } from 'lucide-react'
+import InstallAppButton from '@/components/InstallAppButton'
 import PublicSiteShell from '@/components/home-template/PublicSiteShell'
 import PublicHeroVisual from '@/components/home-template/visuals/PublicHeroVisual'
 import {
@@ -53,6 +54,17 @@ export default function IweosTemplateHome() {
                 >
                   {heroContent.tertiaryCta.label}
                 </Link>
+                <InstallAppButton
+                  className='inline-flex items-center gap-2 rounded-md border border-[#cfd8e3] bg-white px-5 py-3 text-sm font-semibold text-[#1f2a37] transition hover:border-[#9aa7bb]'
+                  iosHintClassName='max-w-xs text-sm leading-6 text-[#4b5563]'
+                />
+              </div>
+
+              <div className='mt-4 rounded-2xl border border-[#d7dfe9] bg-white/80 px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)]'>
+                <p className='text-xs font-semibold uppercase tracking-[0.12em] text-[#7b8796]'>Install iweOS</p>
+                <p className='mt-2 text-sm leading-7 text-[#4b5563]'>
+                  Add iweOS to your phone home screen so admins and teachers can open it like an app with the school icon.
+                </p>
               </div>
 
               <div className='mt-8 grid gap-3 sm:grid-cols-3'>
