@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import localFont from "next/font/local";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
@@ -7,6 +7,7 @@ import ClerkDiagnosticsClient from "@/components/ClerkDiagnosticsClient";
 import GuideDock from "@/components/guide/GuideDock";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
+import PwaClient from "@/components/PwaClient";
 import ThemeSync from "@/components/ThemeSync";
 import "./globals.css";
 
@@ -35,6 +36,13 @@ export const metadata: Metadata = {
     template: "%s | ìwéOS",
   },
   description: "School operating system for grading workflows and parent payments.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "ìwéOS",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ìwéOS",
+  },
   openGraph: {
     title: "ìwéOS",
     description: "School operating system for grading workflows and parent payments.",
@@ -55,8 +63,12 @@ export const metadata: Metadata = {
       { url: "/favicon-dove.svg" },
     ],
     shortcut: "/favicon-dove.svg",
-    apple: "/favicon-dove.svg",
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2f6b3f",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -86,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body className={`${display.variable} ${ui.variable} ${hornbill.variable} ui`}>
+          <PwaClient />
           <ThemeSync />
           <ClerkDiagnosticsClient />
           <GuideDock />
