@@ -174,30 +174,6 @@ export default async function AdminGradingResultsPage({
       <PageHeader
         title="Results"
         subtitle="Generate result sheets, publish them, and share secure links when they are ready."
-        rightActions={
-          selectedTermId && selectedClassId ? (
-            <>
-              <Link
-                href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}`}
-                className="btn btn-secondary"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Export class result
-              </Link>
-              {selectedStudentId ? (
-                <Link
-                  href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
-                  className="btn btn-outline-secondary"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Export student result
-                </Link>
-              ) : null}
-            </>
-          ) : null
-        }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -259,6 +235,29 @@ export default async function AdminGradingResultsPage({
             <AutoSubmitFilters />
           </div>
         </form>
+
+        {selectedTermId && selectedClassId ? (
+          <div className="mt-4 d-flex flex-wrap gap-2 border-top pt-3">
+            <Link
+              href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}`}
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Export class result
+            </Link>
+            {selectedStudentId ? (
+              <Link
+                href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
+                className="btn btn-outline-secondary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Export student result
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
       </Card>
 
       <Card
