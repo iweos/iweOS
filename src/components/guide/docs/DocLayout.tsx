@@ -118,7 +118,7 @@ export default function DocLayout({ tabs, groups, pages }: DocLayoutProps) {
       />
 
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_240px]">
-        <aside className={`${sidebarCollapsed ? "hidden lg:block lg:w-[84px]" : "hidden lg:block lg:w-[248px] xl:w-[256px]"} h-[calc(100vh-3.5rem)] sticky top-14`}>
+        <aside className={`${sidebarCollapsed ? "hidden lg:block lg:w-[84px]" : "hidden lg:block lg:w-[248px] xl:w-[256px]"} sticky top-14 h-[calc(100vh-3.5rem)] lg:top-[6.75rem] lg:h-[calc(100vh-6.75rem)]`}>
           <Sidebar
             groups={groups}
             activePageId={activePage.id}
