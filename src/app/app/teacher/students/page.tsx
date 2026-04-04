@@ -6,6 +6,7 @@ import StatCard from "@/components/admin/ui/StatCard";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
+import { buildCompetitionRankMap } from "@/lib/ranking";
 import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { getGradeForTotal } from "@/lib/server/grading";
 import { isPrismaSchemaMismatchError } from "@/lib/server/prisma-errors";
@@ -197,9 +198,15 @@ export default async function TeacherStudentsPage({
         total: Number(score.total),
       }))
       .sort((a, b) => b.total - a.total);
-    const subjectPositionIndex = subjectRanking.findIndex((score) => score.studentId === selectedStudentId);
+    const subjectRankMap = buildCompetitionRankMap(
+      subjectRanking.map((score) => ({
+        id: score.studentId,
+        score: score.total,
+      })),
+    );
+    const subjectPositionRank = selectedStudentId ? subjectRankMap.get(selectedStudentId) : undefined;
     const subjectPosition =
-      studentTotal !== null && subjectPositionIndex >= 0 ? `${subjectPositionIndex + 1} / ${subjectRanking.length}` : null;
+      studentTotal !== null && subjectPositionRank ? `${subjectPositionRank} / ${subjectRanking.length}` : null;
 
     return [{
       subjectId: row.subject.id,
@@ -241,9 +248,15 @@ export default async function TeacherStudentsPage({
     .filter((row) => row.average !== null)
     .sort((a, b) => (b.average ?? 0) - (a.average ?? 0));
 
-  const rankIndex = classStudentAverageRows.findIndex((row) => row.studentId === selectedStudentId);
+  const classRankMap = buildCompetitionRankMap(
+    classStudentAverageRows.map((row) => ({
+      id: row.studentId,
+      score: row.average,
+    })),
+  );
+  const rankValue = selectedStudentId ? classRankMap.get(selectedStudentId) : undefined;
   const rankLabel =
-    rankIndex >= 0 ? `${rankIndex + 1} / ${classStudentAverageRows.length}` : `- / ${classStudentAverageRows.length}`;
+    rankValue ? `${rankValue} / ${classStudentAverageRows.length}` : `- / ${classStudentAverageRows.length}`;
 
   const bestSubject = scoredRows
     .slice()
@@ -500,9 +513,9 @@ export default async function TeacherStudentsPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {classStudentAverageRows.slice(0, 8).map((row, index) => (
+                    {classStudentAverageRows.slice(0, 8).map((row) => (
                       <tr key={row.studentId}>
-                        <Td>{index + 1}</Td>
+                        <Td>{classRankMap.get(row.studentId) ?? "-"}</Td>
                         <Td>{row.studentName}</Td>
                         <Td>{formatNumber(row.average)}</Td>
                       </tr>

@@ -1,4 +1,5 @@
 import type { GradeScale, ResultPublication, ResultPublicationStatus } from "@prisma/client";
+import { buildCompetitionRankMap } from "@/lib/ranking";
 import { getGradeForTotal } from "@/lib/server/grading";
 import { prisma } from "@/lib/server/prisma";
 import { normalizeAttendanceInput } from "@/lib/server/attendance";
@@ -319,9 +320,15 @@ export async function getStudentResultSheet(params: {
   }));
 
   classAverages.sort((a, b) => b.average - a.average);
+  const overallRankMap = buildCompetitionRankMap(
+    classAverages.map((item) => ({
+      id: item.studentId,
+      score: item.average,
+    })),
+  );
   const selectedStudentAverage = classAverages.find((item) => item.studentId === student.id)?.average ?? 0;
-  const overallPositionIndex = classAverages.findIndex((item) => item.studentId === student.id);
-  const position = overallPositionIndex === -1 ? "-" : `${overallPositionIndex + 1} / ${classAverages.length}`;
+  const overallPosition = overallRankMap.get(student.id);
+  const position = overallPosition ? `${overallPosition} / ${classAverages.length}` : "-";
   const classAverage = average(classAverages.map((item) => item.average));
   const highestAverage = classAverages[0]?.average ?? 0;
   const lowestAverage = classAverages[classAverages.length - 1]?.average ?? 0;
@@ -331,7 +338,13 @@ export async function getStudentResultSheet(params: {
     const subjectScores = filteredScores
       .filter((item) => item.subjectId === score.subjectId)
       .sort((a, b) => toNumber(b.total) - toNumber(a.total));
-    const subjectPositionIndex = subjectScores.findIndex((item) => item.studentId === student.id);
+    const subjectRankMap = buildCompetitionRankMap(
+      subjectScores.map((item) => ({
+        id: item.studentId,
+        score: toNumber(item.total),
+      })),
+    );
+    const subjectPosition = subjectRankMap.get(student.id);
     const subjectAverage = average(subjectScores.map((item) => toNumber(item.total)));
     const subjectHighest = subjectScores[0] ? toNumber(subjectScores[0].total) : 0;
     const subjectLowest = subjectScores[subjectScores.length - 1] ? toNumber(subjectScores[subjectScores.length - 1].total) : 0;
@@ -350,7 +363,7 @@ export async function getStudentResultSheet(params: {
       total: rowTotal,
       grade: rowGrade,
       remark: rowGrade,
-      subjectPosition: subjectPositionIndex === -1 ? "-" : `${subjectPositionIndex + 1} / ${subjectScores.length}`,
+      subjectPosition: subjectPosition ? `${subjectPosition} / ${subjectScores.length}` : "-",
       classHighest: subjectHighest,
       classLowest: subjectLowest,
       classAverage: subjectAverage,

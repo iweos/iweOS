@@ -1,4 +1,5 @@
 import type { GradeScale } from "@prisma/client";
+import { buildCompetitionRankMap } from "@/lib/ranking";
 import { getGradeForTotal } from "@/lib/server/grading";
 
 type StudentInput = {
@@ -242,9 +243,16 @@ export function evaluatePromotionCandidates({
     })
     .sort((a, b) => (b.annualAverage ?? Number.NEGATIVE_INFINITY) - (a.annualAverage ?? Number.NEGATIVE_INFINITY));
 
-  return rankedRows.map((row, index) => ({
+  const rankMap = buildCompetitionRankMap(
+    rankedRows.map((row) => ({
+      id: row.studentId,
+      score: row.annualAverage,
+    })),
+  );
+
+  return rankedRows.map((row) => ({
     ...row,
-    rank: row.annualAverage === null ? "-" : `${index + 1} / ${rankedRows.length}`,
+    rank: row.annualAverage === null ? "-" : `${rankMap.get(row.studentId) ?? "-"} / ${rankedRows.length}`,
     termCoverage: Math.min(row.termCoverage, sessionTermCount),
   }));
 }
