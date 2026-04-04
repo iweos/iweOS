@@ -1710,6 +1710,30 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   margin-top: 1rem;
 }
 
+.result-report-header,
+.result-report-student-meta,
+.result-report-box,
+.result-report-overall-remark,
+.result-report-grade-key,
+.result-report-comment-box,
+.result-report-conduct-section,
+.result-report-performance,
+.result-report-comments > *,
+.result-report-grade-grid,
+.result-report-mini-table,
+.result-report-table tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.result-report-table thead {
+  display: table-header-group;
+}
+
+.result-report-table tfoot {
+  display: table-footer-group;
+}
+
 .result-report-comment-box {
   min-height: 130px;
   padding: 0.7rem 0.8rem 0.9rem;
@@ -2060,6 +2084,23 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
 
   .result-report-card {
     break-inside: avoid;
+  }
+
+  .result-report-header,
+  .result-report-student-meta,
+  .result-report-box,
+  .result-report-overall-remark,
+  .result-report-grade-key,
+  .result-report-comment-box,
+  .result-report-conduct-section,
+  .result-report-performance,
+  .result-report-comments > *,
+  .result-report-grade-grid,
+  .result-report-mini-table,
+  .result-report-table tr,
+  img {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .result-print-preview {
