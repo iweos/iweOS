@@ -8,6 +8,7 @@ import Section from "@/components/admin/ui/Section";
 import Select from "@/components/admin/ui/Select";
 import StatCard from "@/components/admin/ui/StatCard";
 import ResultSheet from "@/components/results/ResultSheet";
+import ShareResultLinkButton from "@/components/results/ShareResultLinkButton";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
 import { setResultPublicationStatusAction } from "@/lib/server/admin-actions";
@@ -349,9 +350,17 @@ export default async function AdminGradingResultsPage({
                     </Td>
                     <Td>
                       {publication?.status === "PUBLISHED" ? (
-                        <Link href={buildResultSharePath(publication.shareToken)} target="_blank" className="btn btn-sm btn-secondary">
-                          Open link
-                        </Link>
+                        <div className="d-flex flex-wrap gap-2">
+                          <Link href={buildResultSharePath(publication.shareToken)} target="_blank" className="btn btn-sm btn-secondary">
+                            Open link
+                          </Link>
+                          <ShareResultLinkButton
+                            href={`${baseUrl}${buildResultSharePath(publication.shareToken)}`}
+                            title={`${student.fullName} result`}
+                            text={`${student.fullName}'s published result`}
+                            className="btn btn-sm btn-primary"
+                          />
+                        </div>
                       ) : (
                         <span className="small text-muted">{formatStatusLabel(publication?.status)} only</span>
                       )}
@@ -402,9 +411,17 @@ export default async function AdminGradingResultsPage({
                   </button>
                 </form>
                 {shareLink ? (
-                  <Link href={buildResultSharePath(resultSheet.publication?.shareToken ?? "")} target="_blank" className="btn btn-secondary">
-                    Open shared result
-                  </Link>
+                  <>
+                    <Link href={buildResultSharePath(resultSheet.publication?.shareToken ?? "")} target="_blank" className="btn btn-secondary">
+                      Open shared result
+                    </Link>
+                    <ShareResultLinkButton
+                      href={shareLink}
+                      title={`${resultSheet.student.fullName} result`}
+                      text={`${resultSheet.student.fullName}'s published result`}
+                      className="btn btn-primary"
+                    />
+                  </>
                 ) : null}
               </div>
             </div>
