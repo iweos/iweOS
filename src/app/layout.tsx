@@ -9,6 +9,7 @@ import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
 import PwaClient from "@/components/PwaClient";
 import ThemeSync from "@/components/ThemeSync";
+import { APP_ICON_VERSION } from "@/lib/app-icon";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     template: "%s | ìwéOS",
   },
   description: "School operating system for grading workflows and parent payments.",
-  manifest: "/manifest.webmanifest",
+  manifest: `/manifest.webmanifest?v=${APP_ICON_VERSION}`,
   applicationName: "ìwéOS",
   appleWebApp: {
     capable: true,
@@ -57,9 +58,9 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: [{ url: "/icon", sizes: "512x512", type: "image/png" }],
-    shortcut: [{ url: "/icon", sizes: "512x512", type: "image/png" }],
-    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    icon: [{ url: `/icon?v=${APP_ICON_VERSION}`, sizes: "512x512", type: "image/png" }],
+    shortcut: [{ url: `/icon?v=${APP_ICON_VERSION}`, sizes: "512x512", type: "image/png" }],
+    apple: [{ url: `/apple-icon?v=${APP_ICON_VERSION}`, sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -73,10 +74,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
-          <link rel="manifest" href="/manifest.webmanifest" />
-          <link rel="icon" href="/icon" sizes="512x512" type="image/png" />
-          <link rel="shortcut icon" href="/icon" type="image/png" />
-          <link rel="apple-touch-icon" href="/apple-icon" />
+          <link rel="manifest" href={`/manifest.webmanifest?v=${APP_ICON_VERSION}`} />
+          <link rel="icon" href={`/icon?v=${APP_ICON_VERSION}`} sizes="512x512" type="image/png" />
+          <link rel="shortcut icon" href={`/icon?v=${APP_ICON_VERSION}`} type="image/png" />
+          <link rel="apple-touch-icon" href={`/apple-icon?v=${APP_ICON_VERSION}`} />
           <script
             dangerouslySetInnerHTML={{
               __html: `

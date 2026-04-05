@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { APP_ICON_VERSION } from "@/lib/app-icon";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -15,13 +16,13 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en-NG",
     icons: [
       {
-        src: "/icon",
+        src: `/icon?v=${APP_ICON_VERSION}`,
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icon",
+        src: `/icon?v=${APP_ICON_VERSION}`,
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
