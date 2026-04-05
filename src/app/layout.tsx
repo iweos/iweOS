@@ -58,8 +58,8 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: [{ url: `/icon?v=${APP_ICON_VERSION}`, sizes: "512x512", type: "image/png" }],
-    shortcut: [{ url: `/icon?v=${APP_ICON_VERSION}`, sizes: "512x512", type: "image/png" }],
+    icon: [{ url: `/favicon-dove-white.svg?v=${APP_ICON_VERSION}`, type: "image/svg+xml" }],
+    shortcut: [{ url: `/favicon-dove-white.svg?v=${APP_ICON_VERSION}`, type: "image/svg+xml" }],
     apple: [{ url: `/apple-icon?v=${APP_ICON_VERSION}`, sizes: "180x180", type: "image/png" }],
   },
 };
@@ -75,8 +75,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <head>
           <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
           <link rel="manifest" href={`/manifest.webmanifest?v=${APP_ICON_VERSION}`} />
-          <link rel="icon" href={`/icon?v=${APP_ICON_VERSION}`} sizes="512x512" type="image/png" />
-          <link rel="shortcut icon" href={`/icon?v=${APP_ICON_VERSION}`} type="image/png" />
+          <link rel="icon" href={`/favicon-dove-white.svg?v=${APP_ICON_VERSION}`} type="image/svg+xml" />
+          <link rel="shortcut icon" href={`/favicon-dove-white.svg?v=${APP_ICON_VERSION}`} type="image/svg+xml" />
           <link rel="apple-touch-icon" href={`/apple-icon?v=${APP_ICON_VERSION}`} />
           <script
             dangerouslySetInnerHTML={{

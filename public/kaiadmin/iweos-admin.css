@@ -867,6 +867,12 @@ html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .row {
   align-items: center;
 }
 
+html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .row > .col-md-5,
+html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .row > .col-md-6,
+html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .row > .col-md-7 {
+  width: 100%;
+}
+
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter,
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_length {
   width: 100%;
@@ -875,46 +881,28 @@ html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_le
 
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter label,
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_length label {
+  display: flex !important;
+  flex-wrap: wrap;
   width: 100%;
   max-width: 100%;
+  white-space: normal;
 }
 
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter input {
-  width: min(220px, 100%) !important;
+  width: 100% !important;
+  flex: 1 1 12rem;
   min-width: 0;
-  margin-left: 0.5rem;
+  margin-left: 0 !important;
 }
 
 html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .table-responsive {
   width: 100%;
   max-width: 100%;
-}
-
-@media (max-width: 991.98px) {
-  html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter,
-  html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_length {
-    justify-content: flex-start;
-  }
-
-  html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter label,
-  html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_length label {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    white-space: normal;
-  }
-
-  html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_filter input,
-  html.kai-admin .teacher-dashboard-table-frame .dataTables_wrapper .dataTables_length select {
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
 }
 
 html.kai-admin .d-flex.flex-wrap.gap-3 > .card.card-stats {
