@@ -54,6 +54,7 @@ export default function TeacherDashboardAnalytics({
     <div className="row g-3">
       <div className="col-12 col-xl-8">
         <Card
+          className="teacher-dashboard-card h-100"
           title="Score Completion by Class"
           subtitle="How far each class is in the active term, plus the current average total."
         >
@@ -105,6 +106,7 @@ export default function TeacherDashboardAnalytics({
 
       <div className="col-12 col-xl-4">
         <Card
+          className="teacher-dashboard-card h-100"
           title="Grade Distribution"
           subtitle="Spread of submitted grades in the current teacher view."
         >

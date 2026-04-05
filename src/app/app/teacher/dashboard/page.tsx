@@ -359,13 +359,14 @@ export default async function TeacherDashboardPage({
         gradeDistributionData={gradeDistributionData}
       />
 
-      <div className="row g-3">
+      <div className="row g-3 align-items-stretch">
         <div className="col-12 col-xl-7">
           <Card
+            className="teacher-dashboard-card h-100"
             title="Class Coverage"
             subtitle="Expected score rows are based on active-term enrollments multiplied by subjects assigned to each class."
           >
-            <TableWrap>
+            <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
@@ -406,8 +407,8 @@ export default async function TeacherDashboardPage({
         </div>
 
         <div className="col-12 col-xl-5">
-          <Card title="Students Needing Attention" subtitle="Lowest active-term averages in the current teacher view.">
-            <TableWrap>
+          <Card className="teacher-dashboard-card h-100" title="Students Needing Attention" subtitle="Lowest active-term averages in the current teacher view.">
+            <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
@@ -442,10 +443,10 @@ export default async function TeacherDashboardPage({
         </div>
       </div>
 
-      <div className="row g-3">
+      <div className="row g-3 align-items-stretch">
         <div className="col-12 col-xl-6">
-          <Card title="Subject Performance" subtitle="Average total, floor, and ceiling by subject in the active term.">
-            <TableWrap>
+          <Card className="teacher-dashboard-card h-100" title="Subject Performance" subtitle="Average total, floor, and ceiling by subject in the active term.">
+            <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
@@ -480,8 +481,8 @@ export default async function TeacherDashboardPage({
         </div>
 
         <div className="col-12 col-xl-6">
-          <Card title="Recent Score Activity" subtitle="Latest score rows updated in the current teacher view.">
-            <TableWrap>
+          <Card className="teacher-dashboard-card h-100" title="Recent Score Activity" subtitle="Latest score rows updated in the current teacher view.">
+            <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table">
                 <thead>
                   <tr>
@@ -518,8 +519,8 @@ export default async function TeacherDashboardPage({
         </div>
       </div>
 
-      <Card title="Classes in View">
-        <TableWrap>
+      <Card className="teacher-dashboard-card" title="Classes in View">
+        <TableWrap className="teacher-dashboard-table-frame">
           <Table className="teacher-dashboard-table">
             <thead>
               <tr>

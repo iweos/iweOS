@@ -2254,6 +2254,41 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
   width: 100%;
 }
 
+.teacher-dashboard-card {
+  height: 100%;
+}
+
+.teacher-dashboard-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  height: 100%;
+}
+
+.teacher-dashboard-card .section-subtle {
+  margin-bottom: 0;
+}
+
+.teacher-dashboard-table-frame {
+  width: 100%;
+}
+
+.teacher-dashboard-table-frame,
+.teacher-dashboard-card .dataTables_wrapper,
+.teacher-dashboard-card .table-responsive {
+  max-width: 100%;
+}
+
+.teacher-dashboard-card .dataTables_wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.teacher-dashboard-card .dataTables_wrapper .table-responsive {
+  flex: 1 1 auto;
+}
+
 .teacher-dashboard-chart-lg {
   height: 320px;
 }
@@ -2315,6 +2350,10 @@ html[data-theme="dark"] .site-theme-toggle:focus-visible {
     letter-spacing: 0.03em;
     text-align: left;
     text-transform: uppercase;
+  }
+
+  .teacher-dashboard-card .card-body {
+    gap: 0.75rem;
   }
 }
 
