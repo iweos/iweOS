@@ -780,6 +780,12 @@ html.kai-admin .dataTables_wrapper .dataTables_filter label {
   white-space: nowrap;
 }
 
+html.kai-admin .dataTables_wrapper .dataTables_length,
+html.kai-admin .dataTables_wrapper .dataTables_filter {
+  width: 100%;
+  max-width: 100%;
+}
+
 html.kai-admin .dataTables_wrapper .dataTables_length select {
   width: auto !important;
   min-width: 72px;
@@ -790,6 +796,23 @@ html.kai-admin .dataTables_wrapper .dataTables_filter input {
   width: 220px !important;
   max-width: 100%;
   margin-left: 0.5rem;
+}
+
+@media (max-width: 1199.98px) {
+  html.kai-admin .dataTables_wrapper .dataTables_length label,
+  html.kai-admin .dataTables_wrapper .dataTables_filter label {
+    display: flex !important;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  html.kai-admin .dataTables_wrapper .dataTables_filter input {
+    width: 100% !important;
+    min-width: 0;
+    margin-left: 0 !important;
+  }
 }
 
 html.kai-admin .dataTables_wrapper .dataTables_info {
