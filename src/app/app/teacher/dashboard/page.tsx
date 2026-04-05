@@ -367,7 +367,7 @@ export default async function TeacherDashboardPage({
             subtitle="Expected score rows are based on active-term enrollments multiplied by subjects assigned to each class."
           >
             <TableWrap className="teacher-dashboard-table-frame">
-              <Table className="teacher-dashboard-table">
+              <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
                   <tr>
                     <Th>Class</Th>
@@ -409,7 +409,7 @@ export default async function TeacherDashboardPage({
         <div className="col-12 col-xl-5">
           <Card className="teacher-dashboard-card h-100" title="Students Needing Attention" subtitle="Lowest active-term averages in the current teacher view.">
             <TableWrap className="teacher-dashboard-table-frame">
-              <Table className="teacher-dashboard-table">
+              <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
                   <tr>
                     <Th>Student</Th>
@@ -447,7 +447,7 @@ export default async function TeacherDashboardPage({
         <div className="col-12 col-xl-6">
           <Card className="teacher-dashboard-card h-100" title="Subject Performance" subtitle="Average total, floor, and ceiling by subject in the active term.">
             <TableWrap className="teacher-dashboard-table-frame">
-              <Table className="teacher-dashboard-table">
+              <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
                   <tr>
                     <Th>Subject</Th>
@@ -483,7 +483,7 @@ export default async function TeacherDashboardPage({
         <div className="col-12 col-xl-6">
           <Card className="teacher-dashboard-card h-100" title="Recent Score Activity" subtitle="Latest score rows updated in the current teacher view.">
             <TableWrap className="teacher-dashboard-table-frame">
-              <Table className="teacher-dashboard-table">
+              <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
                   <tr>
                     <Th>Updated</Th>
@@ -521,7 +521,7 @@ export default async function TeacherDashboardPage({
 
       <Card className="teacher-dashboard-card" title="Classes in View">
         <TableWrap className="teacher-dashboard-table-frame">
-          <Table className="teacher-dashboard-table">
+          <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
             <thead>
               <tr>
                 <Th>Class</Th>
