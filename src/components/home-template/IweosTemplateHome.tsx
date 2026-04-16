@@ -22,6 +22,30 @@ const homepageNav = [
 
 const valueIcons = [Zap, FileCheck, MessageCircle] as const
 
+function SocialIcon({ label }: { label: string }) {
+  if (label === 'LinkedIn') {
+    return (
+      <svg viewBox='0 0 24 24' className='h-4 w-4' aria-hidden='true' fill='currentColor'>
+        <path d='M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5ZM.5 8h4V24h-4V8Zm7 0h3.83v2.19h.05c.53-1 1.84-2.19 3.79-2.19 4.05 0 4.8 2.67 4.8 6.14V24h-4v-7.83c0-1.87-.03-4.28-2.61-4.28-2.61 0-3.01 2.04-3.01 4.15V24h-4V8Z' />
+      </svg>
+    )
+  }
+
+  if (label === 'YouTube') {
+    return (
+      <svg viewBox='0 0 24 24' className='h-4 w-4' aria-hidden='true' fill='currentColor'>
+        <path d='M23.5 6.2a3 3 0 0 0-2.1-2.12C19.53 3.5 12 3.5 12 3.5s-7.53 0-9.4.58A3 3 0 0 0 .5 6.2 31.2 31.2 0 0 0 0 12a31.2 31.2 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.12c1.87.58 9.4.58 9.4.58s7.53 0 9.4-.58a3 3 0 0 0 2.1-2.12A31.2 31.2 0 0 0 24 12a31.2 31.2 0 0 0-.5-5.8ZM9.6 15.8V8.2l6.3 3.8-6.3 3.8Z' />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox='0 0 24 24' className='h-4 w-4' aria-hidden='true' fill='currentColor'>
+      <path d='M18.9 2H22l-6.77 7.74L23.2 22h-6.27l-4.9-6.41L6.4 22H3.3l7.24-8.27L.8 2h6.35l4.43 5.85L18.9 2Zm-1.1 18h1.73L6.2 3.9H4.34L17.8 20Z' />
+    </svg>
+  )
+}
+
 export default function IweosTemplateHome() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -253,9 +277,10 @@ export default function IweosTemplateHome() {
                 <Link
                   key={social.label}
                   href={social.href}
-                  className='text-xs font-medium transition-colors hover:text-[#111827]'
+                  aria-label={social.label}
+                  className='inline-flex items-center text-[#6b7280] transition-colors hover:text-[#111827]'
                 >
-                  {social.label}
+                  <SocialIcon label={social.label} />
                 </Link>
               ))}
               <Link href='mailto:support@iweos.io' className='transition-colors hover:text-[#111827]'>
