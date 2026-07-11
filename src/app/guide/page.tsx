@@ -613,7 +613,7 @@ const pages: DocPage[] = [
     tab: "api",
     title: "Auth tokens",
     description:
-      "Use publishable and server-side keys correctly when integrating against iweOS-authenticated surfaces or protected routes.",
+      "Understand how iweOS protects authenticated pages and resolves the current school profile from a secure server-side session.",
     kind: "doc",
     badge: "API Reference",
     endpoints: [
@@ -627,25 +627,24 @@ const pages: DocPage[] = [
         eyebrow: "Overview",
         title: "Token usage rules",
         body: [
-          "iweOS uses Clerk for authentication, so token usage should respect your environment configuration and deployment mode. Keep publishable keys in the client and secret keys on the server only.",
+          "iweOS uses first-party, database-backed sessions. The browser receives only an opaque, HTTP-only cookie; passwords and raw session tokens are never stored in the database.",
         ],
       },
       {
         id: "token-shape",
         eyebrow: "Attributes",
-        title: "Expected token payload shape",
+        title: "Stored session context",
         body: [
-          "A typical server-consumed token should resolve the user, role, and school context. Metadata should stay minimal and should not duplicate large profile records that can be fetched from the database.",
+          "The server hashes the session token before storage and links the session to a credential and profile. Role and school authorization remain authoritative in the Profile record.",
         ],
         codeBlocks: [
           {
             language: "json",
-            caption: "Illustrative token claims shape.",
+            caption: "Illustrative server-resolved session context.",
             code: `{
-  "sub": "user_123",
-  "role": "teacher",
-  "schoolId": "sch_456",
-  "permissions": ["grade-entry:write", "attendance:write"]
+  "credentialId": "credential_uuid",
+  "profileId": "profile_uuid",
+  "expiresAt": "2026-08-10T10:00:00.000Z"
 }`,
           },
         ],
@@ -657,16 +656,16 @@ const pages: DocPage[] = [
         codeBlocks: [
           {
             language: "ts",
-            caption: "A simple server-side token consumption example.",
-            code: `import { auth } from "@clerk/nextjs/server";
+            caption: "A simple protected server-route example.",
+            code: `import { requireProfile } from "@/lib/server/auth";
 
 export async function GET() {
-  const { userId, sessionClaims } = await auth();
+  const profile = await requireProfile();
 
   return Response.json({
-    userId,
-    role: sessionClaims?.role,
-    schoolId: sessionClaims?.schoolId,
+    profileId: profile.id,
+    role: profile.role,
+    schoolId: profile.schoolId,
   });
 }`,
           },
@@ -904,6 +903,19 @@ export async function GET() {
     kind: "changelog",
     badge: "Changelog",
     sections: [
+      {
+        id: "first-party-authentication",
+        eyebrow: "Security",
+        timestamp: "Jul 11, 2026 · 12:00 PM GMT+1",
+        timelineGroup: "July 2026",
+        title: "First-party iweOS authentication",
+        bullets: [
+          "Clerk was replaced with an iweOS-owned sign-in and sign-up flow using Argon2id password hashing and secure HTTP-only sessions.",
+          "Existing school profiles remain intact and are connected only after the account owner verifies the registered email address.",
+          "Email verification links expire after 30 minutes, and session tokens are stored as hashes rather than readable credentials.",
+          "Teacher account linking, role protection, onboarding, sign-out, and payment report authorization now use the same local identity system.",
+        ],
+      },
       {
         id: "attendance-and-result-settings",
         eyebrow: "Operations",

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth, useClerk } from "@clerk/nextjs";
 import { useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -11,8 +10,6 @@ type GuideFooterBarProps = {
 };
 
 export default function GuideFooterBar({ compact = false, showTourButton = false }: GuideFooterBarProps) {
-  const { signOut } = useClerk();
-  const { sessionId } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   function handleSignOut() {
@@ -27,10 +24,9 @@ export default function GuideFooterBar({ compact = false, showTourButton = false
     );
 
     setIsSigningOut(true);
-    const signOutPromise = sessionId ? signOut({ sessionId, redirectUrl: "/sign-in" }) : signOut({ redirectUrl: "/sign-in" });
-    void signOutPromise.catch(() => {
-      setIsSigningOut(false);
-    });
+    void fetch("/api/auth/sign-out", { method: "POST" })
+      .then(() => window.location.assign("/sign-in"))
+      .catch(() => setIsSigningOut(false));
   }
 
   return (

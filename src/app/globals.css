@@ -4141,3 +4141,22 @@ html[data-theme="dark"] .shell-tour-progress,
 html[data-theme="dark"] .shell-tour-close {
   color: #c5d0dc;
 }
+/* First-party authentication */
+.auth-page { min-height: 100svh; display: grid; place-items: center; padding: 32px 18px; background: radial-gradient(circle at 15% 10%, rgba(47,107,63,.16), transparent 32%), #f4f5f1; }
+.auth-card { width: min(100%, 430px); padding: 38px; border: 1px solid #dfe4dc; border-radius: 24px; background: rgba(255,255,255,.96); box-shadow: 0 24px 70px rgba(24,45,30,.12); }
+.auth-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+.auth-brand-text { font-size: 1.25rem; font-weight: 800; }
+.auth-kicker { margin: 0 0 7px; color: #2f6b3f; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.auth-card h1 { margin: 0; color: #18231c; font-size: clamp(1.9rem, 7vw, 2.45rem); line-height: 1.05; }
+.auth-intro { margin: 12px 0 25px; color: #657068; line-height: 1.6; }
+.auth-error { margin-bottom: 18px; padding: 12px 14px; border: 1px solid #efc4c4; border-radius: 12px; color: #8f2020; background: #fff2f2; font-size: .9rem; }
+.auth-success { margin-bottom: 18px; padding: 12px 14px; border: 1px solid #b8dbc2; border-radius: 12px; color: #245332; background: #eff8f1; font-size: .9rem; line-height: 1.55; }
+.auth-form { display: grid; gap: 17px; }
+.auth-form label { display: grid; gap: 7px; color: #28342c; font-size: .84rem; font-weight: 700; }
+.auth-form input { width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #cad2cc; border-radius: 12px; background: #fff; color: #172019; font: inherit; outline: none; }
+.auth-form input:focus { border-color: #2f6b3f; box-shadow: 0 0 0 3px rgba(47,107,63,.13); }
+.auth-form button { min-height: 50px; margin-top: 4px; border: 0; border-radius: 12px; background: #2f6b3f; color: white; font: inherit; font-weight: 800; cursor: pointer; }
+.auth-form button:hover { background: #255633; }
+.auth-switch { margin: 24px 0 0; color: #68716b; font-size: .9rem; text-align: center; }
+.auth-switch a { color: #2f6b3f; font-weight: 800; }
+@media (max-width: 520px) { .auth-card { padding: 28px 22px; border-radius: 20px; } }

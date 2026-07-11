@@ -1,6 +1,5 @@
 "use server";
 
-import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, ProfileRole, ResultPublicationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
@@ -277,24 +276,6 @@ function revalidateAdminPages() {
   revalidatePath("/app/teacher/grade-entry");
   revalidatePath("/app/teacher/results");
   revalidatePath("/results");
-}
-
-async function syncRoleMetadata(clerkUserId: string | null, role: ProfileRole, schoolId: string) {
-  if (!clerkUserId) {
-    return;
-  }
-
-  try {
-    const client = await clerkClient();
-    await client.users.updateUserMetadata(clerkUserId, {
-      publicMetadata: {
-        role: role === ProfileRole.ADMIN ? "admin" : "teacher",
-        schoolId,
-      },
-    });
-  } catch {
-    // Metadata sync failures should not block DB role updates.
-  }
 }
 
 function toStudentPaymentId(schoolCode: string, studentCode: string) {
@@ -885,31 +866,19 @@ export async function manualLinkTeacherAccountAction(formData: FormData) {
     }
 
     const normalizedEmail = teacher.email.trim().toLowerCase();
-    const client = await clerkClient();
-    const users = await client.users.getUserList({
-      emailAddress: [normalizedEmail],
-      limit: 10,
-    });
-
-    const clerkUser = users.data.find((user) =>
-      user.emailAddresses.some((entry) => entry.emailAddress.trim().toLowerCase() === normalizedEmail),
-    );
-
-    if (!clerkUser) {
+    const credential = await prisma.authCredential.findUnique({ where: { email: normalizedEmail } });
+    if (!credential) {
       throw new Error("No signed-up account found for this email yet.");
     }
 
-    const existingLink = await prisma.profile.findUnique({
-      where: { clerkUserId: clerkUser.id },
-      select: { id: true, schoolId: true, email: true },
-    });
+    const existingLink = credential.profileId
+      ? await prisma.profile.findUnique({
+          where: { id: credential.profileId },
+          select: { id: true, schoolId: true, email: true },
+        })
+      : null;
 
-    let updated: {
-      clerkUserId: string | null;
-      role: ProfileRole;
-      schoolId: string;
-      fullName: string;
-    };
+    let updated: { role: ProfileRole; schoolId: string; fullName: string };
 
     if (existingLink && existingLink.id !== teacher.id) {
       if (existingLink.schoolId !== actor.schoolId) {
@@ -921,30 +890,21 @@ export async function manualLinkTeacherAccountAction(formData: FormData) {
       }
 
       updated = await prisma.$transaction(async (tx) => {
-        await tx.profile.update({
-          where: { id: existingLink.id },
-          data: { clerkUserId: null },
-        });
-
+        await tx.authCredential.update({ where: { id: credential.id }, data: { profileId: teacher.id } });
+        await tx.authSession.updateMany({ where: { credentialId: credential.id }, data: { profileId: teacher.id } });
         return tx.profile.update({
           where: { id: teacher.id },
-          data: {
-            clerkUserId: clerkUser.id,
-            isActive: true,
-          },
+          data: { isActive: true },
         });
       });
     } else {
-      updated = await prisma.profile.update({
-        where: { id: teacher.id },
-        data: {
-          clerkUserId: clerkUser.id,
-          isActive: true,
-        },
+      updated = await prisma.$transaction(async (tx) => {
+        await tx.authCredential.update({ where: { id: credential.id }, data: { profileId: teacher.id } });
+        await tx.authSession.updateMany({ where: { credentialId: credential.id }, data: { profileId: teacher.id } });
+        return tx.profile.update({ where: { id: teacher.id }, data: { isActive: true } });
       });
     }
 
-    await syncRoleMetadata(updated.clerkUserId, updated.role, updated.schoolId);
     revalidateAdminPages();
     redirectTeachersStatus("success", `${updated.fullName} has been linked successfully.`, { editTeacherId: teacherId });
   } catch (error) {
@@ -1010,7 +970,6 @@ export async function setProfileRoleAction(formData: FormData) {
     data: { role: targetRole },
   });
 
-  await syncRoleMetadata(updated.clerkUserId, updated.role, updated.schoolId);
   revalidateAdminPages();
 }
 

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useAuth, useClerk } from "@clerk/nextjs";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -36,8 +35,6 @@ export default function Topbar({
   profileName,
   profileEmail,
 }: TopbarProps) {
-  const { signOut } = useClerk();
-  const { sessionId } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -134,12 +131,9 @@ export default function Topbar({
     setIsSigningOut(true);
     setProfileOpen(false);
     setNotificationsOpen(false);
-    const signOutPromise = sessionId
-      ? signOut({ sessionId, redirectUrl: "/sign-in" })
-      : signOut({ redirectUrl: "/sign-in" });
-    void signOutPromise.catch(() => {
-      setIsSigningOut(false);
-    });
+    void fetch("/api/auth/sign-out", { method: "POST" })
+      .then(() => window.location.assign("/sign-in"))
+      .catch(() => setIsSigningOut(false));
   }
 
   return (

@@ -37,6 +37,7 @@ export default async function AdminTeachersPage({
         role: ProfileRole.TEACHER,
       },
       orderBy: { createdAt: "desc" },
+      include: { authCredential: { select: { id: true } } },
     }),
     prisma.profile.findMany({
       where: {
@@ -44,12 +45,13 @@ export default async function AdminTeachersPage({
         role: ProfileRole.ADMIN,
       },
       orderBy: { createdAt: "desc" },
+      include: { authCredential: { select: { id: true } } },
     }),
   ]);
 
   const totalTeachers = teachers.length;
   const activeTeachers = teachers.filter((teacher) => teacher.isActive).length;
-  const linkedAccounts = teachers.filter((teacher) => Boolean(teacher.clerkUserId)).length;
+  const linkedAccounts = teachers.filter((teacher) => Boolean(teacher.authCredential)).length;
   const pendingAccounts = totalTeachers - linkedAccounts;
   const totalAdmins = admins.length;
   const editingTeacher = params.editTeacherId ? teachers.find((teacher) => teacher.id === params.editTeacherId) ?? null : null;
@@ -156,7 +158,7 @@ export default async function AdminTeachersPage({
               <tr key={teacher.id}>
                 <Td>{teacher.fullName}</Td>
                 <Td>{teacher.email}</Td>
-                <Td>{teacher.clerkUserId ? "Linked" : "Pending signup"}</Td>
+                <Td>{teacher.authCredential ? "Linked" : "Pending signup"}</Td>
                 <Td>{teacher.isActive ? "Active" : "Inactive"}</Td>
                 <Td>Teacher</Td>
                 <Td>
@@ -166,8 +168,8 @@ export default async function AdminTeachersPage({
                       <button
                         className="btn btn-secondary btn-icon-square"
                         type="submit"
-                        aria-label={teacher.clerkUserId ? "Re-link account" : "Link account"}
-                        title={teacher.clerkUserId ? "Re-link account" : "Link account"}
+                        aria-label={teacher.authCredential ? "Re-link account" : "Link account"}
+                        title={teacher.authCredential ? "Re-link account" : "Link account"}
                       >
                         <i className="fas fa-link" aria-hidden="true" />
                       </button>
@@ -247,7 +249,7 @@ export default async function AdminTeachersPage({
               <tr key={admin.id}>
                 <Td>{admin.fullName}</Td>
                 <Td>{admin.email}</Td>
-                <Td>{admin.clerkUserId ? "Linked" : "Pending signup"}</Td>
+                <Td>{admin.authCredential ? "Linked" : "Pending signup"}</Td>
                 <Td>{admin.isActive ? "Active" : "Inactive"}</Td>
                 <Td>Admin</Td>
                 <Td>

@@ -1,9 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import localFont from "next/font/local";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
-import ClerkDiagnosticsClient from "@/components/ClerkDiagnosticsClient";
 import GuideDock from "@/components/guide/GuideDock";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
@@ -70,7 +68,6 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="stylesheet" href="/kaiadmin/assets/css/fonts.min.css" />
@@ -98,7 +95,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className={`${display.variable} ${ui.variable} ${hornbill.variable} ui`}>
           <PwaClient />
           <ThemeSync />
-          <ClerkDiagnosticsClient />
           <GuideDock />
           <Suspense fallback={null}>
             <GlobalPendingIndicator />
@@ -107,6 +103,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </body>
       </html>
-    </ClerkProvider>
   );
 }

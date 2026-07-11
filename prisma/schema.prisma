@@ -12,6 +12,12 @@ enum ProfileRole {
   TEACHER @map("teacher")
 }
 
+enum AuthTokenType {
+  VERIFY_EMAIL
+  PASSWORD_RESET
+  ACCOUNT_CLAIM
+}
+
 enum FeeItemType {
   COMPULSORY @map("compulsory")
   OTHER      @map("other")
@@ -128,11 +134,66 @@ model Profile {
   resultPublications       ResultPublication[] @relation("result_published_by")
   receivedNotifications    Notification[]      @relation("notification_recipient")
   sentNotifications        Notification[]      @relation("notification_actor")
+  authCredential           AuthCredential?
+  authSessions             AuthSession[]
 
   @@index([schoolId])
   @@index([schoolId, email])
   @@index([schoolId, role])
   @@map("profiles")
+}
+
+model AuthCredential {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId       String?   @unique @map("profile_id") @db.Uuid
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(6)
+  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  profile Profile?      @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  sessions AuthSession[]
+  tokens   AuthVerificationToken[]
+
+  @@map("auth_credentials")
+}
+
+model AuthSession {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  credentialId     String   @map("credential_id") @db.Uuid
+  profileId        String?  @map("profile_id") @db.Uuid
+  sessionTokenHash String   @unique @map("session_token_hash")
+  expiresAt        DateTime @map("expires_at") @db.Timestamptz(6)
+  lastSeenAt       DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  ipAddress        String?  @map("ip_address")
+  userAgent        String?  @map("user_agent")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  credential AuthCredential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  profile    Profile?       @relation(fields: [profileId], references: [id], onDelete: SetNull)
+
+  @@index([credentialId])
+  @@index([profileId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model AuthVerificationToken {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  credentialId String        @map("credential_id") @db.Uuid
+  tokenHash    String        @unique @map("token_hash")
+  type         AuthTokenType
+  expiresAt    DateTime      @map("expires_at") @db.Timestamptz(6)
+  usedAt       DateTime?     @map("used_at") @db.Timestamptz(6)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  credential AuthCredential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+
+  @@index([credentialId, type])
+  @@index([expiresAt])
+  @@map("auth_verification_tokens")
 }
 
 model Class {

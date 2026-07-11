@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",
-    "build": "next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
@@ -13,9 +13,9 @@
     "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.0.4",
     "@headlessui/react": "^2.2.9",
     "@prisma/client": "^6.19.2",
+    "argon2": "^0.44.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "jszip": "^3.10.1",

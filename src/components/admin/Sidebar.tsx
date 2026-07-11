@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth, useClerk } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
@@ -125,8 +124,6 @@ export default function Sidebar({
   profileEmail,
   teacherPortalAdmin = false,
 }: SidebarProps) {
-  const { signOut } = useClerk();
-  const { sessionId } = useAuth();
   const pathname = usePathname();
   const [groupOpenMap, setGroupOpenMap] = useState<Record<string, boolean>>({});
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -164,10 +161,9 @@ export default function Sidebar({
     );
     setIsSigningOut(true);
     onClose();
-    const signOutPromise = sessionId ? signOut({ sessionId, redirectUrl: "/sign-in" }) : signOut({ redirectUrl: "/sign-in" });
-    void signOutPromise.catch(() => {
-      setIsSigningOut(false);
-    });
+    void fetch("/api/auth/sign-out", { method: "POST" })
+      .then(() => window.location.assign("/sign-in"))
+      .catch(() => setIsSigningOut(false));
   }
 
   return (

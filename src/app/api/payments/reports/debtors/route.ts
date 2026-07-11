@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { InvoiceStatus, ProfileRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/server/prisma";
@@ -10,12 +9,7 @@ function csvEscape(value: string | number | null | undefined) {
 }
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const profile = await getCurrentProfile(userId);
+  const profile = await getCurrentProfile();
   if (!profile || profile.role !== ProfileRole.ADMIN) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
