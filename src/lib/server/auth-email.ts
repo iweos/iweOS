@@ -77,3 +77,52 @@ export async function consumeAccountVerification(rawToken: string) {
   ]);
   return { credentialId: token.credentialId, profileId };
 }
+
+export async function sendPasswordReset(credentialId: string, email: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.AUTH_EMAIL_FROM;
+  if (!apiKey || !from) throw new Error("Account email delivery is not configured yet.");
+
+  const rawToken = randomBytes(32).toString("base64url");
+  await prisma.authVerificationToken.deleteMany({
+    where: { credentialId, type: AuthTokenType.PASSWORD_RESET, usedAt: null },
+  });
+  await prisma.authVerificationToken.create({
+    data: {
+      credentialId,
+      tokenHash: hashToken(rawToken),
+      type: AuthTokenType.PASSWORD_RESET,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 30),
+    },
+  });
+
+  const resetUrl = `${await appOrigin()}/reset-password?token=${encodeURIComponent(rawToken)}`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [email],
+      subject: "Reset your iweOS password",
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px"><h1 style="color:#245332">Reset your iweOS password</h1><p>Use the button below to choose a new password for your account.</p><p style="margin:28px 0"><a href="${resetUrl}" style="background:#2f6b3f;color:#fff;text-decoration:none;padding:13px 20px;border-radius:9px;font-weight:700">Reset password</a></p><p>This link expires in 30 minutes. If you did not request it, you can ignore this email.</p></div>`,
+    }),
+  });
+  if (!response.ok) {
+    await prisma.authVerificationToken.deleteMany({ where: { credentialId, tokenHash: hashToken(rawToken) } });
+    throw new Error("We could not send the password reset email.");
+  }
+}
+
+export async function consumePasswordReset(rawToken: string, passwordHash: string) {
+  const token = await prisma.authVerificationToken.findUnique({
+    where: { tokenHash: hashToken(rawToken) },
+  });
+  if (!token || token.type !== AuthTokenType.PASSWORD_RESET || token.usedAt || token.expiresAt <= new Date()) return false;
+
+  await prisma.$transaction([
+    prisma.authVerificationToken.update({ where: { id: token.id }, data: { usedAt: new Date() } }),
+    prisma.authCredential.update({ where: { id: token.credentialId }, data: { passwordHash } }),
+    prisma.authSession.deleteMany({ where: { credentialId: token.credentialId } }),
+  ]);
+  return true;
+}

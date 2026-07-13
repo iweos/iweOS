@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "password-recovery",
+        eyebrow: "Security",
+        timestamp: "Jul 13, 2026 · 1:49 PM GMT+1",
+        timelineGroup: "July 2026",
+        title: "Secure password recovery",
+        bullets: [
+          "Users can now request a password reset from the iweOS sign-in page and receive a secure email link that expires after 30 minutes.",
+          "Completing a password reset closes existing sessions, while recovery responses do not reveal whether an email is registered.",
+          "Sign-in, sign-up, and account recovery pages now explicitly use Hornbill typography across headings, fields, links, and buttons.",
+        ],
+      },
+      {
         id: "first-party-authentication",
         eyebrow: "Security",
         timestamp: "Jul 11, 2026 · 12:00 PM GMT+1",

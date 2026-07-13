@@ -4142,7 +4142,8 @@ html[data-theme="dark"] .shell-tour-close {
   color: #c5d0dc;
 }
 /* First-party authentication */
-.auth-page { min-height: 100svh; display: grid; place-items: center; padding: 32px 18px; background: radial-gradient(circle at 15% 10%, rgba(47,107,63,.16), transparent 32%), #f4f5f1; }
+.auth-page { min-height: 100svh; display: grid; place-items: center; padding: 32px 18px; background: radial-gradient(circle at 15% 10%, rgba(47,107,63,.16), transparent 32%), #f4f5f1; font-family: var(--font-site-hornbill), var(--font-display), Georgia, serif; }
+.auth-page input, .auth-page button { font-family: var(--font-site-hornbill), var(--font-display), Georgia, serif; }
 .auth-card { width: min(100%, 430px); padding: 38px; border: 1px solid #dfe4dc; border-radius: 24px; background: rgba(255,255,255,.96); box-shadow: 0 24px 70px rgba(24,45,30,.12); }
 .auth-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 36px; }
 .auth-brand-text { font-size: 1.25rem; font-weight: 800; }
@@ -4157,6 +4158,7 @@ html[data-theme="dark"] .shell-tour-close {
 .auth-form input:focus { border-color: #2f6b3f; box-shadow: 0 0 0 3px rgba(47,107,63,.13); }
 .auth-form button { min-height: 50px; margin-top: 4px; border: 0; border-radius: 12px; background: #2f6b3f; color: white; font: inherit; font-weight: 800; cursor: pointer; }
 .auth-form button:hover { background: #255633; }
+.auth-forgot { justify-self: end; margin-top: -7px; color: #2f6b3f; font-size: .86rem; font-weight: 800; }
 .auth-switch { margin: 24px 0 0; color: #68716b; font-size: .9rem; text-align: center; }
 .auth-switch a { color: #2f6b3f; font-weight: 800; }
 @media (max-width: 520px) { .auth-card { padding: 28px 22px; border-radius: 20px; } }

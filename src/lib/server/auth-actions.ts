@@ -4,14 +4,14 @@ import argon2 from "argon2";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
 import { createAuthSession, destroyAuthSession } from "@/lib/server/session";
-import { sendAccountVerification } from "@/lib/server/auth-email";
+import { consumePasswordReset, sendAccountVerification, sendPasswordReset } from "@/lib/server/auth-email";
 
 function value(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
 function authRedirect(path: string, message: string): never {
-  redirect(`${path}?error=${encodeURIComponent(message)}`);
+  redirect(`${path}${path.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}`);
 }
 
 export async function signInAction(formData: FormData) {
@@ -61,4 +61,34 @@ export async function signUpAction(formData: FormData) {
 export async function signOutAction() {
   await destroyAuthSession();
   redirect("/sign-in");
+}
+
+export async function requestPasswordResetAction(formData: FormData) {
+  const email = value(formData, "email").toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) authRedirect("/forgot-password", "Enter a valid email address.");
+
+  const credential = await prisma.authCredential.findUnique({ where: { email } });
+  if (credential?.emailVerifiedAt) {
+    try {
+      await sendPasswordReset(credential.id, credential.email);
+    } catch (error) {
+      console.error("[auth] Failed to send password reset", error);
+    }
+  }
+  redirect("/forgot-password?sent=1");
+}
+
+export async function resetPasswordAction(formData: FormData) {
+  const token = value(formData, "token");
+  const password = value(formData, "password");
+  const confirmPassword = value(formData, "confirmPassword");
+  if (!token) authRedirect("/reset-password", "Password reset link is missing.");
+  if (password.length < 8) authRedirect(`/reset-password?token=${encodeURIComponent(token)}`, "Password must be at least 8 characters.");
+  if (password !== confirmPassword) authRedirect(`/reset-password?token=${encodeURIComponent(token)}`, "Passwords do not match.");
+
+  const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+  if (!(await consumePasswordReset(token, passwordHash))) {
+    authRedirect("/forgot-password", "Password reset link is invalid or expired. Request a new one.");
+  }
+  redirect("/sign-in?reset=1");
 }
