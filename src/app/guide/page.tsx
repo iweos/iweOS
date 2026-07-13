@@ -904,6 +904,17 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "authentication-usability",
+        eyebrow: "Authentication",
+        timestamp: "Jul 13, 2026 · 2:04 PM GMT+1",
+        timelineGroup: "July 2026",
+        title: "Password visibility and email diagnostics",
+        bullets: [
+          "Password fields on sign-in, sign-up, and password reset now include accessible show and hide controls.",
+          "Verification email failures now identify rejected API keys, unverified sender domains, invalid sender addresses, and temporary rate limits without exposing secrets.",
+        ],
+      },
+      {
         id: "password-recovery",
         eyebrow: "Security",
         timestamp: "Jul 13, 2026 · 1:49 PM GMT+1",

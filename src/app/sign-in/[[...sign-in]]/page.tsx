@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
+import PasswordField from "@/components/auth/PasswordField";
 import { signInAction } from "@/lib/server/auth-actions";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; reset?: string }> }) {
@@ -15,7 +16,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         {reset ? <div className="auth-success" role="status">Password updated. Sign in with your new password.</div> : null}
         <form action={signInAction} className="auth-form">
           <label><span>Email address</span><input name="email" type="email" autoComplete="email" required /></label>
-          <label><span>Password</span><input name="password" type="password" autoComplete="current-password" required /></label>
+          <PasswordField label="Password" name="password" autoComplete="current-password" />
           <Link className="auth-forgot" href="/forgot-password">Forgot password?</Link>
           <button type="submit">Sign in</button>
         </form>

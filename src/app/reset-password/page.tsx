@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
+import PasswordField from "@/components/auth/PasswordField";
 import { resetPasswordAction } from "@/lib/server/auth-actions";
 
 export default async function ResetPasswordPage({ searchParams }: { searchParams: Promise<{ token?: string; error?: string }> }) {
@@ -14,8 +15,8 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
         {error ? <div className="auth-error" role="alert">{error}</div> : null}
         {token ? <form action={resetPasswordAction} className="auth-form">
           <input name="token" type="hidden" value={token} />
-          <label><span>New password</span><input name="password" type="password" autoComplete="new-password" minLength={8} required /></label>
-          <label><span>Confirm new password</span><input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required /></label>
+          <PasswordField label="New password" name="password" autoComplete="new-password" minLength={8} />
+          <PasswordField label="Confirm new password" name="confirmPassword" autoComplete="new-password" minLength={8} />
           <button type="submit">Reset password</button>
         </form> : <div className="auth-error" role="alert">This reset link is incomplete. Request a new one.</div>}
         <p className="auth-switch"><Link href="/forgot-password">Request another link</Link></p>

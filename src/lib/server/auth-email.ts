@@ -17,6 +17,23 @@ async function appOrigin() {
   return host ? `${protocol}://${host}` : "http://localhost:3000";
 }
 
+async function resendFailure(response: Response, fallback: string) {
+  const details = await response.text();
+  console.error(`[auth-email] Resend rejected the request (${response.status})`, details.slice(0, 800));
+  const normalized = details.toLowerCase();
+  if (normalized.includes("domain") && normalized.includes("not verified")) {
+    return "The verification email domain is not approved in Resend yet. Verify the AUTH_EMAIL_FROM domain and try again.";
+  }
+  if (response.status === 401 || normalized.includes("api key")) {
+    return "The email service key was rejected. Check RESEND_API_KEY in Vercel and try again.";
+  }
+  if (response.status === 422 || normalized.includes("from address")) {
+    return "The verification sender address is not approved. Check AUTH_EMAIL_FROM in Vercel and verify its domain in Resend.";
+  }
+  if (response.status === 429) return "The email service is temporarily rate-limited. Wait a moment and try again.";
+  return fallback;
+}
+
 export async function sendAccountVerification(credentialId: string, email: string) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.AUTH_EMAIL_FROM;
@@ -48,7 +65,7 @@ export async function sendAccountVerification(credentialId: string, email: strin
   });
   if (!response.ok) {
     await prisma.authVerificationToken.deleteMany({ where: { credentialId, tokenHash: hashToken(rawToken) } });
-    throw new Error("We could not send the verification email. Please try again.");
+    throw new Error(await resendFailure(response, "We could not send the verification email. Please try again."));
   }
 }
 
@@ -109,7 +126,7 @@ export async function sendPasswordReset(credentialId: string, email: string) {
   });
   if (!response.ok) {
     await prisma.authVerificationToken.deleteMany({ where: { credentialId, tokenHash: hashToken(rawToken) } });
-    throw new Error("We could not send the password reset email.");
+    throw new Error(await resendFailure(response, "We could not send the password reset email."));
   }
 }
 
