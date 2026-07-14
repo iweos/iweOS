@@ -871,39 +871,14 @@ export async function manualLinkTeacherAccountAction(formData: FormData) {
       throw new Error("No signed-up account found for this email yet.");
     }
 
-    const existingLink = credential.profileId
-      ? await prisma.profile.findUnique({
-          where: { id: credential.profileId },
-          select: { id: true, schoolId: true, email: true },
-        })
-      : null;
-
-    let updated: { role: ProfileRole; schoolId: string; fullName: string };
-
-    if (existingLink && existingLink.id !== teacher.id) {
-      if (existingLink.schoolId !== actor.schoolId) {
-        throw new Error("This account is already linked to another school profile.");
-      }
-
-      if (existingLink.email.trim().toLowerCase() !== normalizedEmail) {
-        throw new Error(`This account is already linked to ${existingLink.email} in this school.`);
-      }
-
-      updated = await prisma.$transaction(async (tx) => {
-        await tx.authCredential.update({ where: { id: credential.id }, data: { profileId: teacher.id } });
-        await tx.authSession.updateMany({ where: { credentialId: credential.id }, data: { profileId: teacher.id } });
-        return tx.profile.update({
-          where: { id: teacher.id },
-          data: { isActive: true },
-        });
-      });
-    } else {
-      updated = await prisma.$transaction(async (tx) => {
-        await tx.authCredential.update({ where: { id: credential.id }, data: { profileId: teacher.id } });
-        await tx.authSession.updateMany({ where: { credentialId: credential.id }, data: { profileId: teacher.id } });
-        return tx.profile.update({ where: { id: teacher.id }, data: { isActive: true } });
-      });
+    if (teacher.credentialId && teacher.credentialId !== credential.id) {
+      throw new Error("This teacher profile is already linked to another signed-up account.");
     }
+
+    const updated = await prisma.profile.update({
+      where: { id: teacher.id },
+      data: { credentialId: credential.id, isActive: true },
+    });
 
     revalidateAdminPages();
     redirectTeachersStatus("success", `${updated.fullName} has been linked successfully.`, { editTeacherId: teacherId });

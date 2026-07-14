@@ -17,7 +17,7 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
     await createAuthSession(verified.credentialId, verified.profileId);
   } catch (error) {
     console.error("[auth] Account verified but session creation failed", error);
-    redirect("/sign-in?error=Account%20verified.%20Please%20sign%20in%20to%20continue.");
+    redirect("/sign-in?verified=1");
   }
   redirect(verified.profileId ? "/app" : "/onboarding");
 }

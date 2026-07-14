@@ -1,8 +1,8 @@
-import { Prisma, ProfileRole } from "@prisma/client";
+import { PlatformRole, Prisma, ProfileRole, SchoolStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
 import { getAuthSession, setSessionProfile } from "@/lib/server/session";
-import type { AppRole } from "@/types";
+import type { AppRole, SchoolAccessOption } from "@/types";
 
 type ProfileWithSchool = Prisma.ProfileGetPayload<{ include: { school: true } }>;
 
@@ -56,26 +56,66 @@ async function recoverAdminIfMissing(profile: ProfileWithSchool): Promise<Profil
 
 export async function getCurrentProfile(): Promise<ProfileWithSchool | null> {
   const session = await getAuthSession();
-  return session?.profile ?? null;
+  if (!session?.profile || session.profile.school.status !== SchoolStatus.ACTIVE) return null;
+  return session.profile;
 }
 
-async function findPendingProfilesByEmail(email: string) {
-  return prisma.profile.findMany({
+export function platformAdminEmailAllowed(email: string) {
+  const allowedEmails = (process.env.PLATFORM_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map(normalizeEmail)
+    .filter(Boolean);
+  return allowedEmails.includes(normalizeEmail(email));
+}
+
+async function claimProfilesForCredential(credentialId: string, email: string) {
+  await prisma.profile.updateMany({
     where: {
       isActive: true,
       email: { equals: normalizeEmail(email), mode: "insensitive" },
-      authCredential: null,
+      credentialId: null,
+    },
+    data: { credentialId },
+  });
+}
+
+async function findAvailableProfiles(credentialId: string, email: string) {
+  await claimProfilesForCredential(credentialId, email);
+  return prisma.profile.findMany({
+    where: {
+      credentialId,
+      isActive: true,
+      school: { status: SchoolStatus.ACTIVE },
     },
     include: { school: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ school: { name: "asc" } }, { role: "asc" }],
   });
+}
+
+export async function getAccountWorkspaceOptions(): Promise<{
+  options: SchoolAccessOption[];
+  platformAdmin: boolean;
+}> {
+  const session = await getAuthSession();
+  if (!session) redirect("/sign-in");
+  const profiles = await findAvailableProfiles(session.credentialId, session.credential.email);
+  return {
+    options: profiles.map((profile) => ({
+      profileId: profile.id,
+      schoolId: profile.schoolId,
+      schoolName: profile.school.name,
+      role: profile.role === ProfileRole.ADMIN ? "Admin" : "Teacher",
+    })),
+    platformAdmin:
+      session.credential.platformRole === PlatformRole.PLATFORM_ADMIN || platformAdminEmailAllowed(session.credential.email),
+  };
 }
 
 export async function getPendingInviteProfilesForAuthenticatedUser(): Promise<PendingInviteProfile[]> {
   const session = await getAuthSession();
   if (!session) redirect("/sign-in");
-  const pendingProfiles = await findPendingProfilesByEmail(session.credential.email);
-  return pendingProfiles.map((profile) => ({
+  const availableProfiles = await findAvailableProfiles(session.credentialId, session.credential.email);
+  return availableProfiles.map((profile) => ({
     id: profile.id,
     role: profile.role,
     fullName: profile.fullName,
@@ -92,7 +132,7 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
   if (!session) redirect("/sign-in");
   if (session.profile) return recoverAdminIfMissing(session.profile);
 
-  const pendingProfiles = await findPendingProfilesByEmail(session.credential.email);
+  const pendingProfiles = await findAvailableProfiles(session.credentialId, session.credential.email);
   const selected = preferredProfileId
     ? pendingProfiles.find((profile) => profile.id === preferredProfileId)
     : pendingProfiles.length === 1
@@ -102,7 +142,6 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
   if (pendingProfiles.length > 0 && !selected) redirect("/onboarding");
 
   if (selected) {
-    await prisma.authCredential.update({ where: { id: session.credentialId }, data: { profileId: selected.id } });
     await setSessionProfile(session.id, selected.id);
     return recoverAdminIfMissing(selected);
   }
@@ -112,10 +151,9 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
   const profile = await prisma.$transaction(async (tx) => {
     const school = await tx.school.create({ data: { name: `${fullName}'s School`, code: schoolCode } });
     const createdProfile = await tx.profile.create({
-      data: { schoolId: school.id, role: ProfileRole.ADMIN, fullName, email: session.credential.email },
+      data: { schoolId: school.id, credentialId: session.credentialId, role: ProfileRole.ADMIN, fullName, email: session.credential.email },
       include: { school: true },
     });
-    await tx.authCredential.update({ where: { id: session.credentialId }, data: { profileId: createdProfile.id } });
     await tx.gradingSetting.create({ data: { schoolId: school.id } });
     const template = await tx.assessmentTemplate.create({
       data: { schoolId: school.id, name: "Default", isActive: true },
@@ -141,7 +179,30 @@ export async function requireProfile(): Promise<ProfileWithSchool> {
   if (!session.profile) redirect("/onboarding");
   const profile = await recoverAdminIfMissing(session.profile);
   if (!profile.isActive) throw new Error("Your account has been deactivated.");
+  if (profile.school.status !== SchoolStatus.ACTIVE) redirect("/sign-in?error=This%20school%20workspace%20is%20not%20currently%20active.");
   return profile;
+}
+
+export async function requirePlatformAdmin() {
+  const session = await getAuthSession();
+  if (!session) redirect("/sign-in");
+
+  let platformRole = session.credential.platformRole;
+  if (platformRole !== PlatformRole.PLATFORM_ADMIN && platformAdminEmailAllowed(session.credential.email)) {
+    const credential = await prisma.authCredential.update({
+      where: { id: session.credentialId },
+      data: { platformRole: PlatformRole.PLATFORM_ADMIN },
+      select: { platformRole: true },
+    });
+    platformRole = credential.platformRole;
+  }
+  if (platformRole !== PlatformRole.PLATFORM_ADMIN) redirect("/app");
+
+  return {
+    credentialId: session.credentialId,
+    email: session.credential.email,
+    activeProfile: session.profile,
+  };
 }
 
 export async function requireRole(role: AppRole): Promise<ProfileWithSchool> {

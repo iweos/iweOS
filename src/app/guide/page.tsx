@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "multi-school-platform-control",
+        eyebrow: "Platform operations",
+        timestamp: "Jul 14, 2026 · 8:00 PM GMT+1",
+        timelineGroup: "July 2026",
+        title: "Multi-school accounts and iweOS administration",
+        bullets: [
+          "One verified account can now hold authorised admin or teacher profiles across multiple schools and switch workspace securely from the profile menu.",
+          "A protected iweOS platform control centre now provides cross-school statistics, tenant search, school-level usage details, administrators, payment and result activity, and audit history.",
+          "Platform administrators can activate, suspend, or archive a school without exposing platform controls to ordinary school administrators.",
+          "Successful account-verification notices now use the green confirmation treatment instead of the red error treatment.",
+        ],
+      },
+      {
         id: "verification-link-recovery",
         eyebrow: "Authentication",
         timestamp: "Jul 14, 2026 · 12:51 PM GMT+1",

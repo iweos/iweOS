@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { headers } from "next/headers";
-import { AuthTokenType } from "@prisma/client";
+import { AuthTokenType, SchoolStatus } from "@prisma/client";
 import { prisma } from "@/lib/server/prisma";
 
 function hashToken(token: string) {
@@ -81,15 +81,23 @@ export async function consumeAccountVerification(rawToken: string) {
   // interrupted after verification but before its session could be created.
   if (token.usedAt) {
     if (!token.credential.emailVerifiedAt) return null;
-    return { credentialId: token.credentialId, profileId: token.credential.profileId };
+    const profiles = await prisma.profile.findMany({
+      where: { credentialId: token.credentialId, isActive: true, school: { status: SchoolStatus.ACTIVE } },
+      select: { id: true },
+    });
+    return { credentialId: token.credentialId, profileId: profiles.length === 1 ? profiles[0].id : null };
   }
 
-  const matchingProfiles = await prisma.profile.findMany({
+  await prisma.profile.updateMany({
     where: {
       email: { equals: token.credential.email, mode: "insensitive" },
       isActive: true,
-      authCredential: null,
+      credentialId: null,
     },
+    data: { credentialId: token.credentialId },
+  });
+  const matchingProfiles = await prisma.profile.findMany({
+    where: { credentialId: token.credentialId, isActive: true, school: { status: SchoolStatus.ACTIVE } },
     select: { id: true },
   });
   const profileId = matchingProfiles.length === 1 ? matchingProfiles[0].id : null;
@@ -97,7 +105,7 @@ export async function consumeAccountVerification(rawToken: string) {
     prisma.authVerificationToken.update({ where: { id: token.id }, data: { usedAt: new Date() } }),
     prisma.authCredential.update({
       where: { id: token.credentialId },
-      data: { emailVerifiedAt: new Date(), profileId },
+      data: { emailVerifiedAt: new Date() },
     }),
   ]);
   return { credentialId: token.credentialId, profileId };

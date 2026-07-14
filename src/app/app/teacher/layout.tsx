@@ -1,9 +1,10 @@
 import { ProfileRole } from "@prisma/client";
 import AdminShell from "@/components/admin/AdminShell";
-import { requireProfile } from "@/lib/server/auth";
+import { getAccountWorkspaceOptions, requireProfile } from "@/lib/server/auth";
 
 export default async function TeacherAreaLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
+  const account = await getAccountWorkspaceOptions();
 
   return (
     <>
@@ -17,6 +18,10 @@ export default async function TeacherAreaLayout({ children }: { children: React.
         homeHref="/app/teacher/dashboard"
         profileName={profile.fullName}
         profileEmail={profile.email}
+        currentSchoolName={profile.school.name}
+        currentProfileId={profile.id}
+        schoolOptions={account.options}
+        platformAdmin={account.platformAdmin}
         teacherPortalAdmin={profile.role === ProfileRole.ADMIN}
       >
         {children}

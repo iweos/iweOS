@@ -1,10 +1,12 @@
 "use server";
 
 import argon2 from "argon2";
+import { PlatformRole, SchoolStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
 import { createAuthSession, destroyAuthSession } from "@/lib/server/session";
 import { consumePasswordReset, sendAccountVerification, sendPasswordReset } from "@/lib/server/auth-email";
+import { platformAdminEmailAllowed } from "@/lib/server/auth";
 
 function value(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -25,9 +27,26 @@ export async function signInAction(formData: FormData) {
   }
   if (!credential.emailVerifiedAt) authRedirect("/sign-in", "Verify your email before signing in.");
 
+  await prisma.profile.updateMany({
+    where: {
+      email: { equals: credential.email, mode: "insensitive" },
+      isActive: true,
+      credentialId: null,
+    },
+    data: { credentialId: credential.id },
+  });
+  const profiles = await prisma.profile.findMany({
+    where: { credentialId: credential.id, isActive: true, school: { status: SchoolStatus.ACTIVE } },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+  const profileId = profiles.length === 1 ? profiles[0].id : null;
+  const platformAdmin =
+    credential.platformRole === PlatformRole.PLATFORM_ADMIN || platformAdminEmailAllowed(credential.email);
+
   await prisma.authCredential.update({ where: { id: credential.id }, data: { lastLoginAt: new Date() } });
-  await createAuthSession(credential.id, credential.profileId);
-  redirect(credential.profileId ? "/app" : "/onboarding");
+  await createAuthSession(credential.id, profileId);
+  redirect(profileId ? "/app" : platformAdmin && profiles.length === 0 ? "/platform" : "/onboarding");
 }
 
 export async function signUpAction(formData: FormData) {

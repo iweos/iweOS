@@ -6,6 +6,7 @@ import Sidebar from "@/components/admin/Sidebar";
 import GuideFooterBar from "@/components/guide/GuideFooterBar";
 import ShellTour from "@/components/guide/ShellTour";
 import Topbar from "@/components/admin/Topbar";
+import type { SchoolAccessOption } from "@/types";
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -14,6 +15,10 @@ type AdminShellProps = {
   settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
+  currentSchoolName?: string;
+  currentProfileId?: string;
+  schoolOptions?: SchoolAccessOption[];
+  platformAdmin?: boolean;
   teacherPortalAdmin?: boolean;
 };
 
@@ -24,6 +29,10 @@ export default function AdminShell({
   settingsHref,
   profileName,
   profileEmail,
+  currentSchoolName,
+  currentProfileId,
+  schoolOptions = [],
+  platformAdmin = false,
   teacherPortalAdmin = false,
 }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,7 +58,8 @@ export default function AdminShell({
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
+    const timeoutId = window.setTimeout(() => setMobileOpen(false), 0);
+    return () => window.clearTimeout(timeoutId);
   }, [pathname]);
 
   return (
@@ -78,6 +88,10 @@ export default function AdminShell({
           settingsHref={resolvedSettingsHref}
           profileName={profileName}
           profileEmail={profileEmail}
+          currentSchoolName={currentSchoolName}
+          currentProfileId={currentProfileId}
+          schoolOptions={schoolOptions}
+          platformAdmin={platformAdmin}
         />
         <div className="container">
           <main className="page-inner admin-page-wrap" data-tour="main-content">

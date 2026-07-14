@@ -21,7 +21,7 @@ export default async function OnboardingPage({
           <div className="card-body p-4">
             <h1 className="h4 mb-2">Choose Your School</h1>
             <p className="text-muted mb-4">
-              Your email is attached to multiple school profiles. Select the school where you should continue as admin.
+              Your account is authorised for multiple school workspaces. Select the school and role you want to use now.
             </p>
             <form method="get" className="d-grid gap-3">
               <label className="d-grid gap-1">

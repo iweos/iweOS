@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
+import type { SchoolAccessOption } from "@/types";
 
 type TopbarProps = {
   onMenuToggle: () => void;
@@ -14,6 +15,10 @@ type TopbarProps = {
   settingsHref?: string;
   profileName?: string;
   profileEmail?: string;
+  currentSchoolName?: string;
+  currentProfileId?: string;
+  schoolOptions?: SchoolAccessOption[];
+  platformAdmin?: boolean;
 };
 
 type TopbarNotification = {
@@ -34,10 +39,15 @@ export default function Topbar({
   settingsHref,
   profileName,
   profileEmail,
+  currentSchoolName,
+  currentProfileId,
+  schoolOptions = [],
+  platformAdmin = false,
 }: TopbarProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [switchingProfileId, setSwitchingProfileId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<TopbarNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -134,6 +144,25 @@ export default function Topbar({
     void fetch("/api/auth/sign-out", { method: "POST" })
       .then(() => window.location.assign("/sign-in"))
       .catch(() => setIsSigningOut(false));
+  }
+
+  async function handleSchoolSwitch(profileId: string) {
+    if (profileId === currentProfileId || switchingProfileId) return;
+    setSwitchingProfileId(profileId);
+    window.dispatchEvent(new CustomEvent("iweos:pending-indicator", { detail: { durationMs: 9000 } }));
+    try {
+      const response = await fetch("/api/auth/switch-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId }),
+      });
+      const payload = (await response.json()) as { destination?: string; error?: string };
+      if (!response.ok || !payload.destination) throw new Error(payload.error || "Unable to switch school.");
+      window.location.assign(payload.destination);
+    } catch (error) {
+      setSwitchingProfileId(null);
+      window.alert(error instanceof Error ? error.message : "Unable to switch school.");
+    }
   }
 
   return (
@@ -269,11 +298,42 @@ export default function Topbar({
                         <div className="u-text">
                           <h4>{profileName ?? `${roleLabel} User`}</h4>
                           <p className="text-muted">{profileEmail ?? "admin@iweos.app"}</p>
+                          {currentSchoolName ? <p className="topbar-current-school">{currentSchoolName}</p> : null}
                         </div>
                       </div>
                     </li>
                     <li>
                       <div className="dropdown-divider" />
+                      {schoolOptions.length > 1 ? (
+                        <div className="topbar-school-switcher">
+                          <p className="topbar-menu-label">Switch school</p>
+                          {schoolOptions.map((option) => {
+                            const active = option.profileId === currentProfileId;
+                            return (
+                              <button
+                                type="button"
+                                className={`topbar-school-option ${active ? "is-active" : ""}`}
+                                key={option.profileId}
+                                onClick={() => void handleSchoolSwitch(option.profileId)}
+                                disabled={active || switchingProfileId !== null}
+                              >
+                                <span className="topbar-school-mark">{option.schoolName.slice(0, 1).toUpperCase()}</span>
+                                <span className="topbar-school-copy">
+                                  <strong>{option.schoolName}</strong>
+                                  <small>{option.role}</small>
+                                </span>
+                                <i className={active ? "fas fa-check" : switchingProfileId === option.profileId ? "fas fa-spinner fa-spin" : "fas fa-chevron-right"} />
+                              </button>
+                            );
+                          })}
+                          <div className="dropdown-divider" />
+                        </div>
+                      ) : null}
+                      {platformAdmin ? (
+                        <Link className="dropdown-item" href="/platform">
+                          <i className="fas fa-layer-group me-2" /> iweOS Administration
+                        </Link>
+                      ) : null}
                       {settingsHref ? (
                         <a className="dropdown-item" href={settingsHref}>
                           Account Settings

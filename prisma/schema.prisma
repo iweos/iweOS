@@ -13,6 +13,16 @@ enum ProfileRole {
   TEACHER @map("teacher")
 }
 
+enum PlatformRole {
+  PLATFORM_ADMIN @map("platform_admin")
+}
+
+enum SchoolStatus {
+  ACTIVE    @map("active")
+  SUSPENDED @map("suspended")
+  ARCHIVED  @map("archived")
+}
+
 enum AuthTokenType {
   VERIFY_EMAIL
   PASSWORD_RESET
@@ -76,6 +86,7 @@ model School {
   website                 String?
   processingFeePercent    Int       @default(5) @map("processing_fee_percent")
   currency                String    @default("NGN")
+  status                  SchoolStatus @default(ACTIVE)
   settlementBankName      String?   @map("settlement_bank_name")
   settlementAccountName   String?   @map("settlement_account_name")
   settlementAccountNumber String?   @map("settlement_account_number")
@@ -115,6 +126,7 @@ model School {
   notifications           Notification[]
 
   @@unique([code])
+  @@index([status])
   @@map("schools")
 }
 
@@ -122,6 +134,7 @@ model Profile {
   id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clerkUserId String?     @unique @map("clerk_user_id")
   schoolId    String      @map("school_id") @db.Uuid
+  credentialId String?    @map("credential_id") @db.Uuid
   role        ProfileRole
   fullName    String      @map("full_name")
   email       String
@@ -135,10 +148,11 @@ model Profile {
   resultPublications       ResultPublication[] @relation("result_published_by")
   receivedNotifications    Notification[]      @relation("notification_recipient")
   sentNotifications        Notification[]      @relation("notification_actor")
-  authCredential           AuthCredential?
+  authCredential           AuthCredential?           @relation(fields: [credentialId], references: [id], onDelete: SetNull)
   authSessions             AuthSession[]
 
   @@index([schoolId])
+  @@index([credentialId])
   @@index([schoolId, email])
   @@index([schoolId, role])
   @@map("profiles")
@@ -146,15 +160,15 @@ model Profile {
 
 model AuthCredential {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  profileId       String?   @unique @map("profile_id") @db.Uuid
   email           String    @unique
   passwordHash    String    @map("password_hash")
+  platformRole    PlatformRole? @map("platform_role")
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(6)
   lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz(6)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  profile Profile?      @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  profiles Profile[]
   sessions AuthSession[]
   tokens   AuthVerificationToken[]
 
