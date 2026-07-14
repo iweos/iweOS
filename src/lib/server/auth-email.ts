@@ -10,10 +10,11 @@ function hashToken(token: string) {
 }
 
 async function appOrigin() {
+  if (process.env.NODE_ENV === "production") return "https://iweos.sirfitech.io";
   if (process.env.AUTH_APP_URL) return process.env.AUTH_APP_URL.replace(/\/$/, "");
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? (process.env.NODE_ENV === "production" ? "https" : "http");
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
   return host ? `${protocol}://${host}` : "http://localhost:3000";
 }
 
@@ -74,7 +75,14 @@ export async function consumeAccountVerification(rawToken: string) {
     where: { tokenHash: hashToken(rawToken) },
     include: { credential: true },
   });
-  if (!token || token.type !== AuthTokenType.VERIFY_EMAIL || token.usedAt || token.expiresAt <= new Date()) return null;
+  if (!token || token.type !== AuthTokenType.VERIFY_EMAIL || token.expiresAt <= new Date()) return null;
+
+  // A verified token remains retryable until expiry if the first redirect was
+  // interrupted after verification but before its session could be created.
+  if (token.usedAt) {
+    if (!token.credential.emailVerifiedAt) return null;
+    return { credentialId: token.credentialId, profileId: token.credential.profileId };
+  }
 
   const matchingProfiles = await prisma.profile.findMany({
     where: {

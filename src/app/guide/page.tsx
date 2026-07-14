@@ -904,6 +904,17 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "verification-link-recovery",
+        eyebrow: "Authentication",
+        timestamp: "Jul 14, 2026 · 12:51 PM GMT+1",
+        timelineGroup: "July 2026",
+        title: "Reliable account verification links",
+        bullets: [
+          "Verification and password-reset emails now always open the canonical iweOS .io application instead of the legacy .org host.",
+          "Account verification links can safely recover from an interrupted first attempt without producing an application error.",
+        ],
+      },
+      {
         id: "authentication-usability",
         eyebrow: "Authentication",
         timestamp: "Jul 13, 2026 · 2:04 PM GMT+1",
