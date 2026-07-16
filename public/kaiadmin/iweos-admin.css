@@ -188,32 +188,65 @@ html.kai-admin .topbar-menu-label {
   text-transform: uppercase;
 }
 
-html.kai-admin .topbar-school-switcher { padding: 3px 0; }
-html.kai-admin .topbar-school-option {
+html.kai-admin .topbar-school-switcher { padding: 5px 0; }
+html.kai-admin .topbar-school-select-row {
   display: grid;
-  width: 100%;
-  min-height: 54px;
-  padding: 7px 15px;
-  grid-template-columns: 34px minmax(0, 1fr) 16px;
+  padding: 6px 14px 10px;
+  grid-template-columns: 36px minmax(0, 1fr) 38px;
   align-items: center;
   gap: 10px;
-  border: 0;
-  color: #28342c;
-  background: transparent;
-  text-align: left;
 }
-html.kai-admin .topbar-school-option:not(:disabled):hover { background: #f3f7f2; }
-html.kai-admin .topbar-school-option.is-active { background: #edf5eb; }
-html.kai-admin .topbar-school-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; color: #fff; background: #2f6b3f; font-size: .72rem; font-weight: 900; }
-html.kai-admin .topbar-school-copy { display: grid; min-width: 0; }
-html.kai-admin .topbar-school-copy strong { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
-html.kai-admin .topbar-school-copy small { color: #7a857d; font-size: .61rem; }
-html.kai-admin .topbar-school-option > i { color: #6f7c73; font-size: .64rem; }
+html.kai-admin .topbar-school-mark { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 11px; color: #fff; background: #2f6b3f; font-size: .72rem; font-weight: 900; }
+html.kai-admin .topbar-school-select { position: relative; display: grid; min-width: 0; }
+html.kai-admin .topbar-school-select select {
+  width: 100%;
+  height: 34px;
+  padding: 0 26px 0 0;
+  overflow: hidden;
+  border: 0;
+  outline: 0;
+  color: #26332b;
+  background: transparent;
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html.kai-admin .topbar-school-select small { margin-top: -3px; color: #7a857d; font-size: .59rem; }
+html.kai-admin .topbar-add-school { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #cfd9d1; border-radius: 11px; color: #2f6b3f; background: #f3f8f2; }
+html.kai-admin .topbar-add-school:hover { border-color: #2f6b3f; color: #fff; background: #2f6b3f; }
+html.kai-admin .topbar-add-school i { font-size: .7rem; }
 html.kai-admin .dropdown-user .dropdown-user-scroll { max-height: min(520px, calc(100svh - 95px)); overflow-y: auto; }
+html.kai-admin .topbar-sheet-handle { display: none; }
+html.kai-admin .topbar-profile-scrim { position: fixed; inset: 0; z-index: 1040; border: 0; background: transparent; }
+html.kai-admin .main-header .dropdown-menu.dropdown-user { z-index: 1050; }
 
-html[data-theme="dark"].kai-admin .topbar-school-option { color: #e8eee9; }
-html[data-theme="dark"].kai-admin .topbar-school-option:not(:disabled):hover,
-html[data-theme="dark"].kai-admin .topbar-school-option.is-active { background: #29332b; }
+html.kai-admin .topbar-add-school-layer { position: fixed; inset: 0; z-index: 2200; display: grid; padding: 20px; place-items: center; }
+html.kai-admin .topbar-add-school-scrim { position: absolute; inset: 0; border: 0; background: rgba(14, 25, 17, .55); backdrop-filter: blur(4px); }
+html.kai-admin .topbar-add-school-dialog { position: relative; width: min(100%, 430px); padding: 30px; border: 1px solid #dde5de; border-radius: 22px; color: #233027; background: #fff; box-shadow: 0 28px 80px rgba(16, 35, 22, .25); }
+html.kai-admin .topbar-dialog-handle { display: none; }
+html.kai-admin .topbar-dialog-close { position: absolute; top: 16px; right: 16px; display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 10px; color: #68736b; background: #f1f4f1; }
+html.kai-admin .topbar-dialog-icon { display: grid; width: 44px; height: 44px; margin-bottom: 18px; place-items: center; border-radius: 14px; color: #fff; background: #2f6b3f; }
+html.kai-admin .topbar-add-school-dialog > .topbar-menu-label { padding: 0; color: #2f6b3f; }
+html.kai-admin .topbar-add-school-dialog h2 { margin: 5px 0 8px; color: #1e2b22; font-size: 1.35rem; font-weight: 800; }
+html.kai-admin .topbar-add-school-dialog > p:not(.topbar-menu-label) { margin: 0 0 22px; color: #68736b; font-size: .77rem; line-height: 1.55; }
+html.kai-admin .topbar-add-school-dialog form { display: grid; gap: 9px; }
+html.kai-admin .topbar-add-school-dialog label { color: #344239; font-size: .68rem; font-weight: 800; }
+html.kai-admin .topbar-add-school-dialog input { width: 100%; min-height: 46px; padding: 0 13px; border: 1px solid #ccd6ce; border-radius: 11px; outline: 0; font: inherit; font-size: .78rem; }
+html.kai-admin .topbar-add-school-dialog input:focus { border-color: #2f6b3f; box-shadow: 0 0 0 3px rgba(47, 107, 63, .12); }
+html.kai-admin .topbar-dialog-error { padding: 9px 11px; border: 1px solid #ecc7c7; border-radius: 9px; color: #8e2828; background: #fff3f3; font-size: .68rem; }
+html.kai-admin .topbar-dialog-actions { display: flex; margin-top: 12px; justify-content: flex-end; gap: 9px; }
+html.kai-admin .topbar-dialog-actions button { min-height: 42px; padding: 0 15px; border: 1px solid #d4ddd5; border-radius: 10px; color: #344239; background: #fff; font: inherit; font-size: .7rem; font-weight: 800; }
+html.kai-admin .topbar-dialog-actions button[type="submit"] { border-color: #2f6b3f; color: #fff; background: #2f6b3f; }
+html.kai-admin .topbar-dialog-actions button:disabled { opacity: .55; }
+
+html[data-theme="dark"].kai-admin .topbar-school-select select { color: #e8eee9; }
+html[data-theme="dark"].kai-admin .topbar-add-school { border-color: #3c4940; color: #b9d2be; background: #263029; }
+html[data-theme="dark"].kai-admin .topbar-add-school-dialog { border-color: #374139; color: #e8eee9; background: #1b211d; }
+html[data-theme="dark"].kai-admin .topbar-add-school-dialog h2 { color: #f0f5f1; }
+html[data-theme="dark"].kai-admin .topbar-add-school-dialog input { border-color: #465149; color: #eef4ef; background: #242b26; }
+html[data-theme="dark"].kai-admin .topbar-dialog-close { color: #d5ddd7; background: #29312b; }
 
 /* Sidebar */
 html.kai-admin .sidebar[data-background-color="dark"],
@@ -1278,4 +1311,55 @@ html.kai-admin .student-rows-input {
     background: rgba(123, 199, 146, 0.12) !important;
     color: #edf9f0 !important;
   }
+}
+
+@media (max-width: 767.98px) {
+  html.kai-admin .topbar-profile-scrim {
+    display: block;
+    background: rgba(10, 18, 12, .52);
+    backdrop-filter: blur(3px);
+  }
+
+  html.kai-admin .main-header .dropdown-menu.dropdown-user {
+    position: fixed !important;
+    inset: auto 0 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+    border: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+    box-shadow: 0 -20px 60px rgba(10, 24, 14, .24) !important;
+  }
+
+  html.kai-admin .main-header .dropdown-menu.dropdown-user .dropdown-user-scroll {
+    max-height: min(78svh, 620px) !important;
+    padding: 0 0 max(14px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  html.kai-admin .topbar-sheet-handle { display: grid; height: 23px; place-items: center; }
+  html.kai-admin .topbar-sheet-handle span { width: 42px; height: 4px; border-radius: 999px; background: #d3dad4; }
+  html.kai-admin .dropdown-user .user-box { padding-top: 7px; }
+  html.kai-admin .topbar-school-select-row { padding: 9px 17px 13px; grid-template-columns: 40px minmax(0, 1fr) 44px; }
+  html.kai-admin .topbar-school-mark { width: 40px; height: 40px; }
+  html.kai-admin .topbar-school-select select { height: 38px; font-size: .8rem; }
+  html.kai-admin .topbar-add-school { width: 44px; height: 44px; }
+  html.kai-admin .dropdown-user .dropdown-item { min-height: 46px; display: flex; align-items: center; }
+
+  html.kai-admin .topbar-add-school-layer { padding: 0; place-items: end center; }
+  html.kai-admin .topbar-add-school-dialog {
+    width: 100%;
+    padding: 16px 20px max(22px, env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: 24px 24px 0 0;
+  }
+  html.kai-admin .topbar-dialog-handle { display: block; width: 42px; height: 4px; margin: 0 auto 18px; border-radius: 999px; background: #d3dad4; }
+  html.kai-admin .topbar-dialog-close { top: 17px; right: 17px; }
+  html.kai-admin .topbar-dialog-icon { margin-bottom: 14px; }
+  html.kai-admin .topbar-add-school-dialog input { min-height: 50px; font-size: 16px; }
+  html.kai-admin .topbar-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  html.kai-admin .topbar-dialog-actions button { min-height: 48px; }
 }

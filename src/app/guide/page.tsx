@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "teacher-school-reconciliation",
+        eyebrow: "Accounts and schools",
+        timestamp: "Jul 16, 2026 · 1:35 PM GMT+1",
+        timelineGroup: "July 2026",
+        title: "Reliable teacher access across school workspaces",
+        bullets: [
+          "Existing active teacher and administrator records are now linked by a normalized email match, including legacy records with accidental spacing.",
+          "The profile menu now provides a compact school selector, so users assigned to multiple schools can change workspace without creating another account.",
+          "A separate plus action lets an authenticated user create another school while retaining every existing teacher and administrator membership.",
+          "On phones, school selection and school creation use touch-friendly bottom sheets that respect the browser safe area.",
+        ],
+      },
+      {
         id: "multi-school-platform-control",
         eyebrow: "Platform operations",
         timestamp: "Jul 14, 2026 · 8:00 PM GMT+1",

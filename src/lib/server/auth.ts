@@ -68,15 +68,15 @@ export function platformAdminEmailAllowed(email: string) {
   return allowedEmails.includes(normalizeEmail(email));
 }
 
-async function claimProfilesForCredential(credentialId: string, email: string) {
-  await prisma.profile.updateMany({
-    where: {
-      isActive: true,
-      email: { equals: normalizeEmail(email), mode: "insensitive" },
-      credentialId: null,
-    },
-    data: { credentialId },
-  });
+export async function claimProfilesForCredential(credentialId: string, email: string) {
+  const normalizedEmail = normalizeEmail(email);
+  await prisma.$executeRaw`
+    UPDATE "profiles"
+    SET "credential_id" = ${credentialId}::uuid
+    WHERE "credential_id" IS NULL
+      AND "is_active" = TRUE
+      AND LOWER(BTRIM("email")) = ${normalizedEmail}
+  `;
 }
 
 async function findAvailableProfiles(credentialId: string, email: string) {
@@ -127,6 +127,57 @@ export async function getPendingInviteProfilesForAuthenticatedUser(): Promise<Pe
   }));
 }
 
+async function createSchoolWorkspace({
+  credentialId,
+  email,
+  fullName,
+  schoolName,
+}: {
+  credentialId: string;
+  email: string;
+  fullName: string;
+  schoolName: string;
+}) {
+  const normalizedSchoolName = schoolName.trim().replace(/\s+/g, " ").slice(0, 120);
+  if (normalizedSchoolName.length < 2) throw new Error("Enter a valid school name.");
+  const schoolCode = await generateUniqueSchoolCode(normalizedSchoolName);
+  return prisma.$transaction(async (tx) => {
+    const school = await tx.school.create({ data: { name: normalizedSchoolName, code: schoolCode } });
+    const createdProfile = await tx.profile.create({
+      data: { schoolId: school.id, credentialId, role: ProfileRole.ADMIN, fullName, email },
+      include: { school: true },
+    });
+    await tx.gradingSetting.create({ data: { schoolId: school.id } });
+    const template = await tx.assessmentTemplate.create({
+      data: { schoolId: school.id, name: "Default", isActive: true },
+      select: { id: true },
+    });
+    await tx.assessmentType.createMany({
+      data: [
+        { schoolId: school.id, templateId: template.id, name: "CA1", weight: 20, orderIndex: 1 },
+        { schoolId: school.id, templateId: template.id, name: "CA2", weight: 20, orderIndex: 2 },
+        { schoolId: school.id, templateId: template.id, name: "EXAM", weight: 60, orderIndex: 3 },
+      ],
+    });
+    await tx.gradeScale.createMany({ data: DEFAULT_GRADE_SCALE.map((grade) => ({ ...grade, schoolId: school.id })) });
+    return createdProfile;
+  });
+}
+
+export async function createAdditionalSchoolForAuthenticatedUser(schoolName: string) {
+  const session = await getAuthSession();
+  if (!session) throw new Error("Authentication required.");
+  const fullName = session.profile?.fullName || session.credential.email.split("@")[0] || "School Admin";
+  const profile = await createSchoolWorkspace({
+    credentialId: session.credentialId,
+    email: session.credential.email,
+    fullName,
+    schoolName,
+  });
+  await setSessionProfile(session.id, profile.id);
+  return profile;
+}
+
 export async function ensureProfileForAuthenticatedUser(preferredProfileId?: string): Promise<ProfileWithSchool> {
   const session = await getAuthSession();
   if (!session) redirect("/sign-in");
@@ -147,27 +198,11 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
   }
 
   const fullName = session.credential.email.split("@")[0] || "School Admin";
-  const schoolCode = await generateUniqueSchoolCode(fullName);
-  const profile = await prisma.$transaction(async (tx) => {
-    const school = await tx.school.create({ data: { name: `${fullName}'s School`, code: schoolCode } });
-    const createdProfile = await tx.profile.create({
-      data: { schoolId: school.id, credentialId: session.credentialId, role: ProfileRole.ADMIN, fullName, email: session.credential.email },
-      include: { school: true },
-    });
-    await tx.gradingSetting.create({ data: { schoolId: school.id } });
-    const template = await tx.assessmentTemplate.create({
-      data: { schoolId: school.id, name: "Default", isActive: true },
-      select: { id: true },
-    });
-    await tx.assessmentType.createMany({
-      data: [
-        { schoolId: school.id, templateId: template.id, name: "CA1", weight: 20, orderIndex: 1 },
-        { schoolId: school.id, templateId: template.id, name: "CA2", weight: 20, orderIndex: 2 },
-        { schoolId: school.id, templateId: template.id, name: "EXAM", weight: 60, orderIndex: 3 },
-      ],
-    });
-    await tx.gradeScale.createMany({ data: DEFAULT_GRADE_SCALE.map((grade) => ({ ...grade, schoolId: school.id })) });
-    return createdProfile;
+  const profile = await createSchoolWorkspace({
+    credentialId: session.credentialId,
+    email: session.credential.email,
+    fullName,
+    schoolName: `${fullName}'s School`,
   });
   await setSessionProfile(session.id, profile.id);
   return profile;

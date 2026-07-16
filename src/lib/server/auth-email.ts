@@ -4,6 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { headers } from "next/headers";
 import { AuthTokenType, SchoolStatus } from "@prisma/client";
 import { prisma } from "@/lib/server/prisma";
+import { claimProfilesForCredential } from "@/lib/server/auth";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -88,14 +89,7 @@ export async function consumeAccountVerification(rawToken: string) {
     return { credentialId: token.credentialId, profileId: profiles.length === 1 ? profiles[0].id : null };
   }
 
-  await prisma.profile.updateMany({
-    where: {
-      email: { equals: token.credential.email, mode: "insensitive" },
-      isActive: true,
-      credentialId: null,
-    },
-    data: { credentialId: token.credentialId },
-  });
+  await claimProfilesForCredential(token.credentialId, token.credential.email);
   const matchingProfiles = await prisma.profile.findMany({
     where: { credentialId: token.credentialId, isActive: true, school: { status: SchoolStatus.ACTIVE } },
     select: { id: true },

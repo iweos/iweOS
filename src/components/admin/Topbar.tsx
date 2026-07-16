@@ -48,6 +48,10 @@ export default function Topbar({
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [switchingProfileId, setSwitchingProfileId] = useState<string | null>(null);
+  const [addSchoolOpen, setAddSchoolOpen] = useState(false);
+  const [newSchoolName, setNewSchoolName] = useState("");
+  const [createSchoolError, setCreateSchoolError] = useState("");
+  const [creatingSchool, setCreatingSchool] = useState(false);
   const [notifications, setNotifications] = useState<TopbarNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -163,6 +167,34 @@ export default function Topbar({
       setSwitchingProfileId(null);
       window.alert(error instanceof Error ? error.message : "Unable to switch school.");
     }
+  }
+
+  async function handleCreateSchool(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (creatingSchool || newSchoolName.trim().length < 2) return;
+    setCreatingSchool(true);
+    setCreateSchoolError("");
+    window.dispatchEvent(new CustomEvent("iweos:pending-indicator", { detail: { durationMs: 12000 } }));
+    try {
+      const response = await fetch("/api/auth/create-school", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolName: newSchoolName }),
+      });
+      const payload = (await response.json()) as { destination?: string; error?: string };
+      if (!response.ok || !payload.destination) throw new Error(payload.error || "Unable to create this school.");
+      window.location.assign(payload.destination);
+    } catch (error) {
+      setCreateSchoolError(error instanceof Error ? error.message : "Unable to create this school.");
+      setCreatingSchool(false);
+    }
+  }
+
+  function openAddSchool() {
+    setProfileOpen(false);
+    setCreateSchoolError("");
+    setNewSchoolName("");
+    setAddSchoolOpen(true);
   }
 
   return (
@@ -286,8 +318,11 @@ export default function Topbar({
               </button>
 
               {profileOpen ? (
-                <ul className="dropdown-menu dropdown-user animated fadeIn show">
+                <>
+                  <button type="button" className="topbar-profile-scrim" aria-label="Close account menu" onClick={() => setProfileOpen(false)} />
+                  <ul className="dropdown-menu dropdown-user animated fadeIn show">
                   <div className="dropdown-user-scroll scrollbar-outer">
+                    <li className="topbar-sheet-handle" aria-hidden="true"><span /></li>
                     <li>
                       <div className="user-box">
                         <div className="avatar-lg">
@@ -304,28 +339,30 @@ export default function Topbar({
                     </li>
                     <li>
                       <div className="dropdown-divider" />
-                      {schoolOptions.length > 1 ? (
+                      {schoolOptions.length ? (
                         <div className="topbar-school-switcher">
-                          <p className="topbar-menu-label">Switch school</p>
-                          {schoolOptions.map((option) => {
-                            const active = option.profileId === currentProfileId;
-                            return (
-                              <button
-                                type="button"
-                                className={`topbar-school-option ${active ? "is-active" : ""}`}
-                                key={option.profileId}
-                                onClick={() => void handleSchoolSwitch(option.profileId)}
-                                disabled={active || switchingProfileId !== null}
+                          <p className="topbar-menu-label">School workspace</p>
+                          <div className="topbar-school-select-row">
+                            <span className="topbar-school-mark">{currentSchoolName?.slice(0, 1).toUpperCase() || "S"}</span>
+                            <label className="topbar-school-select">
+                              <span className="visually-hidden">Change school</span>
+                              <select
+                                value={currentProfileId}
+                                onChange={(event) => void handleSchoolSwitch(event.target.value)}
+                                disabled={switchingProfileId !== null}
                               >
-                                <span className="topbar-school-mark">{option.schoolName.slice(0, 1).toUpperCase()}</span>
-                                <span className="topbar-school-copy">
-                                  <strong>{option.schoolName}</strong>
-                                  <small>{option.role}</small>
-                                </span>
-                                <i className={active ? "fas fa-check" : switchingProfileId === option.profileId ? "fas fa-spinner fa-spin" : "fas fa-chevron-right"} />
-                              </button>
-                            );
-                          })}
+                                {schoolOptions.map((option) => (
+                                  <option value={option.profileId} key={option.profileId}>
+                                    {option.schoolName} - {option.role}
+                                  </option>
+                                ))}
+                              </select>
+                              <small>{switchingProfileId ? "Switching workspace..." : `${schoolOptions.length} ${schoolOptions.length === 1 ? "workspace" : "workspaces"}`}</small>
+                            </label>
+                            <button type="button" className="topbar-add-school" onClick={openAddSchool} aria-label="Add another school" title="Add another school">
+                              <i className="fas fa-plus" />
+                            </button>
+                          </div>
                           <div className="dropdown-divider" />
                         </div>
                       ) : null}
@@ -349,12 +386,35 @@ export default function Topbar({
                       </button>
                     </li>
                   </div>
-                </ul>
+                  </ul>
+                </>
               ) : null}
             </li>
           </ul>
         </div>
       </nav>
+      {addSchoolOpen ? (
+        <div className="topbar-add-school-layer" role="presentation">
+          <button type="button" className="topbar-add-school-scrim" aria-label="Close add school" onClick={() => !creatingSchool && setAddSchoolOpen(false)} />
+          <section className="topbar-add-school-dialog" role="dialog" aria-modal="true" aria-labelledby="add-school-title">
+            <span className="topbar-dialog-handle" aria-hidden="true" />
+            <button type="button" className="topbar-dialog-close" onClick={() => setAddSchoolOpen(false)} disabled={creatingSchool} aria-label="Close"><i className="fas fa-times" /></button>
+            <span className="topbar-dialog-icon"><i className="fas fa-school" /></span>
+            <p className="topbar-menu-label">New workspace</p>
+            <h2 id="add-school-title">Add another school</h2>
+            <p>You will become the administrator of this school while keeping access to your existing workspaces.</p>
+            <form onSubmit={handleCreateSchool}>
+              <label htmlFor="new-school-name">School name</label>
+              <input id="new-school-name" value={newSchoolName} onChange={(event) => setNewSchoolName(event.target.value)} maxLength={120} autoComplete="organization" placeholder="e.g. Greenwood Academy" autoFocus required />
+              {createSchoolError ? <div className="topbar-dialog-error" role="alert">{createSchoolError}</div> : null}
+              <div className="topbar-dialog-actions">
+                <button type="button" onClick={() => setAddSchoolOpen(false)} disabled={creatingSchool}>Cancel</button>
+                <button type="submit" disabled={creatingSchool || newSchoolName.trim().length < 2}>{creatingSchool ? "Creating school..." : "Create school"}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
