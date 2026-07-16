@@ -102,6 +102,10 @@ html.kai-admin .topbar-mobile-actions {
   display: none;
 }
 
+html.kai-admin .topbar-profile-layer-mobile {
+  display: none;
+}
+
 html.kai-admin .topbar-mobile-leading .mobile-header-action,
 html.kai-admin .topbar-mobile-actions .mobile-header-action {
   display: inline-flex;
@@ -140,6 +144,12 @@ html.kai-admin .topbar-theme-toggle {
 html.kai-admin .mobile-theme-toggle {
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+html.kai-admin .mobile-profile-trigger {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
 }
 
@@ -1115,7 +1125,7 @@ html.kai-admin .student-rows-input {
 @media screen and (max-width: 767.5px) {
   html.kai-admin .logo-header {
     display: grid !important;
-    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    grid-template-columns: 48px minmax(0, 1fr) 82px;
     align-items: center;
     column-gap: 0.5rem;
     padding-left: 12px !important;
@@ -1152,13 +1162,14 @@ html.kai-admin .student-rows-input {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    width: 48px;
-    min-width: 48px;
+    width: 82px;
+    min-width: 82px;
     position: static;
     left: auto !important;
     top: auto;
     transform: none;
     margin-left: 0;
+    gap: 0.35rem;
     z-index: 2;
   }
 
@@ -1313,7 +1324,44 @@ html.kai-admin .student-rows-input {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (min-width: 767.51px) and (max-width: 991.5px) {
+  html.kai-admin .logo-header {
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) 82px;
+    align-items: center;
+    column-gap: .5rem;
+    padding-inline: 12px !important;
+  }
+
+  html.kai-admin .logo-header .nav-toggle { display: none !important; }
+  html.kai-admin .logo-header .logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0 !important;
+    z-index: 1;
+  }
+  html.kai-admin .topbar-mobile-leading,
+  html.kai-admin .topbar-mobile-actions {
+    display: flex;
+    position: static;
+    align-items: center;
+    z-index: 2;
+  }
+  html.kai-admin .topbar-mobile-leading { width: 48px; justify-content: flex-start; }
+  html.kai-admin .topbar-mobile-actions { width: 82px; justify-content: flex-end; gap: .35rem; }
+}
+
+@media (max-width: 991.5px) {
+  html.kai-admin .topbar-profile-layer-desktop {
+    display: none;
+  }
+
+  html.kai-admin .topbar-profile-layer-mobile {
+    display: block;
+  }
+
   html.kai-admin .topbar-profile-scrim {
     display: block;
     background: rgba(10, 18, 12, .52);

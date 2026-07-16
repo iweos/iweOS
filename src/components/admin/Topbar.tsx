@@ -197,6 +197,81 @@ export default function Topbar({
     setAddSchoolOpen(true);
   }
 
+  function renderProfileMenu(layer: "desktop" | "mobile") {
+    return (
+      <div className={`topbar-profile-layer topbar-profile-layer-${layer}`}>
+        <button type="button" className="topbar-profile-scrim" aria-label="Close account menu" onClick={() => setProfileOpen(false)} />
+        <ul className="dropdown-menu dropdown-user animated fadeIn show">
+          <div className="dropdown-user-scroll scrollbar-outer">
+            <li className="topbar-sheet-handle" aria-hidden="true"><span /></li>
+            <li>
+              <div className="user-box">
+                <div className="avatar-lg">
+                  <div className="avatar-img rounded d-flex align-items-center justify-content-center admin-profile-avatar admin-profile-avatar-lg">
+                    <i className="icon-user-following" aria-hidden="true" />
+                  </div>
+                </div>
+                <div className="u-text">
+                  <h4>{profileName ?? `${roleLabel} User`}</h4>
+                  <p className="text-muted">{profileEmail ?? "admin@iweos.app"}</p>
+                  {currentSchoolName ? <p className="topbar-current-school">{currentSchoolName}</p> : null}
+                </div>
+              </div>
+            </li>
+            <li>
+              <div className="dropdown-divider" />
+              {schoolOptions.length ? (
+                <div className="topbar-school-switcher">
+                  <p className="topbar-menu-label">School workspace</p>
+                  <div className="topbar-school-select-row">
+                    <span className="topbar-school-mark">{currentSchoolName?.slice(0, 1).toUpperCase() || "S"}</span>
+                    <label className="topbar-school-select">
+                      <span className="visually-hidden">Change school</span>
+                      <select
+                        value={currentProfileId}
+                        onChange={(event) => void handleSchoolSwitch(event.target.value)}
+                        disabled={switchingProfileId !== null}
+                      >
+                        {schoolOptions.map((option) => (
+                          <option value={option.profileId} key={option.profileId}>
+                            {option.schoolName} - {option.role}
+                          </option>
+                        ))}
+                      </select>
+                      <small>{switchingProfileId ? "Switching workspace..." : `${schoolOptions.length} ${schoolOptions.length === 1 ? "workspace" : "workspaces"}`}</small>
+                    </label>
+                    <button type="button" className="topbar-add-school" onClick={openAddSchool} aria-label="Add another school" title="Add another school">
+                      <i className="fas fa-plus" />
+                    </button>
+                  </div>
+                  <div className="dropdown-divider" />
+                </div>
+              ) : null}
+              {platformAdmin ? (
+                <Link className="dropdown-item" href="/platform">
+                  <i className="fas fa-layer-group me-2" /> iweOS Administration
+                </Link>
+              ) : null}
+              {settingsHref ? (
+                <a className="dropdown-item" href={settingsHref}>
+                  Account Settings
+                </a>
+              ) : null}
+              <button
+                type="button"
+                className="dropdown-item text-danger border-0 bg-transparent text-start w-100"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+              >
+                {isSigningOut ? "Signing out..." : "Sign out"}
+              </button>
+            </li>
+          </div>
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <div className="main-header">
       <div className="main-header-logo">
@@ -228,6 +303,18 @@ export default function Topbar({
           </div>
           <div className="topbar-mobile-actions">
             <ThemeToggle className="btn btn-toggle mobile-header-action mobile-theme-toggle" />
+            <button
+              type="button"
+              className="btn btn-toggle mobile-header-action mobile-profile-trigger"
+              onClick={() => {
+                setProfileOpen((current) => !current);
+                setNotificationsOpen(false);
+              }}
+              aria-label="Open account and school menu"
+              aria-expanded={profileOpen}
+            >
+              <i className="icon-user-following" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>
@@ -317,82 +404,12 @@ export default function Topbar({
                 </span>
               </button>
 
-              {profileOpen ? (
-                <>
-                  <button type="button" className="topbar-profile-scrim" aria-label="Close account menu" onClick={() => setProfileOpen(false)} />
-                  <ul className="dropdown-menu dropdown-user animated fadeIn show">
-                  <div className="dropdown-user-scroll scrollbar-outer">
-                    <li className="topbar-sheet-handle" aria-hidden="true"><span /></li>
-                    <li>
-                      <div className="user-box">
-                        <div className="avatar-lg">
-                          <div className="avatar-img rounded d-flex align-items-center justify-content-center admin-profile-avatar admin-profile-avatar-lg">
-                            <i className="icon-user-following" aria-hidden="true" />
-                          </div>
-                        </div>
-                        <div className="u-text">
-                          <h4>{profileName ?? `${roleLabel} User`}</h4>
-                          <p className="text-muted">{profileEmail ?? "admin@iweos.app"}</p>
-                          {currentSchoolName ? <p className="topbar-current-school">{currentSchoolName}</p> : null}
-                        </div>
-                      </div>
-                    </li>
-                    <li>
-                      <div className="dropdown-divider" />
-                      {schoolOptions.length ? (
-                        <div className="topbar-school-switcher">
-                          <p className="topbar-menu-label">School workspace</p>
-                          <div className="topbar-school-select-row">
-                            <span className="topbar-school-mark">{currentSchoolName?.slice(0, 1).toUpperCase() || "S"}</span>
-                            <label className="topbar-school-select">
-                              <span className="visually-hidden">Change school</span>
-                              <select
-                                value={currentProfileId}
-                                onChange={(event) => void handleSchoolSwitch(event.target.value)}
-                                disabled={switchingProfileId !== null}
-                              >
-                                {schoolOptions.map((option) => (
-                                  <option value={option.profileId} key={option.profileId}>
-                                    {option.schoolName} - {option.role}
-                                  </option>
-                                ))}
-                              </select>
-                              <small>{switchingProfileId ? "Switching workspace..." : `${schoolOptions.length} ${schoolOptions.length === 1 ? "workspace" : "workspaces"}`}</small>
-                            </label>
-                            <button type="button" className="topbar-add-school" onClick={openAddSchool} aria-label="Add another school" title="Add another school">
-                              <i className="fas fa-plus" />
-                            </button>
-                          </div>
-                          <div className="dropdown-divider" />
-                        </div>
-                      ) : null}
-                      {platformAdmin ? (
-                        <Link className="dropdown-item" href="/platform">
-                          <i className="fas fa-layer-group me-2" /> iweOS Administration
-                        </Link>
-                      ) : null}
-                      {settingsHref ? (
-                        <a className="dropdown-item" href={settingsHref}>
-                          Account Settings
-                        </a>
-                      ) : null}
-                      <button
-                        type="button"
-                        className="dropdown-item text-danger border-0 bg-transparent text-start w-100"
-                        onClick={handleSignOut}
-                        disabled={isSigningOut}
-                      >
-                        {isSigningOut ? "Signing out..." : "Sign out"}
-                      </button>
-                    </li>
-                  </div>
-                  </ul>
-                </>
-              ) : null}
+              {profileOpen ? renderProfileMenu("desktop") : null}
             </li>
           </ul>
         </div>
       </nav>
+      {profileOpen ? renderProfileMenu("mobile") : null}
       {addSchoolOpen ? (
         <div className="topbar-add-school-layer" role="presentation">
           <button type="button" className="topbar-add-school-scrim" aria-label="Close add school" onClick={() => !creatingSchool && setAddSchoolOpen(false)} />
