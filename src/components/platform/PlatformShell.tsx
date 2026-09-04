@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, ArrowLeft, Building2, LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, Building2, ClipboardList, LayoutDashboard, LogOut, Menu, ShieldCheck, UsersRound, WalletCards, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -16,7 +16,20 @@ type PlatformShellProps = {
 const navItems = [
   { href: "/platform", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/platform/schools", label: "Schools", icon: Building2 },
+  { href: "/platform/users", label: "Users", icon: UsersRound },
+  { href: "/platform/payments", label: "Payments", icon: WalletCards },
+  { href: "/platform/results", label: "Results", icon: BookOpenCheck },
+  { href: "/platform/audit", label: "Audit logs", icon: ClipboardList },
 ];
+
+function sectionTitle(pathname: string) {
+  if (pathname.startsWith("/platform/schools")) return "School intelligence";
+  if (pathname.startsWith("/platform/users")) return "Account intelligence";
+  if (pathname.startsWith("/platform/payments")) return "Payment operations";
+  if (pathname.startsWith("/platform/results")) return "Result operations";
+  if (pathname.startsWith("/platform/audit")) return "Governance and audit";
+  return "Platform overview";
+}
 
 export default function PlatformShell({ children, email, schoolPortalHref }: PlatformShellProps) {
   const pathname = usePathname();
@@ -52,8 +65,6 @@ export default function PlatformShell({ children, email, schoolPortalHref }: Pla
             const Icon = item.icon;
             return <Link href={item.href} className={active ? "is-active" : ""} key={item.href}><Icon /><span>{item.label}</span></Link>;
           })}
-          <p>Operations</p>
-          <Link href="/platform#system-health"><Activity /><span>System health</span></Link>
         </nav>
         <div className="platform-sidebar-footer">
           <div className="platform-account-badge">
@@ -69,7 +80,7 @@ export default function PlatformShell({ children, email, schoolPortalHref }: Pla
           <button className="platform-menu-button" type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu /></button>
           <div>
             <span>iweOS administration</span>
-            <strong>{pathname.startsWith("/platform/schools") ? "School intelligence" : "Platform overview"}</strong>
+            <strong>{sectionTitle(pathname)}</strong>
           </div>
           <div className="platform-header-actions">
             <ThemeToggle className="platform-theme-toggle" />

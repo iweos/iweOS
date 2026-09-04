@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "platform-operations-suite",
+        eyebrow: "Platform administration",
+        timestamp: "Sep 4, 2026 · 7:19 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Expanded iweOS platform control centre",
+        bullets: [
+          "Platform administrators can now inspect users, account linkage, roles, and active status across every school workspace.",
+          "Dedicated payment operations now show platform-wide transaction volume, pending and failed payments, references, methods, and owning schools.",
+          "Result operations now track publication status, student, class, session, publisher, and school from one protected directory.",
+          "A searchable audit log now provides cross-school governance visibility with event context, actors, entities, and timestamps.",
+        ],
+      },
+      {
         id: "teacher-school-reconciliation",
         eyebrow: "Accounts and schools",
         timestamp: "Jul 16, 2026 · 1:35 PM GMT+1",
