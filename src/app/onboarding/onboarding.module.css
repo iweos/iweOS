@@ -110,3 +110,25 @@
   .footer span { display: none; }
   .footer form { margin: auto; }
 }
+
+.error {
+  margin: 0 24px 14px;
+  padding: 11px 13px;
+  border: 1px solid #efc8c4;
+  border-radius: 11px;
+  color: #8c332c;
+  background: #fff4f2;
+  font-size: .68rem;
+  text-align: center;
+}
+.option:disabled { cursor: wait; }
+.option:disabled:not([aria-busy="true"]) { opacity: .5; }
+.spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(40,95,58,.25);
+  border-right-color: var(--green);
+  border-radius: 50%;
+  animation: option-spin .65s linear infinite;
+}
+@keyframes option-spin { to { transform: rotate(1turn); } }

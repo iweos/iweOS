@@ -913,6 +913,8 @@ export async function GET() {
           "Authorized iweOS platform administrators now enter the overall platform control centre immediately after sign-in, even when they also manage a school.",
           "Users assigned to multiple schools now choose their workspace from a centered, responsive modal with clear school names and role labels.",
           "The school chooser includes a secure account-switch action and a compact mobile layout for phone users.",
+          "School selection now uses a validated session update so the chosen school opens reliably instead of reloading onboarding.",
+          "Sign-in, sign-up, and workspace selection now show visible loading labels and spinners while requests are processing.",
         ],
       },
       {

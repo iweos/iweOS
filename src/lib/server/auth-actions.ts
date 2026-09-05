@@ -1,10 +1,10 @@
 "use server";
 
 import argon2 from "argon2";
-import { PlatformRole, SchoolStatus } from "@prisma/client";
+import { PlatformRole, ProfileRole, SchoolStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
-import { createAuthSession, destroyAuthSession } from "@/lib/server/session";
+import { createAuthSession, destroyAuthSession, getAuthSession, setSessionProfile } from "@/lib/server/session";
 import { consumePasswordReset, sendAccountVerification, sendPasswordReset } from "@/lib/server/auth-email";
 import { claimProfilesForCredential, platformAdminEmailAllowed } from "@/lib/server/auth";
 
@@ -40,6 +40,26 @@ export async function signInAction(formData: FormData) {
   await prisma.authCredential.update({ where: { id: credential.id }, data: { lastLoginAt: new Date() } });
   await createAuthSession(credential.id, profileId);
   redirect(platformAdmin ? "/platform" : profileId ? "/app" : "/onboarding");
+}
+
+export async function selectWorkspaceAction(formData: FormData) {
+  const session = await getAuthSession();
+  if (!session) redirect("/sign-in");
+
+  const profileId = value(formData, "profileId");
+  const profile = await prisma.profile.findFirst({
+    where: {
+      id: profileId,
+      credentialId: session.credentialId,
+      isActive: true,
+      school: { status: SchoolStatus.ACTIVE },
+    },
+    select: { id: true, role: true },
+  });
+  if (!profile) authRedirect("/onboarding", "That school workspace is no longer available.");
+
+  await setSessionProfile(session.id, profile.id);
+  redirect(profile.role === ProfileRole.ADMIN ? "/app/admin/dashboard" : "/app/teacher/dashboard");
 }
 
 export async function signUpAction(formData: FormData) {

@@ -1,13 +1,15 @@
-import { Building2, ChevronRight, ShieldCheck } from "lucide-react";
+import { Building2, ShieldCheck } from "lucide-react";
 import { ProfileRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import BrandLogo from "@/components/BrandLogo";
-import { signOutAction } from "@/lib/server/auth-actions";
+import WorkspaceOptionButton from "@/components/auth/WorkspaceOptionButton";
+import { selectWorkspaceAction, signOutAction } from "@/lib/server/auth-actions";
 import { ensureProfileForAuthenticatedUser, getPendingInviteProfilesForAuthenticatedUser } from "@/lib/server/auth";
 import styles from "./onboarding.module.css";
 
 type OnboardingSearchParams = {
   profileId?: string;
+  error?: string;
 };
 
 export default async function OnboardingPage({
@@ -35,19 +37,15 @@ export default async function OnboardingPage({
             <span>Your account belongs to more than one school. Choose the workspace and role you want to open.</span>
           </div>
 
-          <form method="get" className={styles.list}>
+          {params.error ? <div className={styles.error} role="alert">{params.error}</div> : null}
+          <form action={selectWorkspaceAction} className={styles.list}>
             {pendingProfiles.map((profile) => (
-              <button className={styles.option} type="submit" name="profileId" value={profile.id} key={profile.id}>
-                <span className={styles.schoolMark}>{profile.schoolName.slice(0, 1).toUpperCase()}</span>
-                <span className={styles.schoolCopy}>
-                  <strong>{profile.schoolName}</strong>
-                  <small>{profile.role === ProfileRole.ADMIN ? "School administration" : "Teacher workspace"}</small>
-                </span>
-                <i className={profile.role === ProfileRole.ADMIN ? styles.adminRole : styles.teacherRole}>
-                  {profile.role === ProfileRole.ADMIN ? "Admin" : "Teacher"}
-                </i>
-                <ChevronRight className={styles.arrow} />
-              </button>
+              <WorkspaceOptionButton
+                profileId={profile.id}
+                schoolName={profile.schoolName}
+                role={profile.role}
+                key={profile.id}
+              />
             ))}
           </form>
 

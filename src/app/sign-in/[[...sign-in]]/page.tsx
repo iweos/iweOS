@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
 import PasswordField from "@/components/auth/PasswordField";
+import AuthSubmitButton from "@/components/auth/AuthSubmitButton";
 import { signInAction } from "@/lib/server/auth-actions";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; reset?: string; verified?: string }> }) {
@@ -19,7 +20,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <label><span>Email address</span><input name="email" type="email" autoComplete="email" required /></label>
           <PasswordField label="Password" name="password" autoComplete="current-password" />
           <Link className="auth-forgot" href="/forgot-password">Forgot password?</Link>
-          <button type="submit">Sign in</button>
+          <AuthSubmitButton idleLabel="Sign in" pendingLabel="Signing in..." />
         </form>
         <p className="auth-switch">New to iweOS? <Link href="/sign-up">Sign up your school</Link></p>
       </section>

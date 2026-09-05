@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
 import PasswordField from "@/components/auth/PasswordField";
+import AuthSubmitButton from "@/components/auth/AuthSubmitButton";
 import { signUpAction } from "@/lib/server/auth-actions";
 
 export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ error?: string; sent?: string }> }) {
@@ -18,7 +19,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
           <label><span>Email address</span><input name="email" type="email" autoComplete="email" required /></label>
           <PasswordField label="Password" name="password" autoComplete="new-password" minLength={8} />
           <PasswordField label="Confirm password" name="confirmPassword" autoComplete="new-password" minLength={8} />
-          <button type="submit">Create account</button>
+          <AuthSubmitButton idleLabel="Create account" pendingLabel="Creating account..." />
         </form> : null}
         <p className="auth-switch">Already have an account? <Link href="/sign-in">Sign in</Link></p>
       </section>
