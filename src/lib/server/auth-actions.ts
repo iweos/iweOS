@@ -39,7 +39,7 @@ export async function signInAction(formData: FormData) {
 
   await prisma.authCredential.update({ where: { id: credential.id }, data: { lastLoginAt: new Date() } });
   await createAuthSession(credential.id, profileId);
-  redirect(profileId ? "/app" : platformAdmin && profiles.length === 0 ? "/platform" : "/onboarding");
+  redirect(platformAdmin ? "/platform" : profileId ? "/app" : "/onboarding");
 }
 
 export async function signUpAction(formData: FormData) {

@@ -1,6 +1,10 @@
+import { Building2, ChevronRight, ShieldCheck } from "lucide-react";
 import { ProfileRole } from "@prisma/client";
 import { redirect } from "next/navigation";
+import BrandLogo from "@/components/BrandLogo";
+import { signOutAction } from "@/lib/server/auth-actions";
 import { ensureProfileForAuthenticatedUser, getPendingInviteProfilesForAuthenticatedUser } from "@/lib/server/auth";
+import styles from "./onboarding.module.css";
 
 type OnboardingSearchParams = {
   profileId?: string;
@@ -16,38 +20,46 @@ export default async function OnboardingPage({
 
   if (pendingProfiles.length > 1 && !params.profileId) {
     return (
-      <section className="container py-5">
-        <div className="card mx-auto" style={{ maxWidth: 620 }}>
-          <div className="card-body p-4">
-            <h1 className="h4 mb-2">Choose Your School</h1>
-            <p className="text-muted mb-4">
-              Your account is authorised for multiple school workspaces. Select the school and role you want to use now.
-            </p>
-            <form method="get" className="d-grid gap-3">
-              <label className="d-grid gap-1">
-                <span className="field-label">School Profile</span>
-                <select name="profileId" className="form-select" required defaultValue="">
-                  <option value="" disabled>
-                    Select a school profile
-                  </option>
-                  {pendingProfiles.map((profile) => (
-                    <option key={profile.id} value={profile.id}>
-                      {profile.schoolName} - {profile.role === ProfileRole.ADMIN ? "Admin" : "Teacher"}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit" className="btn btn-primary">
-                Continue
-              </button>
-            </form>
+      <main className={styles.page}>
+        <div className={styles.glow} aria-hidden="true" />
+        <section className={styles.modal} aria-labelledby="workspace-title">
+          <header className={styles.header}>
+            <BrandLogo href="/" variant="dark" className={styles.brand} textClassName={styles.brandName} />
+            <span className={styles.secure}><ShieldCheck /> Secure access</span>
+          </header>
+
+          <div className={styles.intro}>
+            <span className={styles.icon}><Building2 /></span>
+            <p>Choose a workspace</p>
+            <h1 id="workspace-title">Where are you working today?</h1>
+            <span>Your account belongs to more than one school. Choose the workspace and role you want to open.</span>
           </div>
-        </div>
-      </section>
+
+          <form method="get" className={styles.list}>
+            {pendingProfiles.map((profile) => (
+              <button className={styles.option} type="submit" name="profileId" value={profile.id} key={profile.id}>
+                <span className={styles.schoolMark}>{profile.schoolName.slice(0, 1).toUpperCase()}</span>
+                <span className={styles.schoolCopy}>
+                  <strong>{profile.schoolName}</strong>
+                  <small>{profile.role === ProfileRole.ADMIN ? "School administration" : "Teacher workspace"}</small>
+                </span>
+                <i className={profile.role === ProfileRole.ADMIN ? styles.adminRole : styles.teacherRole}>
+                  {profile.role === ProfileRole.ADMIN ? "Admin" : "Teacher"}
+                </i>
+                <ChevronRight className={styles.arrow} />
+              </button>
+            ))}
+          </form>
+
+          <footer className={styles.footer}>
+            <span><ShieldCheck /> Only workspaces assigned to your verified email are shown.</span>
+            <form action={signOutAction}><button type="submit">Use another account</button></form>
+          </footer>
+        </section>
+      </main>
     );
   }
 
   const profile = await ensureProfileForAuthenticatedUser(params.profileId);
-
   redirect(profile.role === ProfileRole.ADMIN ? "/app/admin/dashboard" : "/app/teacher/dashboard");
 }

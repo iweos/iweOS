@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "platform-admin-entry-and-workspace-chooser",
+        eyebrow: "Authentication and workspaces",
+        timestamp: "Sep 5, 2026 · 4:14 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Direct platform access and a modern school chooser",
+        bullets: [
+          "Authorized iweOS platform administrators now enter the overall platform control centre immediately after sign-in, even when they also manage a school.",
+          "Users assigned to multiple schools now choose their workspace from a centered, responsive modal with clear school names and role labels.",
+          "The school chooser includes a secure account-switch action and a compact mobile layout for phone users.",
+        ],
+      },
+      {
         id: "platform-operations-suite",
         eyebrow: "Platform administration",
         timestamp: "Sep 4, 2026 · 7:19 PM GMT+1",
