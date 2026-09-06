@@ -906,13 +906,16 @@ export async function GET() {
       {
         id: "dataroom-owner-access",
         eyebrow: "Platform administration",
-        timestamp: "Sep 6, 2026 · 2:53 PM GMT+1",
+        timestamp: "Sep 6, 2026 · 3:25 PM GMT+1",
         timelineGroup: "September 2026",
         title: "Dedicated iweOS Dataroom access",
         bullets: [
           "The overall iweOS administration centre now uses the dedicated /dataroom route, separate from individual school administration.",
           "Verified platform owners are promoted securely on entry and routed directly to Dataroom after sign-in.",
           "The former /platform address now redirects to Dataroom so existing bookmarks continue to work.",
+          "A responsive School portal selector in the Dataroom header now opens any active school where the platform owner has administrator access.",
+          "The Dataroom sidebar can now collapse to an icon rail, preserving more workspace on laptops and tablets.",
+          "School inspection now includes administrator, teacher, class-assignment, and student details in responsive directories.",
         ],
       },
       {

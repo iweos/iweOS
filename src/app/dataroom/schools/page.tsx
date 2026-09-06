@@ -30,14 +30,14 @@ export default async function PlatformSchoolsPage({ searchParams }: PageProps) {
         {(query || status) ? <Link href="/dataroom/schools">Clear</Link> : null}
       </form>
       <section className="platform-panel platform-directory-panel">
-        <div className="platform-directory-head"><span>School</span><span>Usage</span><span>Status</span><span>Created</span><span /></div>
+        <div className="platform-directory-head"><span>School</span><span>Usage</span><span>Status</span><span>Created</span><span>Open</span></div>
         <div className="platform-directory-list">
           {schools.map((school) => <Link href={`/dataroom/schools/${school.id}`} key={school.id}>
             <span className="platform-directory-school"><i><School /></i><span><strong>{school.name}</strong><small>{school.code} · {[school.city, school.country].filter(Boolean).join(", ") || "Location not set"}</small></span></span>
             <span className="platform-directory-usage"><strong>{school._count.students} students</strong><small>{school._count.classes} classes · {school._count.profiles} staff</small></span>
             <span><i className={`platform-status ${school.status.toLowerCase()}`}>{school.status.toLowerCase()}</i></span>
             <span className="platform-directory-date">{school.createdAt.toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
-            <ArrowUpRight />
+            <span className="platform-open-label">Open <ArrowUpRight /></span>
           </Link>)}
           {schools.length === 0 ? <div className="platform-empty"><School /><h2>No schools found</h2><p>Adjust the search or status filter and try again.</p></div> : null}
         </div>
