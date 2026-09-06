@@ -904,6 +904,17 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "session-assessment-snapshot-constraint-fix",
+        eyebrow: "Academic setup reliability",
+        timestamp: "Sep 6, 2026 · 10:35 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Session assessment snapshots now create reliably",
+        bullets: [
+          "New academic sessions can reuse assessment names such as CA1, CA2, and Exam inside each term snapshot without triggering the obsolete school-wide unique-name rule.",
+          "Assessment names remain protected from duplicates within the same preset or term template, preserving clean grading structures.",
+        ],
+      },
+      {
         id: "school-settings-workspace-redesign",
         eyebrow: "Settings UX",
         timestamp: "Sep 6, 2026 · 7:12 PM GMT+1",
