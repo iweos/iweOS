@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "fresh-school-portal-shell",
+        eyebrow: "Portal migration",
+        timestamp: "Sep 6, 2026 · 5:56 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Fresh School Administration and Teacher Portal shell",
+        bullets: [
+          "Signed-in users who revisit Sign in are now returned automatically to Dataroom, School Administration, Teacher Portal, or workspace selection instead of seeing the login form again.",
+          "School Administration and Teacher Portal now use a newly built shell with a dark global header, quiet light sidebar, compact account controls, and a focused school workspace inspired by modern operations products.",
+          "Navigation no longer inherits KaiAdmin active-text behavior; active pages use dark readable text, a restrained school-green outline and accent, and matching accessible dark-mode styling.",
+          "Notifications, school switching, add-school access, command search, profile controls, collapsible desktop navigation, mobile drawer behavior, and the in-app guide remain available in the new shell.",
+        ],
+      },
+      {
         id: "shared-workspace-component-redesign",
         eyebrow: "UI and UX",
         timestamp: "Sep 6, 2026 · 5:17 PM GMT+1",

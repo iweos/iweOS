@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import BrandLogo from "@/components/BrandLogo";
 import PasswordField from "@/components/auth/PasswordField";
 import AuthSubmitButton from "@/components/auth/AuthSubmitButton";
 import { signInAction } from "@/lib/server/auth-actions";
+import { getAuthenticatedDestination } from "@/lib/server/auth";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; reset?: string; verified?: string }> }) {
+  const destination = await getAuthenticatedDestination().catch((error) => {
+    console.error("[auth][sign-in] Failed to resolve existing session", error);
+    return null;
+  });
+  if (destination) redirect(destination);
+
   const { error, reset, verified } = await searchParams;
   return (
     <main className="auth-page" data-loading-indicator="off">

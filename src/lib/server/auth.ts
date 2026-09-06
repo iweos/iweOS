@@ -274,3 +274,27 @@ export async function requireTeacherPortalContext(teacherProfileId?: string) {
   if (!selectedTeacher) throw new Error("Selected teacher does not exist in this school.");
   return { actorProfile, effectiveTeacherProfile: selectedTeacher, mode: "admin_as_teacher" as TeacherPortalMode, teacherOptions };
 }
+
+export async function getAuthenticatedDestination(): Promise<string | null> {
+  const session = await getAuthSession();
+  if (!session) return null;
+
+  if (
+    session.credential.platformRole === PlatformRole.PLATFORM_ADMIN ||
+    platformAdminEmailAllowed(session.credential.email)
+  ) {
+    return "/dataroom";
+  }
+
+  if (session.profile?.isActive && session.profile.school.status === SchoolStatus.ACTIVE) {
+    return session.profile.role === ProfileRole.ADMIN ? "/app/admin/dashboard" : "/app/teacher/dashboard";
+  }
+
+  const profiles = await findAvailableProfiles(session.credentialId, session.credential.email);
+  if (profiles.length === 1) {
+    await setSessionProfile(session.id, profiles[0].id);
+    return profiles[0].role === ProfileRole.ADMIN ? "/app/admin/dashboard" : "/app/teacher/dashboard";
+  }
+
+  return "/onboarding";
+}
