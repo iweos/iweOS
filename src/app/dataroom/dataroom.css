@@ -4,13 +4,13 @@
   --platform-line: #dfe5df;
   --platform-paper: #f6f7f3;
   --platform-card: #ffffff;
-  --platform-green: #285f3a;
-  --platform-green-dark: #173b26;
+  --platform-green: #1e3a5f;
+  --platform-green-dark: #18314f;
   min-height: 100svh;
   color: var(--platform-ink);
   background:
-    radial-gradient(circle at 92% 2%, rgba(184, 211, 159, .24), transparent 23rem),
-    linear-gradient(135deg, rgba(40, 95, 58, .035) 25%, transparent 25%) 0 0 / 22px 22px,
+    radial-gradient(circle at 92% 2%, rgba(30, 58, 95, .12), transparent 23rem),
+    linear-gradient(135deg, rgba(30, 58, 95, .028) 25%, transparent 25%) 0 0 / 22px 22px,
     var(--platform-paper);
   font-family: var(--font-site-hornbill), Georgia, serif;
 }
@@ -42,11 +42,11 @@
 .platform-nav p { margin: 22px 12px 7px; color: #85a48d; font-size: .65rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .platform-nav a { display: flex; min-height: 45px; padding: 0 13px; align-items: center; gap: 12px; border-radius: 11px; color: #bfd0c2; text-decoration: none; font-size: .88rem; font-weight: 700; transition: .18s ease; }
 .platform-nav a:hover { color: #fff; background: rgba(255,255,255,.065); transform: translateX(2px); }
-.platform-nav a.is-active { color: #173b26; background: #dcebd6; box-shadow: 0 8px 24px rgba(7, 26, 14, .18); }
+.platform-nav a.is-active { color: #18314f; background: #e4ebf3; box-shadow: 0 8px 24px rgba(20, 42, 69, .18); }
 .platform-nav svg { width: 18px; height: 18px; }
 .platform-sidebar-footer { display: grid; gap: 14px; margin-top: auto; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.09); }
 .platform-account-badge { display: flex; min-width: 0; align-items: center; gap: 10px; }
-.platform-account-badge > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #173b26; background: #dcebd6; font-weight: 900; }
+.platform-account-badge > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #18314f; background: #e4ebf3; font-weight: 900; }
 .platform-account-badge div { display: grid; min-width: 0; }
 .platform-account-badge strong { font-size: .77rem; }
 .platform-account-badge small { overflow: hidden; color: #92ac98; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -67,12 +67,12 @@
 .platform-theme-toggle { width: 38px; padding: 0; justify-content: center; }
 .platform-main { width: min(100%, 1500px); margin: 0 auto; padding: clamp(28px, 4vw, 54px) clamp(20px, 3.4vw, 52px) 100px; }
 
-.platform-hero { position: relative; isolation: isolate; display: flex; min-height: 230px; padding: clamp(28px, 4vw, 52px); align-items: flex-end; justify-content: space-between; gap: 30px; overflow: hidden; border-radius: 28px; color: #f8fbf8; background: linear-gradient(118deg, #173b26, #2d6540 62%, #426b39); box-shadow: 0 22px 55px rgba(30, 67, 42, .16); }
+.platform-hero { position: relative; isolation: isolate; display: flex; min-height: 230px; padding: clamp(28px, 4vw, 52px); align-items: flex-end; justify-content: space-between; gap: 30px; overflow: hidden; border-radius: 28px; color: #f8fbf8; background: linear-gradient(118deg, #111827, #1e3a5f 62%, #294f78); box-shadow: 0 22px 55px rgba(20, 42, 69, .16); }
 .platform-hero::after { position: absolute; z-index: -1; right: -65px; bottom: -110px; width: 330px; height: 330px; border: 50px solid rgba(230, 243, 211, .1); border-radius: 50%; content: ""; }
 .platform-hero p, .platform-panel-heading p, .platform-page-heading p { margin: 0 0 9px; color: #a9cdb0; font-size: .66rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 .platform-hero h1 { max-width: 700px; margin: 0; font-size: clamp(2rem, 4vw, 3.55rem); line-height: .98; letter-spacing: -.045em; }
 .platform-hero div > span { display: block; max-width: 640px; margin-top: 17px; color: #bed0c1; font-size: .9rem; line-height: 1.55; }
-.platform-hero > a { display: inline-flex; min-height: 43px; padding: 0 17px; flex: 0 0 auto; align-items: center; gap: 8px; border-radius: 12px; color: #173b26; background: #e1eed8; text-decoration: none; font-size: .77rem; font-weight: 900; }
+.platform-hero > a { display: inline-flex; min-height: 43px; padding: 0 17px; flex: 0 0 auto; align-items: center; gap: 8px; border-radius: 12px; color: #18314f; background: #e4ebf3; text-decoration: none; font-size: .77rem; font-weight: 900; }
 .platform-hero > a svg { width: 17px; }
 
 .platform-stat-grid { display: grid; margin: 22px 0; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
@@ -98,7 +98,7 @@
 .platform-school-list > a { display: grid; min-height: 82px; padding: 15px 23px; grid-template-columns: 42px minmax(170px, 1fr) 70px 82px 18px; align-items: center; gap: 13px; border-bottom: 1px solid #edf0ed; color: inherit; text-decoration: none; transition: .15s ease; }
 .platform-school-list > a:last-child { border-bottom: 0; }
 .platform-school-list > a:hover { background: #fafcf9; }
-.platform-school-avatar, .platform-directory-school > i { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; color: var(--platform-green); background: #eaf2e6; }
+.platform-school-avatar, .platform-directory-school > i { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; color: var(--platform-green); background: #e7edf4; }
 .platform-school-avatar svg, .platform-directory-school svg { width: 18px; }
 .platform-school-primary, .platform-school-metric { display: grid; min-width: 0; }
 .platform-school-primary strong { overflow: hidden; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -177,7 +177,7 @@
 .platform-detail-stats strong { font-size: 1.35rem; }
 .platform-admin-list > div { display: flex; min-height: 72px; padding: 13px 23px; align-items: center; gap: 12px; border-bottom: 1px solid #edf0ed; }
 .platform-admin-list > div:last-child { border-bottom: 0; }
-.platform-admin-list > div > span { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 11px; color: #fff; background: #2d5f3d; font-size: .74rem; font-weight: 900; }
+.platform-admin-list > div > span { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 11px; color: #fff; background: #1e3a5f; font-size: .74rem; font-weight: 900; }
 .platform-admin-list > div > div { display: grid; min-width: 0; margin-right: auto; }
 .platform-admin-list strong { font-size: .75rem; }
 .platform-admin-list small { display: flex; align-items: center; gap: 5px; color: var(--platform-muted); font-size: .62rem; }
@@ -451,7 +451,7 @@ html[data-theme="dark"] .platform-roster-row { border-color: #303831; }
   color: var(--platform-ink);
   border-right: 1px solid var(--platform-line);
   background:
-    radial-gradient(circle at 4% 0, rgba(184, 211, 159, .2), transparent 14rem),
+    radial-gradient(circle at 4% 0, rgba(30, 58, 95, .1), transparent 14rem),
     rgba(246, 247, 243, .97);
   box-shadow: 12px 0 40px rgba(31, 52, 37, .055);
   backdrop-filter: blur(18px);
@@ -461,8 +461,8 @@ html[data-theme="dark"] .platform-roster-row { border-color: #303831; }
 .platform-collapse-button { color: var(--platform-ink); }
 .platform-control-label {
   color: var(--platform-green);
-  border-color: rgba(40, 95, 58, .14);
-  background: rgba(40, 95, 58, .055);
+  border-color: rgba(30, 58, 95, .16);
+  background: rgba(30, 58, 95, .06);
 }
 .platform-nav p { color: #8a938d; }
 .platform-nav a { color: #566159; }
@@ -472,14 +472,14 @@ html[data-theme="dark"] .platform-roster-row { border-color: #303831; }
 }
 .platform-nav a.is-active {
   color: var(--platform-green-dark);
-  background: #dfead9;
+  background: #e4ebf3;
   box-shadow: inset 3px 0 0 var(--platform-green);
 }
 .platform-sidebar-footer { border-color: var(--platform-line); }
 .platform-account-badge > span {
   color: var(--platform-green-dark);
-  border-color: rgba(40, 95, 58, .12);
-  background: #e6efe2;
+  border-color: rgba(30, 58, 95, .14);
+  background: #e7edf4;
 }
 .platform-account-badge small { color: #7b867e; }
 .platform-sidebar-footer > button { color: #68736b; }
@@ -502,8 +502,8 @@ html[data-theme="dark"] .platform-nav p { color: #7f8e83; }
 html[data-theme="dark"] .platform-nav a { color: #aebbb1; }
 html[data-theme="dark"] .platform-nav a:hover { color: #fff; background: #232a24; }
 html[data-theme="dark"] .platform-nav a.is-active {
-  color: #eff7f0;
-  background: #2a352d;
+  color: #dce9f6;
+  background: #253449;
   box-shadow: none;
 }
 html[data-theme="dark"] .platform-sidebar-footer { border-color: #303831; }

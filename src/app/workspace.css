@@ -4,9 +4,9 @@
   --workspace-line: #dfe5df;
   --workspace-paper: #f6f7f3;
   --workspace-card: #ffffff;
-  --workspace-brand: #285f3a;
-  --workspace-brand-dark: #173b26;
-  --workspace-tint: #e8f0e4;
+  --workspace-brand: #1e3a5f;
+  --workspace-brand-dark: #18314f;
+  --workspace-tint: #e7edf4;
   --workspace-shadow: 0 8px 28px rgba(31, 52, 37, 0.055);
 }
 .workspace-page-heading { display: flex; min-width: 0; margin-bottom: 1.1rem; padding: .2rem 0 .35rem; align-items: flex-end; justify-content: space-between; gap: 1.25rem; }
@@ -15,13 +15,13 @@
 .workspace-page-heading h1 { margin: 0; color: var(--workspace-ink); font-size: clamp(1.75rem, 3vw, 2.7rem); font-weight: 850; line-height: 1.04; letter-spacing: -.04em; }
 .workspace-page-heading > div:first-child > span { display: block; max-width: 720px; margin-top: .55rem; color: var(--workspace-muted); font-size: .82rem; line-height: 1.55; }
 .workspace-page-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .6rem; }
-.workspace-hero { position: relative; isolation: isolate; display: flex; min-height: 220px; padding: clamp(1.75rem, 4vw, 3.2rem); align-items: flex-end; justify-content: space-between; gap: 2rem; overflow: hidden; border-radius: 1.75rem; color: #f8fbf8; background: linear-gradient(118deg, #173b26, #2d6540 62%, #426b39); box-shadow: 0 22px 55px rgba(30, 67, 42, .16); }
+.workspace-hero { position: relative; isolation: isolate; display: flex; min-height: 220px; padding: clamp(1.75rem, 4vw, 3.2rem); align-items: flex-end; justify-content: space-between; gap: 2rem; overflow: hidden; border-radius: 1.75rem; color: #f8fbf8; background: linear-gradient(118deg, #111827, #1e3a5f 62%, #294f78); box-shadow: 0 22px 55px rgba(20, 42, 69, .16); }
 .workspace-hero::after { position: absolute; z-index: -1; right: -4rem; bottom: -7rem; width: 21rem; height: 21rem; border: 3.2rem solid rgba(230, 243, 211, .1); border-radius: 50%; content: ""; }
-.workspace-hero p { color: #b9d6be; }
+.workspace-hero p { color: #c3d6e9; }
 .workspace-hero h1 { max-width: 760px; margin: 0; font-size: clamp(2rem, 4vw, 3.55rem); font-weight: 850; line-height: .99; letter-spacing: -.048em; }
-.workspace-hero div > span { display: block; max-width: 650px; margin-top: 1rem; color: #c2d3c5; font-size: .88rem; line-height: 1.6; }
+.workspace-hero div > span { display: block; max-width: 650px; margin-top: 1rem; color: #cbd9e8; font-size: .88rem; line-height: 1.6; }
 .workspace-hero-action { flex: 0 0 auto; }
-.workspace-hero-action a, .workspace-hero-action button { display: inline-flex; min-height: 43px; padding: 0 1rem; align-items: center; gap: .5rem; border: 0; border-radius: .75rem; color: #173b26; background: #e1eed8; font: inherit; font-size: .76rem; font-weight: 900; text-decoration: none; }
+.workspace-hero-action a, .workspace-hero-action button { display: inline-flex; min-height: 43px; padding: 0 1rem; align-items: center; gap: .5rem; border: 0; border-radius: .75rem; color: #142b48; background: #e5edf5; font: inherit; font-size: .76rem; font-weight: 900; text-decoration: none; }
 .workspace-hero-action svg { width: 17px; height: 17px; }
 .workspace-stat-grid { display: grid; margin: 1.25rem 0; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; }
 .workspace-stat { display: flex; min-width: 0; min-height: 146px; padding: 1.25rem; align-items: flex-start; justify-content: space-between; gap: .8rem; overflow: hidden; border: 1px solid var(--workspace-line); border-radius: 1.25rem; color: var(--workspace-ink); background: rgba(255,255,255,.92); box-shadow: var(--workspace-shadow); }
@@ -29,7 +29,7 @@
 .workspace-stat-copy > span { color: var(--workspace-muted); font-size: .72rem; font-weight: 800; }
 .workspace-stat-copy > strong { margin: .58rem 0 .38rem; color: var(--workspace-ink); font-size: clamp(1.8rem, 3vw, 2.55rem); font-weight: 850; line-height: 1; letter-spacing: -.045em; }
 .workspace-stat-copy > small { overflow: hidden; color: #829087; font-size: .66rem; line-height: 1.35; text-overflow: ellipsis; }
-.workspace-stat-icon { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: .8rem; color: var(--workspace-brand); background: #e9f1e5; font-size: 1.05rem; font-style: normal; }
+.workspace-stat-icon { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: .8rem; color: var(--workspace-brand); background: #e7edf4; font-size: 1.05rem; font-style: normal; }
 .workspace-stat-icon svg { width: 20px; height: 20px; }
 .workspace-tone-blue .workspace-stat-icon { color: #245d82; background: #e5f1f7; }
 .workspace-tone-gold .workspace-stat-icon { color: #8a601e; background: #f7eedb; }
@@ -63,13 +63,13 @@ html[data-theme="dark"] .workspace-tone-red .workspace-stat-icon { color: #efc2b
 .workspace-emphasis-panel p { margin: 1rem 0 .35rem; color: #b9c7bc; font-size: .7rem; font-weight: 750; }
 .workspace-emphasis-panel strong { color: #fff; font-size: clamp(1.3rem, 2.5vw, 2rem); line-height: 1; }
 .workspace-emphasis-panel small { margin-top: .55rem; color: #94a399; font-size: .65rem; }
-.workspace-emphasis-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: .8rem; color: #183522; background: #dcebd6; }
+.workspace-emphasis-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: .8rem; color: #142b48; background: #e5edf5; }
 .workspace-emphasis-icon svg { width: 19px; height: 19px; }
 .workspace-action-list { display: grid; }
 .workspace-action-list > a { display: grid; min-height: 78px; padding: .85rem 1.2rem; grid-template-columns: 42px minmax(0, 1fr) 18px; align-items: center; gap: .85rem; border-bottom: 1px solid #edf0ed; color: inherit; text-decoration: none; transition: background .16s ease, transform .16s ease; }
 .workspace-action-list > a:last-child { border-bottom: 0; }
 .workspace-action-list > a:hover { background: #fafcf9; }
-.workspace-action-list > a > i { display: grid; width: 40px; height: 40px; place-items: center; border-radius: .75rem; color: var(--workspace-brand); background: #eaf2e6; font-style: normal; }
+.workspace-action-list > a > i { display: grid; width: 40px; height: 40px; place-items: center; border-radius: .75rem; color: var(--workspace-brand); background: #e7edf4; font-style: normal; }
 .workspace-action-list > a > i svg { width: 18px; height: 18px; }
 .workspace-action-list > a > span { display: grid; min-width: 0; }
 .workspace-action-list strong { color: var(--workspace-ink); font-size: .78rem; }

@@ -1,6 +1,6 @@
 :root {
-  --iwe-primary: #2f6b3f;
-  --iwe-primary-strong: #245332;
+  --iwe-primary: #1e3a5f;
+  --iwe-primary-strong: #18314f;
   --iwe-secondary: #7a4f28;
 }
 
@@ -1829,23 +1829,23 @@ html.kai-admin .workspace-sidebar .nav > .nav-item > a {
 }
 html.kai-admin .workspace-sidebar .nav > .nav-item > a:hover {
   color: #17231b !important;
-  background: rgba(226, 235, 222, .72) !important;
+  background: rgba(228, 235, 243, .8) !important;
   box-shadow: none;
   transform: translateX(2px);
 }
 html.kai-admin .workspace-sidebar .nav > .nav-item.active > a,
 html.kai-admin .workspace-sidebar .nav > .nav-item > a[data-toggle="collapse"][aria-expanded="true"] {
-  color: #173b26 !important;
-  background: #dfead9 !important;
-  box-shadow: inset 3px 0 0 #285f3a;
+  color: #18314f !important;
+  background: #e4ebf3 !important;
+  box-shadow: inset 3px 0 0 #1e3a5f;
 }
 html.kai-admin .workspace-sidebar .nav-collapse li.active > a {
-  color: #173b26 !important;
-  background: #dfead9 !important;
+  color: #18314f !important;
+  background: #e4ebf3 !important;
   border-radius: 8px;
 }
 html.kai-admin .workspace-sidebar .nav-collapse {
-  background: rgba(230, 237, 226, .66) !important;
+  background: rgba(231, 237, 244, .7) !important;
 }
 html.kai-admin .workspace-stat {
   border-color: var(--workspace-line) !important;
