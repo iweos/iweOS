@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
 import GuideDock from "@/components/guide/GuideDock";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
@@ -81,7 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </head>
-        <body className={`${hornbill.variable} ui`}>
+        <body className={`${hornbill.variable} ${GeistSans.variable} ui`}>
           <PwaClient />
           <ThemeSync />
           <GuideDock />

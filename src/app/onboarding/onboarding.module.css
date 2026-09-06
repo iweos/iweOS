@@ -15,7 +15,7 @@
     radial-gradient(circle at 12% 10%, rgba(113, 163, 104, .18), transparent 24rem),
     radial-gradient(circle at 90% 90%, rgba(36, 91, 55, .12), transparent 27rem),
     #f4f6f1;
-  font-family: var(--font-site-hornbill), Georgia, serif;
+  font-family: var(--font-ui), "Geist", Arial, sans-serif;
 }
 
 .page::before {

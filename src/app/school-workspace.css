@@ -6,7 +6,7 @@
   background:
     radial-gradient(circle at 92% 2%, rgba(30, 58, 95, .09), transparent 24rem),
     #f8f6f2;
-  font-family: var(--font-site-hornbill), Georgia, serif;
+  font-family: var(--font-ui), "Geist", Arial, sans-serif;
 }
 .school-shell button,
 .school-shell input,

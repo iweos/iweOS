@@ -12,7 +12,7 @@
     radial-gradient(circle at 92% 2%, rgba(30, 58, 95, .12), transparent 23rem),
     linear-gradient(135deg, rgba(30, 58, 95, .028) 25%, transparent 25%) 0 0 / 22px 22px,
     var(--platform-paper);
-  font-family: var(--font-site-hornbill), Georgia, serif;
+  font-family: var(--font-ui), "Geist", Arial, sans-serif;
 }
 
 .platform-sidebar {

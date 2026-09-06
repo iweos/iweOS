@@ -4142,8 +4142,8 @@ html[data-theme="dark"] .shell-tour-close {
   color: #c5d0dc;
 }
 /* First-party authentication */
-.auth-page { min-height: 100svh; display: grid; place-items: center; padding: 32px 18px; background: radial-gradient(circle at 15% 10%, rgba(47,107,63,.16), transparent 32%), #f4f5f1; font-family: var(--font-site-hornbill), var(--font-display), Georgia, serif; }
-.auth-page input, .auth-page button { font-family: var(--font-site-hornbill), var(--font-display), Georgia, serif; }
+.auth-page { min-height: 100svh; display: grid; place-items: center; padding: 32px 18px; background: radial-gradient(circle at 15% 10%, rgba(47,107,63,.16), transparent 32%), #f4f5f1; font-family: var(--font-ui), "Geist", Arial, sans-serif; }
+.auth-page input, .auth-page button { font-family: inherit; }
 .auth-card { width: min(100%, 430px); padding: 38px; border: 1px solid #dfe4dc; border-radius: 24px; background: rgba(255,255,255,.96); box-shadow: 0 24px 70px rgba(24,45,30,.12); }
 .auth-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 36px; }
 .auth-brand-text { font-size: 1.25rem; font-weight: 800; }
@@ -4190,9 +4190,9 @@ html[data-theme="dark"] .shell-tour-close {
   animation: iweos-pending-spin .65s linear infinite;
 }
 
-/* iweOS uses the bundled Hornbill typeface across every public and authenticated surface. */
+/* Product surfaces use Geist; public website wrappers explicitly retain Hornbill. */
 body.ui {
-  --font-display: var(--font-site-hornbill);
-  --font-ui: var(--font-site-hornbill);
-  font-family: var(--font-site-hornbill), Georgia, serif;
+  --font-display: var(--font-geist-sans);
+  --font-ui: var(--font-geist-sans);
+  font-family: var(--font-ui), "Geist", Arial, sans-serif;
 }

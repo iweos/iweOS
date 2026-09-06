@@ -12,7 +12,7 @@ html.kai-admin body {
 }
 
 html.kai-admin body {
-  font-family: "Public Sans", sans-serif !important;
+  font-family: var(--font-ui), "Geist", Arial, sans-serif !important;
 }
 
 html.kai-admin .wrapper {
@@ -1432,14 +1432,14 @@ html.kai-admin .app-command-trigger {
 }
 html.kai-admin .app-command-trigger:hover { border-color: #aac4b0; background: #fff; box-shadow: 0 7px 20px rgba(30, 70, 43, .08); }
 html.kai-admin .app-command-trigger span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html.kai-admin .app-command-trigger kbd, html.kai-admin .app-command-panel kbd { padding: .16rem .36rem; border: 1px solid #d8ded9; border-radius: 6px; color: #657068; background: #fff; box-shadow: 0 1px 1px rgba(24, 39, 28, .06); font: 700 .6rem var(--font-site-hornbill), serif; }
+html.kai-admin .app-command-trigger kbd, html.kai-admin .app-command-panel kbd { padding: .16rem .36rem; border: 1px solid #d8ded9; border-radius: 6px; color: #657068; background: #fff; box-shadow: 0 1px 1px rgba(24, 39, 28, .06); font: 700 .6rem var(--font-ui), "Geist", Arial, sans-serif; }
 html.kai-admin .app-command-root { position: fixed; z-index: 2200; inset: 0; }
 html.kai-admin .app-command-backdrop { position: fixed; inset: 0; background: rgba(13, 24, 17, .54); backdrop-filter: blur(5px); }
 html.kai-admin .app-command-positioner { position: fixed; inset: 0; display: grid; padding: max(8vh, 3rem) 1rem 1rem; place-items: start center; overflow-y: auto; }
 html.kai-admin .app-command-panel { width: min(100%, 660px); overflow: hidden; border: 1px solid rgba(255,255,255,.6); border-radius: 20px; background: #fff; box-shadow: 0 30px 90px rgba(10, 27, 16, .28); }
 html.kai-admin .app-command-search { display: flex; min-height: 68px; padding: 0 1.1rem; align-items: center; gap: .8rem; border-bottom: 1px solid #e8ece8; }
 html.kai-admin .app-command-search > svg { width: 20px; color: #2f6b3f; }
-html.kai-admin .app-command-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: #17231b; background: transparent; font: 500 .92rem var(--font-site-hornbill), serif; }
+html.kai-admin .app-command-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: #17231b; background: transparent; font: 500 .92rem var(--font-ui), "Geist", Arial, sans-serif; }
 html.kai-admin .app-command-search button { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 8px; color: #738078; background: #f1f4f1; }
 html.kai-admin .app-command-search button svg { width: 16px; }
 html.kai-admin .app-command-title { margin: 0; padding: .9rem 1.1rem .35rem; color: #7b877e; font-size: .62rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
@@ -1539,7 +1539,7 @@ html.kai-admin button,
 html.kai-admin input,
 html.kai-admin select,
 html.kai-admin textarea {
-  font-family: var(--font-site-hornbill), Georgia, serif !important;
+  font-family: var(--font-ui), "Geist", Arial, sans-serif !important;
 }
 html.kai-admin .sidebar[data-background-color="dark"],
 html.kai-admin .logo-header[data-background-color="dark"],

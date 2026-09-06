@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "geist-product-typography-migration",
+        eyebrow: "Product typography",
+        timestamp: "Sep 6, 2026 · 11:48 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Geist typography across every product workspace",
+        bullets: [
+          "School Administration, Teacher Portal, Dataroom, authentication, onboarding, results, exports, forms, tables, modals, and shared controls now use the bundled Geist Sans variable font.",
+          "Public website and Guide surfaces retain Hornbill as the distinct iweOS marketing typeface.",
+          "Legacy KaiAdmin font overrides now inherit the same product typography token, preventing inconsistent fallback fonts across older workflows.",
+        ],
+      },
+      {
         id: "session-assessment-snapshot-constraint-fix",
         eyebrow: "Academic setup reliability",
         timestamp: "Sep 6, 2026 · 10:35 PM GMT+1",
@@ -1287,7 +1299,7 @@ export async function GET() {
 
 export default function GuidePage() {
   return (
-    <div className={hornbill.variable}>
+    <div className={`${hornbill.variable} site-hornbill`}>
       <DocLayout tabs={tabs} groups={groups} pages={pages} />
     </div>
   );

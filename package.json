@@ -16,6 +16,7 @@
     "@headlessui/react": "^2.2.9",
     "@prisma/client": "^6.19.2",
     "argon2": "^0.44.0",
+    "geist": "^1.7.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
