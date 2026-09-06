@@ -259,6 +259,7 @@ export default async function TeacherConductPage({
           <p className="section-subtle">No enrolled students found for the selected class and term.</p>
         ) : (
           <TeacherConductTable
+            key={`${selectedTermId}:${selectedClassId}:${selectedStudent.studentId}`}
             teacherProfileId={params.teacherProfileId}
             termId={selectedTermId}
             classId={selectedClassId}

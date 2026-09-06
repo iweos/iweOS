@@ -51,6 +51,7 @@ export default function TeacherConductTable({
   const [, startTransition] = useTransition();
   const clearTimersRef = useRef<Record<string, number>>({});
   const requestVersionRef = useRef<Record<string, number>>({});
+  const studentRef = useRef(selectedStudent);
 
   const conductCategories = useMemo(
     () => conductSections.flatMap((section) => section.categories),
@@ -58,12 +59,11 @@ export default function TeacherConductTable({
   );
 
   useEffect(() => {
-    setStudent(selectedStudent);
-    setStatusByCategoryId({});
-    Object.values(clearTimersRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
-    clearTimersRef.current = {};
-    requestVersionRef.current = {};
-  }, [selectedStudent]);
+    const clearTimers = clearTimersRef.current;
+    return () => {
+      Object.values(clearTimers).forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, []);
 
   function setItemStatus(categoryId: string, status: ItemStatus) {
     setStatusByCategoryId((current) => ({
@@ -90,24 +90,29 @@ export default function TeacherConductTable({
   }
 
   function handleValueChange(conductCategoryId: string, nextValue: string) {
-    setStudent((current) => ({
-      ...current,
-      values: {
-        ...current.values,
-        [conductCategoryId]: nextValue,
-      },
-    }));
+    setStudent((current) => {
+      const nextStudent = {
+        ...current,
+        values: {
+          ...current.values,
+          [conductCategoryId]: nextValue,
+        },
+      };
+      studentRef.current = nextStudent;
+      return nextStudent;
+    });
   }
 
   function saveCategory(conductCategoryId: string) {
+    const submittedStudent = studentRef.current;
     const payload: SaveStudentConductInput = {
       teacherProfileId,
       termId,
       classId,
-      studentId: student.studentId,
+      studentId: submittedStudent.studentId,
       conduct: conductCategories.map((category) => ({
         conductCategoryId: category.id,
-        value: student.values[category.id] ?? "0",
+        value: submittedStudent.values[category.id] ?? "0",
       })),
     };
 
@@ -127,10 +132,21 @@ export default function TeacherConductTable({
             return;
           }
 
-          setStudent((current) => ({
-            ...current,
-            values: result.values,
-          }));
+          setStudent((current) => {
+            const mergedValues = Object.fromEntries(
+              conductCategories.map((category) => {
+                const submittedValue = submittedStudent.values[category.id] ?? "0";
+                const currentValue = current.values[category.id] ?? "0";
+                return [
+                  category.id,
+                  currentValue === submittedValue ? (result.values[category.id] ?? "0") : currentValue,
+                ];
+              }),
+            );
+            const nextStudent = { ...current, values: mergedValues };
+            studentRef.current = nextStudent;
+            return nextStudent;
+          });
           setItemStatus(conductCategoryId, { tone: "saved", message: "Saved" });
           scheduleStatusClear(conductCategoryId);
         })

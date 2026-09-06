@@ -72,20 +72,9 @@ export default function GradeEntryTable({
   const totalColumns = assessmentTypes.length + 5;
 
   useEffect(() => {
-    setRows(initialRows);
-    rowsRef.current = initialRows;
-    setRowStatusByStudentId({});
-    requestVersionRef.current = {};
-
-    Object.values(clearTimersRef.current).forEach((timeoutId) => {
-      window.clearTimeout(timeoutId);
-    });
-    clearTimersRef.current = {};
-  }, [initialRows, termId, classId, subjectId]);
-
-  useEffect(() => {
+    const clearTimers = clearTimersRef.current;
     return () => {
-      Object.values(clearTimersRef.current).forEach((timeoutId) => {
+      Object.values(clearTimers).forEach((timeoutId) => {
         window.clearTimeout(timeoutId);
       });
     };

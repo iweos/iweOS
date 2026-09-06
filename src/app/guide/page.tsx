@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "workflow-reliability-gate",
+        eyebrow: "Reliability",
+        timestamp: "Sep 6, 2026 · 4:23 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Safer autosave and production quality gates",
+        bullets: [
+          "Grade entry, attendance, comments, and conduct now preserve newer typing when an earlier background save finishes.",
+          "Editable tables now reset only when the selected session, class, subject, or student actually changes.",
+          "Result charts, theme switching, pagination, navigation, and the guide tour now pass the production React quality gate.",
+          "The deployment pipeline now lints the production app independently of archived templates and prototype projects.",
+        ],
+      },
+      {
         id: "unified-portal-navigation",
         eyebrow: "Navigation and resilience",
         timestamp: "Sep 6, 2026 · 3:59 PM GMT+1",

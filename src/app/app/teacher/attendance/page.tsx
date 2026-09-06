@@ -220,7 +220,7 @@ export default async function TeacherAttendancePage({
         </div>
 
         <Card title="Student Attendance" subtitle="Edit each row and save attendance for the selected class and term.">
-          <StudentAttendanceTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentAttendanceAction} />
+          <StudentAttendanceTable key={`${selectedTermId}:${selectedClassId}`} rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentAttendanceAction} />
         </Card>
       </section>
     </>

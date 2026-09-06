@@ -1,6 +1,7 @@
 export type IweTheme = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "iweos-theme";
+export const THEME_CHANGE_EVENT = "iweos:theme-change";
 
 export function getPreferredTheme(): IweTheme {
   if (typeof window === "undefined") {
@@ -26,6 +27,25 @@ export function applyTheme(theme: IweTheme) {
     document.body.dataset.theme = theme;
     document.body.dataset.backgroundColor = theme === "dark" ? "dark" : "light";
   }
+
+  window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+}
+
+export function subscribeToTheme(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  window.addEventListener(THEME_CHANGE_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+export function getServerTheme(): IweTheme {
+  return "light";
 }
 
 export function persistTheme(theme: IweTheme) {

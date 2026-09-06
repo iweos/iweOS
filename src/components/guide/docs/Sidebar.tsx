@@ -24,18 +24,23 @@ type SidebarProps = {
   onOpenPage: (pageId: string) => void;
 };
 
-const iconMap = {
-  sparkles: Sparkles,
-  compass: Compass,
-  book: BookOpen,
-  flask: FlaskConical,
-  key: KeyRound,
-  shield: ShieldCheck,
-  help: HelpCircle,
-} as const;
-
-function resolveItemIcon(icon?: string) {
-  return icon ? (iconMap[icon as keyof typeof iconMap] ?? BookOpen) : BookOpen;
+function ItemIcon({ icon, className }: { icon?: string; className: string }) {
+  switch (icon) {
+    case "sparkles":
+      return <Sparkles className={className} />;
+    case "compass":
+      return <Compass className={className} />;
+    case "flask":
+      return <FlaskConical className={className} />;
+    case "key":
+      return <KeyRound className={className} />;
+    case "shield":
+      return <ShieldCheck className={className} />;
+    case "help":
+      return <HelpCircle className={className} />;
+    default:
+      return <BookOpen className={className} />;
+  }
 }
 
 function itemContainsActive(item: SidebarItem, activePageId: string): boolean {
@@ -60,8 +65,6 @@ function SidebarItemNode({
   const isActive = item.pageId === activePageId;
   const hasChildren = Boolean(item.children?.length);
   const hasActiveDescendant = itemContainsActive(item, activePageId);
-  const Icon = resolveItemIcon(item.icon);
-
   if (!hasChildren) {
     return (
       <button
@@ -74,7 +77,7 @@ function SidebarItemNode({
         }`}
         style={{ paddingLeft: `${0.55 + depth * 0.75}rem` }}
       >
-        <Icon className="mr-1.5 h-4 w-4 shrink-0" />
+        <ItemIcon icon={item.icon} className="mr-1.5 h-4 w-4 shrink-0" />
         {item.title}
       </button>
     );
@@ -93,7 +96,7 @@ function SidebarItemNode({
             style={{ paddingLeft: `${0.55 + depth * 0.75}rem` }}
           >
             <span className="flex items-center">
-              <Icon className="mr-1.5 h-4 w-4 shrink-0" />
+              <ItemIcon icon={item.icon} className="mr-1.5 h-4 w-4 shrink-0" />
               <span>{item.title}</span>
             </span>
             {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -127,7 +130,6 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
         {collapsed ? (
           <div className="space-y-3">
             {groups.flatMap((group) => group.items).map((item) => {
-              const CollapsedIcon = resolveItemIcon(item.icon);
               return (
                 <button
                   key={item.id}
@@ -145,7 +147,7 @@ export default function Sidebar({ groups, activePageId, collapsed, onToggleColla
                   }`}
                   title={item.title}
                 >
-                  <CollapsedIcon className="h-4.5 w-4.5" />
+                  <ItemIcon icon={item.icon} className="h-4.5 w-4.5" />
                 </button>
               );
             })}

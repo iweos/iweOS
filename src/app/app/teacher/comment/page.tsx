@@ -197,6 +197,7 @@ export default async function TeacherCommentPage({
 
         <Card title="Class Teacher Comments" subtitle="Sort the table, edit each student comment, and save it directly into the result sheet.">
           <StudentCommentTable
+            key={`${selectedTermId}:${selectedClassId}`}
             rows={rows}
             termId={selectedTermId}
             classId={selectedClassId}

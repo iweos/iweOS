@@ -173,7 +173,6 @@ export default function ShellTour({ mode, teacherPortalAdmin = false }: ShellTou
 
   useEffect(() => {
     if (!open || !currentStep?.selector) {
-      setTargetRect(null);
       return;
     }
 
@@ -208,30 +207,31 @@ export default function ShellTour({ mode, teacherPortalAdmin = false }: ShellTou
     return null;
   }
 
+  const visibleTargetRect = currentStep.selector ? targetRect : null;
   const cardStyle =
-    targetRect && typeof window !== "undefined"
+    visibleTargetRect && typeof window !== "undefined"
       ? {
-          top: Math.min(targetRect.top + targetRect.height + 18, window.innerHeight - 230),
-          left: Math.min(Math.max(targetRect.left, 20), window.innerWidth - 360),
+          top: Math.min(visibleTargetRect.top + visibleTargetRect.height + 18, window.innerHeight - 230),
+          left: Math.min(Math.max(visibleTargetRect.left, 20), window.innerWidth - 360),
         }
       : undefined;
 
   return (
     <div className="shell-tour-layer" role="dialog" aria-modal="true" aria-label="Product tour">
       <div className="shell-tour-backdrop" onClick={() => setOpen(false)} />
-      {targetRect ? (
+      {visibleTargetRect ? (
         <div
           className="shell-tour-spotlight"
           style={{
-            top: targetRect.top - 8,
-            left: targetRect.left - 8,
-            width: targetRect.width + 16,
-            height: targetRect.height + 16,
+            top: visibleTargetRect.top - 8,
+            left: visibleTargetRect.left - 8,
+            width: visibleTargetRect.width + 16,
+            height: visibleTargetRect.height + 16,
           }}
           aria-hidden="true"
         />
       ) : null}
-      <div className={`shell-tour-card${targetRect ? "" : " is-centered"}`} style={cardStyle}>
+      <div className={`shell-tour-card${visibleTargetRect ? "" : " is-centered"}`} style={cardStyle}>
         <div className="shell-tour-progress">
           <span>
             Step {stepIndex + 1} of {steps.length}

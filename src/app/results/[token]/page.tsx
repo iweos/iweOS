@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ResultSheet from "@/components/results/ResultSheet";
 import ShareResultLinkButton from "@/components/results/ShareResultLinkButton";
 import { getPublishedResultSheetByToken } from "@/lib/server/results";
@@ -51,9 +52,9 @@ export default async function SharedResultPage({
                   text={`${resultSheet.student.fullName}'s published result`}
                   className="btn btn-secondary"
                 />
-                <a href="/" className="btn btn-secondary">
+                <Link href="/" className="btn btn-secondary">
                   Open iweOS
-                </a>
+                </Link>
               </div>
             </div>
           </div>

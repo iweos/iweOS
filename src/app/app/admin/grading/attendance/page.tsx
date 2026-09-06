@@ -188,7 +188,7 @@ export default async function AdminGradingAttendancePage({
       </Card>
 
       <Card title="Student Attendance" subtitle="Attendance saves automatically when you leave a field.">
-        <StudentAttendanceTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentAttendanceAdminAction} />
+        <StudentAttendanceTable key={`${selectedTermId}:${selectedClassId}`} rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentAttendanceAdminAction} />
       </Card>
     </Section>
   );

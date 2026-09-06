@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type AutoSubmitFiltersProps = {
@@ -17,17 +17,6 @@ export default function AutoSubmitFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [manualPending, setManualPending] = useState(false);
-  const submittedQueryRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const currentQuery = searchParams.toString();
-    if (submittedQueryRef.current && currentQuery === submittedQueryRef.current) {
-      submittedQueryRef.current = null;
-      setManualPending(false);
-    }
-  }, [searchParams]);
-
   useEffect(() => {
     const anchor = anchorRef.current;
     const form = anchor?.closest("form");
@@ -68,8 +57,6 @@ export default function AutoSubmitFilters({
         return;
       }
 
-      submittedQueryRef.current = nextQuery;
-      setManualPending(true);
       startTransition(() => {
         router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
       });
@@ -83,7 +70,7 @@ export default function AutoSubmitFilters({
 
   return (
     <div ref={anchorRef} className={`inline-flex min-h-[42px] items-center ${className}`.trim()}>
-      <AutoSubmitStatus isLoading={isPending || manualPending} readyLabel={readyLabel} />
+      <AutoSubmitStatus isLoading={isPending} readyLabel={readyLabel} />
     </div>
   );
 }

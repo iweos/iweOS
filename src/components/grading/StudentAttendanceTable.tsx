@@ -85,18 +85,12 @@ export default function StudentAttendanceTable({ rows: initialRows, termId, clas
   const [, startTransition] = useTransition();
   const clearTimersRef = useRef<Record<string, number>>({});
   const requestVersionRef = useRef<Record<string, number>>({});
+  const rowsRef = useRef(initialRows);
 
   useEffect(() => {
-    setRows(initialRows);
-    setRowStatusByStudentId({});
-    requestVersionRef.current = {};
-    Object.values(clearTimersRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
-    clearTimersRef.current = {};
-  }, [initialRows, termId, classId]);
-
-  useEffect(() => {
+    const clearTimers = clearTimersRef.current;
     return () => {
-      Object.values(clearTimersRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+      Object.values(clearTimers).forEach((timeoutId) => window.clearTimeout(timeoutId));
     };
   }, []);
 
@@ -106,8 +100,6 @@ export default function StudentAttendanceTable({ rows: initialRows, termId, clas
       return sortDirection === "asc" ? comparison : -comparison;
     });
   }, [rows, sortDirection, sortKey]);
-
-  const rowsByStudentId = useMemo(() => new Map(rows.map((row) => [row.studentId, row])), [rows]);
 
   function updateSort(nextKey: SortKey) {
     if (nextKey === sortKey) {
@@ -147,17 +139,19 @@ export default function StudentAttendanceTable({ rows: initialRows, termId, clas
   }
 
   function handleValueChange(studentId: string, key: AttendanceField, nextValue: string) {
-    setRows((current) =>
-      current.map((row) =>
+    setRows((current) => {
+      const nextRows = current.map((row) =>
         row.studentId === studentId
           ? normalizeAttendanceRow(row, key, Number.parseInt(nextValue || "0", 10) || 0)
           : row,
-      ),
-    );
+      );
+      rowsRef.current = nextRows;
+      return nextRows;
+    });
   }
 
   function saveRow(studentId: string) {
-    const row = rowsByStudentId.get(studentId);
+    const row = rowsRef.current.find((currentRow) => currentRow.studentId === studentId);
     if (!row) {
       return;
     }
@@ -186,18 +180,32 @@ export default function StudentAttendanceTable({ rows: initialRows, termId, clas
             return;
           }
 
-          setRows((current) =>
-            current.map((currentRow) =>
-              currentRow.studentId === studentId && result.record
-                ? {
-                    ...currentRow,
-                    timesSchoolOpened: result.record.timesSchoolOpened,
-                    timesPresent: result.record.timesPresent,
-                    timesAbsent: result.record.timesAbsent,
-                  }
-                : currentRow,
-            ),
-          );
+          if (result.record) {
+            const savedRecord = result.record;
+            const nextRows = rowsRef.current.map((currentRow) => {
+              if (currentRow.studentId !== studentId) {
+                return currentRow;
+              }
+
+              return {
+                ...currentRow,
+                timesSchoolOpened:
+                  currentRow.timesSchoolOpened === row.timesSchoolOpened
+                    ? savedRecord.timesSchoolOpened
+                    : currentRow.timesSchoolOpened,
+                timesPresent:
+                  currentRow.timesPresent === row.timesPresent
+                    ? savedRecord.timesPresent
+                    : currentRow.timesPresent,
+                timesAbsent:
+                  currentRow.timesAbsent === row.timesAbsent
+                    ? savedRecord.timesAbsent
+                    : currentRow.timesAbsent,
+              };
+            });
+            rowsRef.current = nextRows;
+            setRows(nextRows);
+          }
           setRowStatus(studentId, { tone: "saved", message: "Saved" });
           scheduleStatusClear(studentId);
         })

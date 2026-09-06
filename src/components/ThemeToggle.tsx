@@ -1,31 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { applyTheme, getPreferredTheme, persistTheme, type IweTheme } from "@/lib/client/theme";
+import { useSyncExternalStore } from "react";
+import {
+  applyTheme,
+  getPreferredTheme,
+  getServerTheme,
+  persistTheme,
+  subscribeToTheme,
+  type IweTheme,
+} from "@/lib/client/theme";
 
 type ThemeToggleProps = {
   className?: string;
 };
 
 export default function ThemeToggle({ className }: ThemeToggleProps) {
-  const [theme, setTheme] = useState<IweTheme>("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const resolvedTheme = getPreferredTheme();
-    setTheme(resolvedTheme);
-    applyTheme(resolvedTheme);
-    setMounted(true);
-  }, []);
+  const theme = useSyncExternalStore(subscribeToTheme, getPreferredTheme, getServerTheme);
+  const isDark = theme === "dark";
 
   function handleToggle() {
-    const nextTheme: IweTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
+    const nextTheme: IweTheme = isDark ? "light" : "dark";
     persistTheme(nextTheme);
     applyTheme(nextTheme);
   }
-
-  const isDark = mounted ? theme === "dark" : false;
 
   return (
     <button

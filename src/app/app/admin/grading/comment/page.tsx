@@ -168,7 +168,7 @@ export default async function AdminGradingCommentPage({
       </Card>
 
       <Card title="Student Comments" subtitle="Sort the table by code, name, or comment content, then let each comment save automatically on blur.">
-        <StudentCommentTable rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentCommentAdminAction} />
+        <StudentCommentTable key={`${selectedTermId}:${selectedClassId}`} rows={rows} termId={selectedTermId} classId={selectedClassId} saveAction={saveStudentCommentAdminAction} />
       </Card>
     </Section>
   );

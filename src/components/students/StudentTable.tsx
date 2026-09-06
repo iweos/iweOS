@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
@@ -169,36 +169,28 @@ export default function StudentTable({ rows, classes, mode = "admin", teacherPro
   const totalEntries = filteredRows.length;
   const totalPages = Math.max(1, Math.ceil(totalEntries / pageSize));
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, pageSize]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  const visiblePage = Math.min(currentPage, totalPages);
 
   const paginatedRows = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
+    const start = (visiblePage - 1) * pageSize;
     return filteredRows.slice(start, start + pageSize);
-  }, [filteredRows, currentPage, pageSize]);
+  }, [filteredRows, visiblePage, pageSize]);
 
-  const entryStart = totalEntries === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const entryEnd = totalEntries === 0 ? 0 : Math.min(currentPage * pageSize, totalEntries);
+  const entryStart = totalEntries === 0 ? 0 : (visiblePage - 1) * pageSize + 1;
+  const entryEnd = totalEntries === 0 ? 0 : Math.min(visiblePage * pageSize, totalEntries);
 
   const visiblePages = useMemo(() => {
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, index) => index + 1);
     }
-    if (currentPage <= 4) {
+    if (visiblePage <= 4) {
       return [1, 2, 3, 4, 5, -1, totalPages];
     }
-    if (currentPage >= totalPages - 3) {
+    if (visiblePage >= totalPages - 3) {
       return [1, -1, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
     }
-    return [1, -1, currentPage - 1, currentPage, currentPage + 1, -1, totalPages];
-  }, [currentPage, totalPages]);
+    return [1, -1, visiblePage - 1, visiblePage, visiblePage + 1, -1, totalPages];
+  }, [visiblePage, totalPages]);
 
   const displayFirstName = activeStudent ? activeStudent.firstName ?? activeStudent.fullName.split(/\s+/)[0] ?? "" : "";
   const displayLastName = activeStudent
@@ -232,6 +224,7 @@ export default function StudentTable({ rows, classes, mode = "admin", teacherPro
                   value={pageSize}
                   onChange={(event) => {
                     setPageSize(Number(event.target.value));
+                    setCurrentPage(1);
                   }}
                 >
                   {[10, 25, 50, 100].map((size) => (
@@ -253,7 +246,10 @@ export default function StudentTable({ rows, classes, mode = "admin", teacherPro
                   type="search"
                   className="form-control form-control-sm"
                   value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onChange={(event) => {
+                    setSearchTerm(event.target.value);
+                    setCurrentPage(1);
+                  }}
                 />
               </label>
             </div>
@@ -375,12 +371,12 @@ export default function StudentTable({ rows, classes, mode = "admin", teacherPro
               id="student-directory-datatables_paginate"
             >
               <ul className="pagination mb-0">
-                <li className={`paginate_button page-item previous ${currentPage === 1 ? "disabled" : ""}`}>
+                <li className={`paginate_button page-item previous ${visiblePage === 1 ? "disabled" : ""}`}>
                   <button
                     type="button"
                     className="page-link"
                     onClick={() => setCurrentPage((current) => Math.max(1, current - 1))}
-                    disabled={currentPage === 1}
+                    disabled={visiblePage === 1}
                   >
                     Previous
                   </button>
@@ -391,19 +387,19 @@ export default function StudentTable({ rows, classes, mode = "admin", teacherPro
                       <span className="page-link">…</span>
                     </li>
                   ) : (
-                    <li key={page} className={`paginate_button page-item ${currentPage === page ? "active" : ""}`}>
+                    <li key={page} className={`paginate_button page-item ${visiblePage === page ? "active" : ""}`}>
                       <button type="button" className="page-link" onClick={() => setCurrentPage(page)}>
                         {page}
                       </button>
                     </li>
                   ),
                 )}
-                <li className={`paginate_button page-item next ${currentPage === totalPages ? "disabled" : ""}`}>
+                <li className={`paginate_button page-item next ${visiblePage === totalPages ? "disabled" : ""}`}>
                   <button
                     type="button"
                     className="page-link"
                     onClick={() => setCurrentPage((current) => Math.min(totalPages, current + 1))}
-                    disabled={currentPage === totalPages}
+                    disabled={visiblePage === totalPages}
                   >
                     Next
                   </button>

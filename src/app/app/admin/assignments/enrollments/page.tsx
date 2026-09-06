@@ -146,7 +146,7 @@ export default async function AssignmentEnrollmentsPage({
         <div className="border-top pt-3">
           <h2 className="section-heading mb-2">Bulk Enroll Active Students By Registered Class</h2>
           <p className="section-subtle mb-3">
-            This uses each student's saved class registration and only includes students with `active` status.
+            This uses each student&apos;s saved class registration and only includes students with `active` status.
           </p>
           <form action={bulkEnrollStudentsByClassAction} className="grid gap-2 md:grid-cols-4">
             <label className="d-grid gap-1">

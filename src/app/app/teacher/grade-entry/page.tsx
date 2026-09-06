@@ -390,6 +390,7 @@ export default async function TeacherGradeEntryPage({
           <p className="section-subtle">No active assessment items found in the selected term scheme.</p>
         ) : (
           <GradeEntryTable
+            key={`${selectedTermId}:${selectedClassId}:${selectedSubjectId}`}
             teacherProfileId={params.teacherProfileId}
             termId={selectedTermId}
             classId={selectedClassId}

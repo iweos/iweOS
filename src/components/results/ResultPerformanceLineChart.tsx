@@ -45,14 +45,6 @@ export default function ResultPerformanceLineChart({
   compact = false,
   showExtendedBenchmarks = true,
 }: ResultPerformanceLineChartProps) {
-  if (rows.length === 0) {
-    return (
-      <div className="result-performance-empty">
-        No score rows available yet to compare student performance against class average.
-      </div>
-    );
-  }
-
   const chartData = rows.map((row) => ({
     subjectId: row.subjectId,
     subjectName: row.subjectName,
@@ -98,6 +90,14 @@ export default function ResultPerformanceLineChart({
       ] as const,
     [showExtendedBenchmarks, studentFirstName],
   );
+
+  if (rows.length === 0) {
+    return (
+      <div className="result-performance-empty">
+        No score rows available yet to compare student performance against class average.
+      </div>
+    );
+  }
 
   function toggleSeries(dataKey: string) {
     setVisibleSeries((current) => ({
