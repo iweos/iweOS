@@ -278,7 +278,7 @@ export default function Topbar({
   }
 
   return (
-    <div className="main-header">
+    <div className="main-header workspace-topbar">
       <div className="main-header-logo">
         <div className="logo-header" data-background-color="dark">
           <div className="topbar-mobile-leading">

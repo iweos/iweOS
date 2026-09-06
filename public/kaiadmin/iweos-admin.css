@@ -1814,3 +1814,120 @@ html[data-theme="dark"].kai-admin .mobile-profile-trigger {
   border-color: #3b463e !important;
   background: #232923 !important;
 }
+
+/* Shared workspace shell: balanced navigation and Dataroom parity */
+html.kai-admin .workspace-sidebar.sidebar[data-background-color="dark"],
+html.kai-admin .workspace-sidebar .logo-header[data-background-color="dark"],
+html.kai-admin .workspace-topbar .main-header-logo {
+  background: rgba(246, 247, 243, .98) !important;
+}
+html.kai-admin .workspace-sidebar .nav > .nav-item > a {
+  min-height: 44px;
+  margin: 2px 10px;
+  border-radius: 11px;
+  transition: color .16s ease, background .16s ease, transform .16s ease;
+}
+html.kai-admin .workspace-sidebar .nav > .nav-item > a:hover {
+  color: #17231b !important;
+  background: rgba(226, 235, 222, .72) !important;
+  box-shadow: none;
+  transform: translateX(2px);
+}
+html.kai-admin .workspace-sidebar .nav > .nav-item.active > a,
+html.kai-admin .workspace-sidebar .nav > .nav-item > a[data-toggle="collapse"][aria-expanded="true"] {
+  color: #173b26 !important;
+  background: #dfead9 !important;
+  box-shadow: inset 3px 0 0 #285f3a;
+}
+html.kai-admin .workspace-sidebar .nav-collapse li.active > a {
+  color: #173b26 !important;
+  background: #dfead9 !important;
+  border-radius: 8px;
+}
+html.kai-admin .workspace-sidebar .nav-collapse {
+  background: rgba(230, 237, 226, .66) !important;
+}
+html.kai-admin .workspace-stat {
+  border-color: var(--workspace-line) !important;
+  border-radius: 1.25rem !important;
+  background: rgba(255,255,255,.92) !important;
+  box-shadow: var(--workspace-shadow) !important;
+}
+html.kai-admin .workspace-stat-copy > span,
+html.kai-admin .workspace-stat-copy > small { color: var(--workspace-muted) !important; }
+html.kai-admin .workspace-stat-copy > strong { color: var(--workspace-ink) !important; }
+html.kai-admin .workspace-panel.card { border-color: var(--workspace-line) !important; border-radius: 1.3rem !important; background: rgba(255,255,255,.94) !important; box-shadow: var(--workspace-shadow) !important; }
+html.kai-admin .workspace-panel .workspace-panel-heading.card-header { min-height: 78px; padding: 1rem 1.25rem !important; background: transparent !important; }
+html.kai-admin .workspace-panel .workspace-panel-body.card-body { padding: 1.25rem !important; }
+html.kai-admin .workspace-panel .workspace-panel-heading .card-title { font-size: 1.02rem !important; font-weight: 850 !important; }
+html.kai-admin .workspace-panel .workspace-panel-heading .card-category { display: block; margin-top: .24rem; color: #78847b !important; font-size: .7rem !important; line-height: 1.45; }
+html.kai-admin .workspace-page-heading.page-header { display: flex; margin-bottom: 1.1rem; padding: .2rem 0 .35rem; }
+html.kai-admin .workspace-page-heading.page-header h1 { margin: 0; color: var(--workspace-ink); font-size: clamp(1.75rem,3vw,2.7rem); font-weight: 850; line-height: 1.04; letter-spacing: -.04em; }
+html.kai-admin .workspace-page-heading.page-header .text-muted { display: block; margin-top: .55rem; color: var(--workspace-muted) !important; font-size: .82rem; line-height: 1.55; }
+html[data-theme="dark"].kai-admin .workspace-sidebar.sidebar[data-background-color="dark"],
+html[data-theme="dark"].kai-admin .workspace-sidebar .logo-header[data-background-color="dark"],
+html[data-theme="dark"].kai-admin .workspace-topbar .main-header-logo { background: #151815 !important; }
+html[data-theme="dark"].kai-admin .workspace-sidebar .nav > .nav-item > a:hover { color: #eef4ef !important; background: #232a24 !important; }
+html[data-theme="dark"].kai-admin .workspace-sidebar .nav > .nav-item.active > a,
+html[data-theme="dark"].kai-admin .workspace-sidebar .nav > .nav-item > a[data-toggle="collapse"][aria-expanded="true"],
+html[data-theme="dark"].kai-admin .workspace-sidebar .nav-collapse li.active > a { color: #eff7f0 !important; background: #2a352d !important; box-shadow: inset 3px 0 0 #82ad89; }
+html[data-theme="dark"].kai-admin .workspace-sidebar .nav-collapse { background: #1c211d !important; }
+html[data-theme="dark"].kai-admin .workspace-stat,
+html[data-theme="dark"].kai-admin .workspace-panel.card { background: rgba(29,34,30,.96) !important; }
+@media (max-width: 767px) {
+  html.kai-admin .workspace-page-heading.page-header { align-items: flex-start; flex-direction: column; }
+  html.kai-admin .workspace-panel .workspace-panel-body.card-body { padding: 1rem !important; }
+}
+
+@media (min-width: 992px) {
+  html.kai-admin .workspace-shell:not(.sidebar_minimize) .workspace-sidebar { width: 264px !important; }
+  html.kai-admin .workspace-shell:not(.sidebar_minimize) .main-panel,
+  html.kai-admin .workspace-shell:not(.sidebar_minimize) .workspace-topbar { width: calc(100% - 264px) !important; }
+}
+html.kai-admin .workspace-panel .table-responsive { max-width: 100%; overflow-x: auto; border: 1px solid #e7ece7; border-radius: .9rem; }
+html.kai-admin .workspace-panel .table { width: 100% !important; margin: 0 !important; color: var(--workspace-ink) !important; font-size: .74rem; }
+html.kai-admin .workspace-panel .table > :not(caption) > * > th {
+  padding: .78rem .8rem !important;
+  border-bottom: 1px solid #dfe5df !important;
+  color: #263329 !important;
+  background: #f3f6f1 !important;
+  font-size: .67rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+html.kai-admin .workspace-panel .table > :not(caption) > * > td { padding: .78rem .8rem !important; border-color: #edf0ed !important; vertical-align: middle; }
+html.kai-admin .workspace-panel .table-striped > tbody > tr:nth-of-type(odd) > * { --bs-table-accent-bg: rgba(246,248,245,.65); color: inherit; }
+html.kai-admin .workspace-panel .table-hover > tbody > tr:hover > * { --bs-table-accent-bg: #f1f5ef; color: inherit; }
+html.kai-admin .workspace-panel .form-control,
+html.kai-admin .workspace-panel .form-select,
+html.kai-admin .workspace-panel textarea {
+  min-height: 43px;
+  border-color: #cfd8d1 !important;
+  border-radius: .72rem !important;
+  color: var(--workspace-ink) !important;
+  background: #fff !important;
+  font-size: .76rem;
+  box-shadow: none !important;
+}
+html.kai-admin .workspace-panel .form-control:focus,
+html.kai-admin .workspace-panel .form-select:focus,
+html.kai-admin .workspace-panel textarea:focus { border-color: #6e9277 !important; box-shadow: 0 0 0 3px rgba(40,95,58,.1) !important; }
+html.kai-admin .workspace-panel .btn,
+html.kai-admin .workspace-page-actions .btn { min-height: 40px; padding: .55rem .9rem; border-radius: .7rem; font-size: .72rem; font-weight: 800; }
+html.kai-admin .setup-action-panel { border-radius: 1rem; box-shadow: none; }
+html.kai-admin .setup-action-panel > summary { min-height: 72px; }
+html.kai-admin .setup-action-panel[open] { border-color: #b9cbbb; box-shadow: 0 10px 30px rgba(31,52,37,.055); }
+html.kai-admin .setup-action-panel[open] > summary { background: #f5f8f3; }
+html[data-theme="dark"].kai-admin .workspace-panel .table-responsive { border-color: var(--workspace-line); }
+html[data-theme="dark"].kai-admin .workspace-panel .table > :not(caption) > * > th { border-color: var(--workspace-line) !important; color: #edf3ee !important; background: #242b26 !important; }
+html[data-theme="dark"].kai-admin .workspace-panel .table-striped > tbody > tr:nth-of-type(odd) > *,
+html[data-theme="dark"].kai-admin .workspace-panel .table-hover > tbody > tr:hover > * { --bs-table-accent-bg: #202620; color: inherit; }
+html[data-theme="dark"].kai-admin .workspace-panel .form-control,
+html[data-theme="dark"].kai-admin .workspace-panel .form-select,
+html[data-theme="dark"].kai-admin .workspace-panel textarea { border-color: #465149 !important; color: #eef4ef !important; background: #242b26 !important; }
+@media (max-width: 767px) {
+  html.kai-admin .workspace-panel .table { min-width: 620px; }
+  html.kai-admin .workspace-panel .teacher-dashboard-table { min-width: 680px; }
+  html.kai-admin .workspace-panel .table-responsive { -webkit-overflow-scrolling: touch; }
+}

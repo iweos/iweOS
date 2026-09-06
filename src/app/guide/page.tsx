@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "shared-workspace-component-redesign",
+        eyebrow: "UI and UX",
+        timestamp: "Sep 6, 2026 · 5:17 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Shared dashboard components across every staff workspace",
+        bullets: [
+          "Dataroom, School Administration, and Teacher Portal dashboards now use the same reusable hero, statistic, panel, heading, and responsive-grid components instead of separate visual systems.",
+          "Dashboard infographics now use calm neutral cards, consistent value hierarchy, and restrained semantic icon colors rather than unrelated full-card color blocks.",
+          "Navigation active states now use a balanced brand tint and slim accent edge instead of stark white cards, with matching light and dark treatments.",
+          "Tables, filters, forms, setup actions, empty states, and mobile overflow behavior now follow the same spacing, border, typography, and interaction rules across school workflows.",
+        ],
+      },
+      {
         id: "unified-school-workspace-design",
         eyebrow: "Design system",
         timestamp: "Sep 6, 2026 · 4:52 PM GMT+1",

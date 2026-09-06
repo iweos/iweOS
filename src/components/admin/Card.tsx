@@ -10,19 +10,17 @@ type CardProps = {
 
 export default function Card({ title, subtitle, action, className = "", children }: CardProps) {
   return (
-    <section className={`card ${className}`}>
+    <section className={`card workspace-panel ${className}`}>
       {(title || subtitle || action) ? (
-        <header className="card-header">
-          <div className="d-flex w-100 flex-wrap align-items-start justify-content-between gap-2">
-            <div>
-              {title ? <h4 className="card-title">{title}</h4> : null}
-              {subtitle ? <p className="card-category mb-0">{subtitle}</p> : null}
-            </div>
-            {action ? <div>{action}</div> : null}
+        <header className="card-header workspace-panel-heading">
+          <div>
+            {title ? <h2 className="card-title">{title}</h2> : null}
+            {subtitle ? <span className="card-category mb-0">{subtitle}</span> : null}
           </div>
+          {action ? <div className="workspace-panel-action">{action}</div> : null}
         </header>
       ) : null}
-      <div className="card-body">{children}</div>
+      <div className="card-body workspace-panel-body">{children}</div>
     </section>
   );
 }

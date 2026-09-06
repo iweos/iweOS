@@ -472,8 +472,8 @@ html[data-theme="dark"] .platform-roster-row { border-color: #303831; }
 }
 .platform-nav a.is-active {
   color: var(--platform-green-dark);
-  background: #fff;
-  box-shadow: 0 9px 28px rgba(31, 52, 37, .085);
+  background: #dfead9;
+  box-shadow: inset 3px 0 0 var(--platform-green);
 }
 .platform-sidebar-footer { border-color: var(--platform-line); }
 .platform-account-badge > span {

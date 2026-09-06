@@ -8,6 +8,7 @@ import PwaClient from "@/components/PwaClient";
 import ThemeSync from "@/components/ThemeSync";
 import { APP_ICON_VERSION } from "@/lib/app-icon";
 import "./globals.css";
+import "./workspace.css";
 
 const hornbill = localFont({
   src: "../../public/fonts/Hornbill-Regular.otf",

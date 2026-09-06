@@ -63,7 +63,7 @@ export default function AdminShell({
   }, [pathname]);
 
   return (
-    <div className={`wrapper ${sidebarMinimized ? "sidebar_minimize" : ""}`}>
+    <div className={`wrapper workspace-shell ${sidebarMinimized ? "sidebar_minimize" : ""}`}>
       <ShellTour mode={mode} teacherPortalAdmin={teacherPortalAdmin} />
       <Sidebar
         mobileOpen={mobileOpen}

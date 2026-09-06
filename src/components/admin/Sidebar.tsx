@@ -167,7 +167,7 @@ export default function Sidebar({
   }
 
   return (
-    <div className="sidebar" data-background-color="dark" data-tour="sidebar-main">
+    <div className="sidebar workspace-sidebar" data-background-color="dark" data-tour="sidebar-main">
       <div className="sidebar-logo">
         <div className="logo-header" data-background-color="dark">
           <BrandLogo

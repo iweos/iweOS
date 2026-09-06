@@ -1,3 +1,5 @@
+import { WorkspaceStat } from "@/components/workspace/WorkspaceUI";
+
 type StatCardVariant = "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "black";
 type StatIconSize = "sm" | "md" | "lg";
 
@@ -42,36 +44,26 @@ function iconSizeClass(size: StatIconSize) {
   return "stat-icon-md";
 }
 
-export default function StatCard({
-  label,
-  value,
-  icon,
-  cardVariant,
-  iconSize = "md",
-  delta,
-  className = "",
-}: StatCardProps) {
+function workspaceTone(variant: StatCardVariant) {
+  if (variant === "info") return "blue" as const;
+  if (variant === "warning" || variant === "secondary") return "gold" as const;
+  if (variant === "danger") return "red" as const;
+  if (variant === "black") return "ink" as const;
+  return "forest" as const;
+}
+
+export default function StatCard({ label, value, icon, cardVariant, iconSize = "md", delta, className = "" }: StatCardProps) {
   const resolvedIcon = icon ?? inferIcon(label);
   const resolvedVariant = cardVariant ?? inferVariant(label);
 
   return (
-    <div className={`card card-stats card-${resolvedVariant} card-round h-100 mb-0 ${className}`.trim()}>
-      <div className="card-body">
-        <div className="row align-items-center">
-          <div className="col-5">
-            <div className="icon-big text-center">
-              <i className={`${resolvedIcon} ${iconSizeClass(iconSize)}`.trim()} />
-            </div>
-          </div>
-          <div className="col-7 col-stats">
-            <div className="numbers">
-              <p className="card-category">{label}</p>
-              <h4 className="card-title">{value}</h4>
-              {delta ? <p className="card-delta mb-0">{delta}</p> : null}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <WorkspaceStat
+      label={label}
+      value={value}
+      detail={delta}
+      tone={workspaceTone(resolvedVariant)}
+      icon={<i className={`${resolvedIcon} ${iconSizeClass(iconSize)}`.trim()} />}
+      className={className}
+    />
   );
 }

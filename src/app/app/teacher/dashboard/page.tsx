@@ -9,6 +9,7 @@ import StatCard from "@/components/admin/ui/StatCard";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import TeacherDashboardAnalytics from "@/components/teacher/TeacherDashboardAnalytics";
+import { WorkspacePanel, WorkspaceStatGrid } from "@/components/workspace/WorkspaceUI";
 
 type TeacherDashboardSearchParams = {
   teacherProfileId?: string;
@@ -315,44 +316,32 @@ export default async function TeacherDashboardPage({
         }
       />
 
-      <Card subtitle={`Signed in as ${label}`}>
-        <p className="section-subtle mb-3">
-          Portal mode:{" "}
-          <strong>{context.mode === "admin_override" ? "Admin" : "Teacher"}</strong>
-        </p>
-        <div className="row g-3">
-          <div className="col-sm-6 col-xl-4">
-            <StatCard label="Classes In View" value={assignments.length} icon="fas fa-th-large" cardVariant="secondary" />
-          </div>
-          <div className="col-sm-6 col-xl-4">
-            <StatCard label="Subjects In View" value={uniqueSubjectMap.size} icon="fas fa-book-open" cardVariant="success" />
-          </div>
-          <div className="col-sm-6 col-xl-4">
-            <StatCard label="Students In Active Term" value={uniqueStudentMap.size} icon="fas fa-user-graduate" cardVariant="primary" />
-          </div>
-          <div className="col-sm-6 col-xl-4">
-            <StatCard label="Submitted Score Rows" value={totalScores} icon="fas fa-clipboard-check" cardVariant="info" />
-          </div>
-          <div className="col-sm-6 col-xl-4">
-            <StatCard
-              label="Score Completion"
-              value={`${completionRate.toFixed(0)}%`}
-              icon="fas fa-chart-line"
-              cardVariant="warning"
-              delta={`${pendingScoreRows} pending of ${expectedScoreRows || 0}`}
-            />
-          </div>
-          <div className="col-sm-6 col-xl-4">
-            <StatCard
-              label="Current Term Average"
-              value={formatMetric(averageTotal)}
-              icon="fas fa-award"
-              cardVariant="black"
-              delta={activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "No active term"}
-            />
-          </div>
-        </div>
-      </Card>
+      <WorkspacePanel
+        eyebrow="Current workspace"
+        title={label}
+        description={context.mode === "admin_override" ? "Administrator view across every assigned class." : "Your active classes, students and score progress."}
+      >
+        <WorkspaceStatGrid className="teacher-summary-grid">
+          <StatCard label="Classes In View" value={assignments.length} icon="fas fa-th-large" cardVariant="secondary" />
+          <StatCard label="Subjects In View" value={uniqueSubjectMap.size} icon="fas fa-book-open" cardVariant="success" />
+          <StatCard label="Students In Active Term" value={uniqueStudentMap.size} icon="fas fa-user-graduate" cardVariant="primary" />
+          <StatCard label="Submitted Score Rows" value={totalScores} icon="fas fa-clipboard-check" cardVariant="info" />
+          <StatCard
+            label="Score Completion"
+            value={`${completionRate.toFixed(0)}%`}
+            icon="fas fa-chart-line"
+            cardVariant="warning"
+            delta={`${pendingScoreRows} pending of ${expectedScoreRows || 0}`}
+          />
+          <StatCard
+            label="Current Term Average"
+            value={formatMetric(averageTotal)}
+            icon="fas fa-award"
+            cardVariant="black"
+            delta={activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "No active term"}
+          />
+        </WorkspaceStatGrid>
+      </WorkspacePanel>
 
       <TeacherDashboardAnalytics
         classCompletionData={classCompletionData}

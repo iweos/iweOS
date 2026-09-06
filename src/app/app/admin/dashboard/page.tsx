@@ -2,15 +2,15 @@ import Link from "next/link";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 import { ProfileRole } from "@prisma/client";
+import { ArrowUpRight, BookOpen, CalendarDays, GraduationCap, LayoutGrid, Settings2, UsersRound } from "lucide-react";
+import { WorkspaceContentGrid, WorkspaceHero, WorkspacePanel, WorkspaceStat, WorkspaceStatGrid } from "@/components/workspace/WorkspaceUI";
 import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
-import StatCard from "@/components/admin/ui/StatCard";
 
 export default async function AdminDashboardPage() {
   try {
     const profile = await requireRole("admin");
-
     let school: Awaited<ReturnType<typeof prisma.school.findUnique>> = null;
     let teacherCount = 0;
     let classCount = 0;
@@ -29,110 +29,64 @@ export default async function AdminDashboardPage() {
       ]);
     } catch (error) {
       if (isPrismaSchemaMismatchError(error)) {
-        return (
-          <section className="card card-body d-grid gap-2">
-            <p className="section-kicker">Dashboard</p>
-            <h1 className="section-title">Setup Required</h1>
-            <p className="section-subtle">{schemaSyncMessage("Admin")}</p>
-          </section>
-        );
+        return <WorkspacePanel eyebrow="Dashboard" title="Setup required"><p className="section-subtle">{schemaSyncMessage("Admin")}</p></WorkspacePanel>;
       }
       throw error;
     }
 
-    if (!school) {
-      throw new Error("School not found.");
-    }
+    if (!school) throw new Error("School not found.");
 
-    const cards = [
-      { label: "Teachers", value: teacherCount, icon: "fas fa-chalkboard-teacher", variant: "secondary" as const },
-      { label: "Classes", value: classCount, icon: "fas fa-th-large", variant: "info" as const },
-      { label: "Students", value: studentCount, icon: "fas fa-user-graduate", variant: "success" as const },
-      { label: "Subjects", value: subjectCount, icon: "fas fa-book-open", variant: "warning" as const },
+    const activeTermLabel = activeTerm ? `${activeTerm.sessionLabel} · ${activeTerm.termLabel}` : "No active term";
+    const quickActions = [
+      { href: "/app/admin/teachers", label: "Manage teachers", detail: "Invite, activate and assign staff", icon: UsersRound },
+      { href: "/app/admin/classes", label: "Manage classes", detail: "Maintain the school class structure", icon: LayoutGrid },
+      { href: "/app/admin/students/manage", label: "Manage students", detail: "Review records and enrollment", icon: GraduationCap },
+      { href: "/app/admin/terms", label: "Manage sessions", detail: "Set the active academic period", icon: CalendarDays },
     ];
 
     return (
       <>
-        <div className="card card-round">
-          <div className="card-body">
-            <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
-              <div>
-                <p className="mb-1 text-uppercase fw-bold text-secondary small">Dashboard</p>
-                <h1 className="mb-1 fw-bold">{school.name}</h1>
-                <p className="text-muted mb-0">
-                  {school.country || "Country not set"}
-                  {activeTerm ? ` • Active term: ${activeTerm.sessionLabel} ${activeTerm.termLabel}` : " • No active term"}
-                </p>
-              </div>
-              <Link href="/app/admin/settings" className="btn btn-secondary">
-                Open Settings
-              </Link>
-            </div>
+        <WorkspaceHero
+          eyebrow="School command centre"
+          title={school.name}
+          description={`${school.country || "Country not set"} · ${activeTermLabel}. Review your school at a glance and continue the work that needs attention.`}
+          action={<Link href="/app/admin/settings">School settings <Settings2 /></Link>}
+        />
 
-            <div className="row g-3 mt-1">
-              {cards.map((card) => (
-                <div key={card.label} className="col-12 col-sm-6 col-lg-4 col-xl-3">
-                  <StatCard
-                    label={card.label}
-                    value={card.value}
-                    icon={card.icon}
-                    cardVariant={card.variant}
-                    iconSize={card.label.includes("Rate") ? "sm" : "md"}
-                  />
-                </div>
+        <WorkspaceStatGrid>
+          <WorkspaceStat label="Teachers" value={teacherCount} detail="Active teaching profiles" icon={<UsersRound />} />
+          <WorkspaceStat label="Classes" value={classCount} detail="Configured class groups" icon={<LayoutGrid />} tone="gold" />
+          <WorkspaceStat label="Students" value={studentCount} detail="School student records" icon={<GraduationCap />} tone="blue" />
+          <WorkspaceStat label="Subjects" value={subjectCount} detail="Subjects in the catalogue" icon={<BookOpen />} tone="ink" />
+        </WorkspaceStatGrid>
+
+        <WorkspaceContentGrid>
+          <WorkspacePanel eyebrow="Continue working" title="Quick actions" description="The most common school administration workflows, kept within one click." bodyClassName="workspace-panel-body-flush">
+            <div className="workspace-action-list">
+              {quickActions.map(({ href, label, detail, icon: Icon }) => (
+                <Link href={href} key={href}>
+                  <i><Icon /></i>
+                  <span><strong>{label}</strong><small>{detail}</small></span>
+                  <ArrowUpRight />
+                </Link>
               ))}
             </div>
-          </div>
-        </div>
+          </WorkspacePanel>
 
-        <div className="card card-round">
-          <div className="card-body">
-            <h2 className="fw-bold mb-3">Quick Actions</h2>
-            <div className="d-flex flex-wrap gap-2">
-              <Link className="btn btn-secondary" href="/app/admin/teachers">
-                Manage Teachers
-              </Link>
-              <Link className="btn btn-secondary" href="/app/admin/classes">
-                Manage Classes
-              </Link>
-              <Link className="btn btn-secondary" href="/app/admin/students">
-                Manage Students
-              </Link>
-              <Link className="btn btn-secondary" href="/app/admin/terms">
-                Manage Terms
-              </Link>
+          <WorkspacePanel eyebrow="Academic context" title="Current workspace">
+            <div className="workspace-fact-list">
+              <div><span>Active session</span><strong>{activeTerm?.sessionLabel || "Not configured"}</strong></div>
+              <div><span>Active term</span><strong>{activeTerm?.termLabel || "Not configured"}</strong></div>
+              <div><span>School code</span><strong>{school.code}</strong></div>
             </div>
-          </div>
-        </div>
+          </WorkspacePanel>
+        </WorkspaceContentGrid>
       </>
     );
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-    if (isDynamicServerError(error)) {
-      throw error;
-    }
-
+    if (isRedirectError(error) || isDynamicServerError(error)) throw error;
     console.error("[dashboard][admin] Failed to render admin dashboard", error);
-    if (isPrismaSchemaMismatchError(error)) {
-      return (
-        <section className="card card-body d-grid gap-2">
-          <p className="section-kicker">Dashboard</p>
-          <h1 className="section-title">Setup Required</h1>
-          <p className="section-subtle">{schemaSyncMessage("Admin")}</p>
-        </section>
-      );
-    }
-    return (
-      <section className="card card-body d-grid gap-2">
-        <p className="section-kicker">Dashboard</p>
-        <h1 className="section-title">Admin dashboard temporarily unavailable</h1>
-        <p className="section-subtle">
-          We hit an unexpected issue while loading the dashboard. Try refreshing once. If it keeps happening, the server logs now have a
-          tagged entry to help us trace it quickly.
-        </p>
-      </section>
-    );
+    const setupIssue = isPrismaSchemaMismatchError(error);
+    return <WorkspacePanel eyebrow="Dashboard" title={setupIssue ? "Setup required" : "Admin dashboard temporarily unavailable"}><p className="section-subtle">{setupIssue ? schemaSyncMessage("Admin") : "We hit an unexpected issue while loading the dashboard. Refresh once; if it continues, the tagged server log will identify the failing operation."}</p></WorkspacePanel>;
   }
 }
