@@ -10,11 +10,11 @@ export async function updateSchoolStatusAction(formData: FormData) {
   const context = await requirePlatformAdmin();
   const schoolId = String(formData.get("schoolId") ?? "");
   const requestedStatus = String(formData.get("status") ?? "");
-  if (!schoolId || !Object.values(SchoolStatus).includes(requestedStatus as SchoolStatus)) redirect("/platform/schools?error=Invalid%20school%20status.");
+  if (!schoolId || !Object.values(SchoolStatus).includes(requestedStatus as SchoolStatus)) redirect("/dataroom/schools?error=Invalid%20school%20status.");
 
   const status = requestedStatus as SchoolStatus;
   const school = await prisma.school.findUnique({ where: { id: schoolId }, select: { name: true } });
-  if (!school) redirect("/platform/schools?error=School%20not%20found.");
+  if (!school) redirect("/dataroom/schools?error=School%20not%20found.");
   await prisma.$transaction([
     prisma.school.update({ where: { id: schoolId }, data: { status } }),
     prisma.auditLog.create({
@@ -28,8 +28,8 @@ export async function updateSchoolStatusAction(formData: FormData) {
       },
     }),
   ]);
-  revalidatePath("/platform");
-  revalidatePath("/platform/schools");
-  revalidatePath(`/platform/schools/${schoolId}`);
-  redirect(`/platform/schools/${schoolId}?updated=1`);
+  revalidatePath("/dataroom");
+  revalidatePath("/dataroom/schools");
+  revalidatePath(`/dataroom/schools/${schoolId}`);
+  redirect(`/dataroom/schools/${schoolId}?updated=1`);
 }

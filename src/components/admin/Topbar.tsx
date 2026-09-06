@@ -248,7 +248,7 @@ export default function Topbar({
                 </div>
               ) : null}
               {platformAdmin ? (
-                <Link className="dropdown-item" href="/platform">
+                <Link className="dropdown-item" href="/dataroom">
                   <i className="fas fa-layer-group me-2" /> iweOS Administration
                 </Link>
               ) : null}

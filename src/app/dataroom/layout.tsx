@@ -1,7 +1,7 @@
 import { ProfileRole } from "@prisma/client";
-import PlatformShell from "@/components/platform/PlatformShell";
+import DataroomShell from "@/components/dataroom/DataroomShell";
 import { requirePlatformAdmin } from "@/lib/server/auth";
-import "./platform.css";
+import "./dataroom.css";
 
 export default async function PlatformLayout({ children }: { children: React.ReactNode }) {
   const context = await requirePlatformAdmin();
@@ -11,5 +11,5 @@ export default async function PlatformLayout({ children }: { children: React.Rea
       : "/app/teacher/dashboard"
     : undefined;
 
-  return <PlatformShell email={context.email} schoolPortalHref={schoolPortalHref}>{children}</PlatformShell>;
+  return <DataroomShell email={context.email} schoolPortalHref={schoolPortalHref}>{children}</DataroomShell>;
 }

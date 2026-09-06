@@ -39,7 +39,7 @@ export async function signInAction(formData: FormData) {
 
   await prisma.authCredential.update({ where: { id: credential.id }, data: { lastLoginAt: new Date() } });
   await createAuthSession(credential.id, profileId);
-  redirect(platformAdmin ? "/platform" : profileId ? "/app" : "/onboarding");
+  redirect(platformAdmin ? "/dataroom" : profileId ? "/app" : "/onboarding");
 }
 
 export async function selectWorkspaceAction(formData: FormData) {

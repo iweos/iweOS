@@ -41,12 +41,12 @@ export default async function PlatformResultsPage({ searchParams }: PageProps) {
       <label><Search /><input type="search" name="q" defaultValue={query} placeholder="Search student, class or school" /></label>
       <select name="status" defaultValue={status ?? ""}><option value="">All statuses</option>{Object.values(ResultPublicationStatus).map((value) => <option value={value} key={value}>{value[0] + value.slice(1).toLowerCase()}</option>)}</select>
       <button type="submit">Apply filters</button>
-      {(query || status) ? <Link href="/platform/results">Clear</Link> : null}
+      {(query || status) ? <Link href="/dataroom/results">Clear</Link> : null}
     </form>
     <section className="platform-panel platform-data-panel">
       <div className="platform-data-head platform-results-grid"><span>Student</span><span>School</span><span>Class / session</span><span>Status</span><span>Published by</span><span>Updated</span></div>
       <div className="platform-data-list">
-        {results.map((result) => <Link className="platform-data-row platform-results-grid" href={`/platform/schools/${result.school.id}`} key={result.id}>
+        {results.map((result) => <Link className="platform-data-row platform-results-grid" href={`/dataroom/schools/${result.school.id}`} key={result.id}>
           <span className="platform-cell"><strong>{result.student.fullName}</strong><small>{result.student.studentCode}</small></span>
           <span className="platform-cell"><strong>{result.school.name}</strong><small>{result.school.code}</small></span>
           <span className="platform-cell"><strong>{result.class.name}</strong><small>{result.term.sessionLabel} · {result.term.termLabel}</small></span>

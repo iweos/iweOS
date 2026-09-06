@@ -7,31 +7,31 @@ import { useEffect, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 
-type PlatformShellProps = {
+type DataroomShellProps = {
   children: React.ReactNode;
   email: string;
   schoolPortalHref?: string;
 };
 
 const navItems = [
-  { href: "/platform", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/platform/schools", label: "Schools", icon: Building2 },
-  { href: "/platform/users", label: "Users", icon: UsersRound },
-  { href: "/platform/payments", label: "Payments", icon: WalletCards },
-  { href: "/platform/results", label: "Results", icon: BookOpenCheck },
-  { href: "/platform/audit", label: "Audit logs", icon: ClipboardList },
+  { href: "/dataroom", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/dataroom/schools", label: "Schools", icon: Building2 },
+  { href: "/dataroom/users", label: "Users", icon: UsersRound },
+  { href: "/dataroom/payments", label: "Payments", icon: WalletCards },
+  { href: "/dataroom/results", label: "Results", icon: BookOpenCheck },
+  { href: "/dataroom/audit", label: "Audit logs", icon: ClipboardList },
 ];
 
 function sectionTitle(pathname: string) {
-  if (pathname.startsWith("/platform/schools")) return "School intelligence";
-  if (pathname.startsWith("/platform/users")) return "Account intelligence";
-  if (pathname.startsWith("/platform/payments")) return "Payment operations";
-  if (pathname.startsWith("/platform/results")) return "Result operations";
-  if (pathname.startsWith("/platform/audit")) return "Governance and audit";
-  return "Platform overview";
+  if (pathname.startsWith("/dataroom/schools")) return "School intelligence";
+  if (pathname.startsWith("/dataroom/users")) return "Account intelligence";
+  if (pathname.startsWith("/dataroom/payments")) return "Payment operations";
+  if (pathname.startsWith("/dataroom/results")) return "Result operations";
+  if (pathname.startsWith("/dataroom/audit")) return "Governance and audit";
+  return "Dataroom overview";
 }
 
-export default function PlatformShell({ children, email, schoolPortalHref }: PlatformShellProps) {
+export default function DataroomShell({ children, email, schoolPortalHref }: DataroomShellProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -54,11 +54,11 @@ export default function PlatformShell({ children, email, schoolPortalHref }: Pla
       <button className={`platform-scrim ${menuOpen ? "is-visible" : ""}`} aria-label="Close navigation" onClick={() => setMenuOpen(false)} />
       <aside className={`platform-sidebar ${menuOpen ? "is-open" : ""}`}>
         <div className="platform-brand-row">
-          <BrandLogo href="/platform" variant="light" className="platform-brand" textClassName="platform-brand-name" />
+          <BrandLogo href="/dataroom" variant="light" className="platform-brand" textClassName="platform-brand-name" />
           <button className="platform-mobile-close" type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu"><X /></button>
         </div>
-        <div className="platform-control-label"><ShieldCheck /> Platform control</div>
-        <nav className="platform-nav" aria-label="Platform administration">
+        <div className="platform-control-label"><ShieldCheck /> Dataroom control</div>
+        <nav className="platform-nav" aria-label="Dataroom administration">
           <p>Workspace</p>
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -69,7 +69,7 @@ export default function PlatformShell({ children, email, schoolPortalHref }: Pla
         <div className="platform-sidebar-footer">
           <div className="platform-account-badge">
             <span>{email.slice(0, 1).toUpperCase()}</span>
-            <div><strong>Platform admin</strong><small>{email}</small></div>
+            <div><strong>Dataroom admin</strong><small>{email}</small></div>
           </div>
           <button type="button" onClick={signOut} disabled={signingOut}><LogOut /> {signingOut ? "Signing out..." : "Sign out"}</button>
         </div>
@@ -79,7 +79,7 @@ export default function PlatformShell({ children, email, schoolPortalHref }: Pla
         <header className="platform-header">
           <button className="platform-menu-button" type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu /></button>
           <div>
-            <span>iweOS administration</span>
+            <span>iweOS Dataroom</span>
             <strong>{sectionTitle(pathname)}</strong>
           </div>
           <div className="platform-header-actions">

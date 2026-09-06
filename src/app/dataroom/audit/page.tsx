@@ -45,12 +45,12 @@ export default async function PlatformAuditPage({ searchParams }: PageProps) {
       <label><Search /><input type="search" name="q" defaultValue={query} placeholder="Search action, entity or school" /></label>
       <select name="school" defaultValue={schoolId}><option value="">All schools</option>{schools.map((school) => <option value={school.id} key={school.id}>{school.name}</option>)}</select>
       <button type="submit">Apply filters</button>
-      {(query || schoolId) ? <Link href="/platform/audit">Clear</Link> : null}
+      {(query || schoolId) ? <Link href="/dataroom/audit">Clear</Link> : null}
     </form>
     <section className="platform-panel platform-data-panel">
       <div className="platform-data-head platform-audit-grid"><span>Event</span><span>School</span><span>Context</span><span>Actor</span><span>Date</span></div>
       <div className="platform-data-list">
-        {logs.map((log) => <Link className="platform-data-row platform-audit-grid" href={`/platform/schools/${log.school.id}`} key={log.id}>
+        {logs.map((log) => <Link className="platform-data-row platform-audit-grid" href={`/dataroom/schools/${log.school.id}`} key={log.id}>
           <span className="platform-cell"><strong>{log.action.replaceAll(".", " ")}</strong><small>{log.entityType}{log.entityId ? ` · ${log.entityId.slice(0, 8)}` : ""}</small></span>
           <span className="platform-cell"><strong>{log.school.name}</strong><small>{log.school.code}</small></span>
           <span className="platform-context">{metadataPreview(log.metaJson)}</span>

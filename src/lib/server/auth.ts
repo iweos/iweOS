@@ -26,6 +26,8 @@ const DEFAULT_GRADE_SCALE = [
   { gradeLetter: "F", minScore: 0, maxScore: 39, orderIndex: 6 },
 ] as const;
 
+const PLATFORM_OWNER_EMAILS = ["iyanflex@gmail.com"] as const;
+
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
@@ -61,8 +63,10 @@ export async function getCurrentProfile(): Promise<ProfileWithSchool | null> {
 }
 
 export function platformAdminEmailAllowed(email: string) {
-  const allowedEmails = (process.env.PLATFORM_ADMIN_EMAILS ?? "")
-    .split(",")
+  const allowedEmails = [
+    ...PLATFORM_OWNER_EMAILS,
+    ...(process.env.PLATFORM_ADMIN_EMAILS ?? "").split(","),
+  ]
     .map(normalizeEmail)
     .filter(Boolean);
   return allowedEmails.includes(normalizeEmail(email));

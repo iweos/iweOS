@@ -4,7 +4,7 @@ import { PaymentStatus, ProfileRole, ResultPublicationStatus, SchoolStatus } fro
 import { ArrowLeft, BookOpenCheck, Building, CalendarDays, GraduationCap, Mail, MapPin, UsersRound, WalletCards } from "lucide-react";
 import { requirePlatformAdmin } from "@/lib/server/auth";
 import { prisma } from "@/lib/server/prisma";
-import { updateSchoolStatusAction } from "@/lib/server/platform-actions";
+import { updateSchoolStatusAction } from "@/lib/server/dataroom-actions";
 
 type PageProps = { params: Promise<{ schoolId: string }>; searchParams: Promise<{ updated?: string }> };
 
@@ -33,7 +33,7 @@ export default async function PlatformSchoolDetailPage({ params, searchParams }:
 
   return (
     <>
-      <Link className="platform-back-link" href="/platform/schools"><ArrowLeft /> School directory</Link>
+      <Link className="platform-back-link" href="/dataroom/schools"><ArrowLeft /> School directory</Link>
       {updated ? <div className="platform-success-notice">School status updated successfully.</div> : null}
       <section className="platform-school-hero">
         <div className="platform-school-identity"><span>{school.logoUrl ? (

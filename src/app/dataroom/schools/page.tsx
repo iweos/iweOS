@@ -27,12 +27,12 @@ export default async function PlatformSchoolsPage({ searchParams }: PageProps) {
         <label><Search /><input type="search" name="q" defaultValue={query} placeholder="Search by school name or code" /></label>
         <select name="status" defaultValue={status ?? ""}><option value="">All statuses</option>{Object.values(SchoolStatus).map((value) => <option value={value} key={value}>{value[0] + value.slice(1).toLowerCase()}</option>)}</select>
         <button type="submit">Apply filters</button>
-        {(query || status) ? <Link href="/platform/schools">Clear</Link> : null}
+        {(query || status) ? <Link href="/dataroom/schools">Clear</Link> : null}
       </form>
       <section className="platform-panel platform-directory-panel">
         <div className="platform-directory-head"><span>School</span><span>Usage</span><span>Status</span><span>Created</span><span /></div>
         <div className="platform-directory-list">
-          {schools.map((school) => <Link href={`/platform/schools/${school.id}`} key={school.id}>
+          {schools.map((school) => <Link href={`/dataroom/schools/${school.id}`} key={school.id}>
             <span className="platform-directory-school"><i><School /></i><span><strong>{school.name}</strong><small>{school.code} · {[school.city, school.country].filter(Boolean).join(", ") || "Location not set"}</small></span></span>
             <span className="platform-directory-usage"><strong>{school._count.students} students</strong><small>{school._count.classes} classes · {school._count.profiles} staff</small></span>
             <span><i className={`platform-status ${school.status.toLowerCase()}`}>{school.status.toLowerCase()}</i></span>

@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "dataroom-owner-access",
+        eyebrow: "Platform administration",
+        timestamp: "Sep 6, 2026 · 2:53 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Dedicated iweOS Dataroom access",
+        bullets: [
+          "The overall iweOS administration centre now uses the dedicated /dataroom route, separate from individual school administration.",
+          "Verified platform owners are promoted securely on entry and routed directly to Dataroom after sign-in.",
+          "The former /platform address now redirects to Dataroom so existing bookmarks continue to work.",
+        ],
+      },
+      {
         id: "platform-admin-entry-and-workspace-chooser",
         eyebrow: "Authentication and workspaces",
         timestamp: "Sep 5, 2026 · 4:14 PM GMT+1",

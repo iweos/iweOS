@@ -38,12 +38,12 @@ export default async function PlatformPaymentsPage({ searchParams }: PageProps) 
       <label><Search /><input type="search" name="q" defaultValue={query} placeholder="Search reference, invoice or school" /></label>
       <select name="status" defaultValue={status ?? ""}><option value="">All statuses</option>{Object.values(PaymentStatus).map((value) => <option value={value} key={value}>{value[0] + value.slice(1).toLowerCase()}</option>)}</select>
       <button type="submit">Apply filters</button>
-      {(query || status) ? <Link href="/platform/payments">Clear</Link> : null}
+      {(query || status) ? <Link href="/dataroom/payments">Clear</Link> : null}
     </form>
     <section className="platform-panel platform-data-panel">
       <div className="platform-data-head platform-payments-grid"><span>Transaction</span><span>School</span><span>Amount</span><span>Method</span><span>Status</span><span>Date</span></div>
       <div className="platform-data-list">
-        {payments.map((payment) => <Link className="platform-data-row platform-payments-grid" href={`/platform/schools/${payment.school.id}`} key={payment.id}>
+        {payments.map((payment) => <Link className="platform-data-row platform-payments-grid" href={`/dataroom/schools/${payment.school.id}`} key={payment.id}>
           <span className="platform-cell"><strong>{payment.providerRef}</strong><small>{payment.invoice.invoiceNo} · {payment.provider}</small></span>
           <span className="platform-cell"><strong>{payment.school.name}</strong><small>{payment.invoice.payerEmail || payment.school.code}</small></span>
           <strong>{money(Number(payment.amount), payment.school.currency)}</strong>
