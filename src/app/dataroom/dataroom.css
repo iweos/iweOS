@@ -446,3 +446,76 @@ html[data-theme="dark"] .platform-roster-row { border-color: #303831; }
 .dataroom-error small { margin-top: 15px; color: var(--platform-muted); font-size: .62rem; }
 @keyframes platform-skeleton { to { background-position: -220% 0; } }
 @media (max-width: 700px) { .dataroom-loading > div { grid-template-columns: 1fr 1fr; } .dataroom-error { min-height: 390px; margin-top: 0; padding: 28px; } }
+
+.platform-sidebar {
+  color: var(--platform-ink);
+  border-right: 1px solid var(--platform-line);
+  background:
+    radial-gradient(circle at 4% 0, rgba(184, 211, 159, .2), transparent 14rem),
+    rgba(246, 247, 243, .97);
+  box-shadow: 12px 0 40px rgba(31, 52, 37, .055);
+  backdrop-filter: blur(18px);
+}
+.platform-brand { color: var(--platform-ink); }
+.platform-mobile-close,
+.platform-collapse-button { color: var(--platform-ink); }
+.platform-control-label {
+  color: var(--platform-green);
+  border-color: rgba(40, 95, 58, .14);
+  background: rgba(40, 95, 58, .055);
+}
+.platform-nav p { color: #8a938d; }
+.platform-nav a { color: #566159; }
+.platform-nav a:hover {
+  color: var(--platform-ink);
+  background: rgba(255, 255, 255, .74);
+}
+.platform-nav a.is-active {
+  color: var(--platform-green-dark);
+  background: #fff;
+  box-shadow: 0 9px 28px rgba(31, 52, 37, .085);
+}
+.platform-sidebar-footer { border-color: var(--platform-line); }
+.platform-account-badge > span {
+  color: var(--platform-green-dark);
+  border-color: rgba(40, 95, 58, .12);
+  background: #e6efe2;
+}
+.platform-account-badge small { color: #7b867e; }
+.platform-sidebar-footer > button { color: #68736b; }
+.platform-sidebar-footer > button:hover { color: #9d2d2d; }
+
+html[data-theme="dark"] .platform-sidebar {
+  color: #eef4ef;
+  border-color: #303831;
+  background: rgba(21, 24, 21, .98);
+}
+html[data-theme="dark"] .platform-brand,
+html[data-theme="dark"] .platform-mobile-close,
+html[data-theme="dark"] .platform-collapse-button { color: #eef4ef; }
+html[data-theme="dark"] .platform-control-label {
+  color: #b9d2be;
+  border-color: #354139;
+  background: #202721;
+}
+html[data-theme="dark"] .platform-nav p { color: #7f8e83; }
+html[data-theme="dark"] .platform-nav a { color: #aebbb1; }
+html[data-theme="dark"] .platform-nav a:hover { color: #fff; background: #232a24; }
+html[data-theme="dark"] .platform-nav a.is-active {
+  color: #eff7f0;
+  background: #2a352d;
+  box-shadow: none;
+}
+html[data-theme="dark"] .platform-sidebar-footer { border-color: #303831; }
+html[data-theme="dark"] .platform-account-badge > span {
+  color: #dff0e1;
+  border-color: #3b4a3e;
+  background: #29352c;
+}
+html[data-theme="dark"] .platform-account-badge small,
+html[data-theme="dark"] .platform-sidebar-footer > button { color: #9faea2; }
+
+.platform-brand i,
+.platform-brand-name { color: var(--platform-ink) !important; }
+html[data-theme="dark"] .platform-brand i,
+html[data-theme="dark"] .platform-brand-name { color: #eef4ef !important; }

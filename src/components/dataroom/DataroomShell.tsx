@@ -96,7 +96,7 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
       <button className={`platform-scrim ${menuOpen ? "is-visible" : ""}`} aria-label="Close navigation" onClick={() => setMenuOpen(false)} />
       <aside className={`platform-sidebar ${menuOpen ? "is-open" : ""}`}>
         <div className="platform-brand-row">
-          <BrandLogo href="/dataroom" variant="light" className="platform-brand" textClassName="platform-brand-name" />
+          <BrandLogo href="/dataroom" variant="dark" className="platform-brand" textClassName="platform-brand-name" />
           <button className="platform-collapse-button" type="button" onClick={toggleSidebar} aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}>
             {sidebarCollapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
           </button>

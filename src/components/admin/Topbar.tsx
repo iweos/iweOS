@@ -293,7 +293,7 @@ export default function Topbar({
           </div>
           <BrandLogo
             href={homeHref}
-            variant="light"
+            variant="dark"
             className="logo"
             iconClassName="navbar-brand logo-icon"
             textClassName="logo-title"

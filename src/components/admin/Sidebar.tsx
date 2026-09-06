@@ -172,7 +172,7 @@ export default function Sidebar({
         <div className="logo-header" data-background-color="dark">
           <BrandLogo
             href={homeHref}
-            variant="light"
+            variant="dark"
             className="logo"
             iconClassName="navbar-brand logo-icon"
             textClassName="logo-title"

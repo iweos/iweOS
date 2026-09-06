@@ -4,6 +4,7 @@ import Input from "@/components/admin/ui/Input";
 import PageHeader from "@/components/admin/PageHeader";
 import Section from "@/components/admin/ui/Section";
 import Select from "@/components/admin/ui/Select";
+import SetupActionPanel from "@/components/admin/SetupActionPanel";
 import AssessmentTemplateTable from "@/components/grading/AssessmentTemplateTable";
 import AssessmentTypeTable from "@/components/grading/AssessmentTypeTable";
 import { requireRole } from "@/lib/server/auth";
@@ -161,7 +162,7 @@ export default async function GradingAssessmentTypesPage({
   const activeTemplateName = templates.find((item) => item.isActive)?.name ?? "None";
 
   return (
-    <Section>
+    <Section className="admin-workspace-section">
       <PageHeader
         title="Assessment Types"
         subtitle="Create reusable assessment presets, then assign a fixed preset snapshot to each term."
@@ -177,26 +178,28 @@ export default async function GradingAssessmentTypesPage({
         }
       />
 
-      <Card title="Add Assessment Template">
-        <form action={upsertAssessmentTemplateAction} className="grid gap-3 md:grid-cols-4">
+      <SetupActionPanel
+        title="Create assessment preset"
+        description="Add a reusable score structure before assigning it to a session."
+        icon="fas fa-layer-group"
+      >
+        <form action={upsertAssessmentTemplateAction} className="grid gap-3 md:grid-cols-3">
           <label className="d-grid gap-1">
-            <span className="field-label">Template Name</span>
-            <Input name="name" placeholder="3test" required />
+            <span className="field-label">Preset name</span>
+            <Input name="name" placeholder="Standard assessment" required />
           </label>
           <label className="d-grid gap-1">
-            <span className="field-label">Set Active Now</span>
+            <span className="field-label">Activation</span>
             <Select name="setActive" defaultValue={templates.some((item) => item.isActive) ? "off" : "on"}>
-              <option value="on">Yes</option>
-              <option value="off">No</option>
+              <option value="on">Make active now</option>
+              <option value="off">Save as inactive</option>
             </Select>
           </label>
           <div className="align-self-end">
-            <Button variant="primary" type="submit">
-              Save Template
-            </Button>
+            <Button variant="primary" type="submit">Create preset</Button>
           </div>
         </form>
-      </Card>
+      </SetupActionPanel>
 
       <Card title="Assessment Template Menu">
         <AssessmentTemplateTable
@@ -289,39 +292,44 @@ export default async function GradingAssessmentTypesPage({
         </div>
       </Card>
 
-      <Card title={selectedTemplate ? `Add Assessment Item (${selectedTemplate.name})` : "Add Assessment Item"}>
+      <SetupActionPanel
+        title={selectedTemplate ? "Add item to " + selectedTemplate.name : "Add assessment item"}
+        description={selectedTemplate ? "Define a scored component such as CA1, Project, or Exam." : "Create an assessment preset first."}
+        icon="fas fa-list-ol"
+      >
         {!selectedTemplate ? (
-          <p className="small text-muted mb-0">Create a template first before adding assessment items.</p>
+          <div className="setup-empty-note">
+            <i className="fas fa-info-circle" aria-hidden="true" />
+            Create an assessment preset before adding scored items.
+          </div>
         ) : (
-          <form action={upsertAssessmentTypeAction} className="grid gap-3 md:grid-cols-5">
+          <form action={upsertAssessmentTypeAction} className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
             <input type="hidden" name="templateId" value={selectedTemplate.id} />
             <label className="d-grid gap-1">
-              <span className="field-label">Name</span>
+              <span className="field-label">Item name</span>
               <Input name="name" placeholder="CA1" required />
             </label>
             <label className="d-grid gap-1">
-              <span className="field-label">Max Score</span>
+              <span className="field-label">Maximum score</span>
               <Input name="weight" type="number" min={0} max={100} placeholder="20" required />
             </label>
             <label className="d-grid gap-1">
-              <span className="field-label">Order</span>
+              <span className="field-label">Display order</span>
               <Input name="orderIndex" type="number" min={1} max={99} placeholder="1" required />
             </label>
             <label className="d-grid gap-1">
-              <span className="field-label">Active</span>
+              <span className="field-label">Status</span>
               <Select name="isActive" defaultValue="on">
-                <option value="on">Yes</option>
-                <option value="off">No</option>
+                <option value="on">Active</option>
+                <option value="off">Inactive</option>
               </Select>
             </label>
             <div className="align-self-end">
-              <Button variant="primary" type="submit">
-                Add Item
-              </Button>
+              <Button variant="primary" type="submit">Add assessment item</Button>
             </div>
           </form>
         )}
-      </Card>
+      </SetupActionPanel>
 
       <Card title={selectedTemplate ? `Assessment Items (${selectedTemplate.name})` : "Assessment Items"}>
         {!selectedTemplate ? (

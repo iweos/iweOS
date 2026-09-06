@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "unified-school-workspace-design",
+        eyebrow: "Design system",
+        timestamp: "Sep 6, 2026 · 4:52 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Unified Dataroom and school workspace experience",
+        bullets: [
+          "School Administration and Teacher Portal now share Dataroom's calmer workspace background, Hornbill typography, card surfaces, spacing, and navigation hierarchy.",
+          "The green Dataroom and school sidebars have been replaced with a neutral website-background surface, clearer active states, and matching dark-mode treatment.",
+          "Conduct setup now keeps conduct groups and scored items as the primary workspace while creation forms open only when requested.",
+          "Grade Scale and Assessment Types now use the same compact setup-action pattern, with clearer labels and responsive forms for phones and tablets.",
+        ],
+      },
+      {
         id: "workflow-reliability-gate",
         eyebrow: "Reliability",
         timestamp: "Sep 6, 2026 · 4:23 PM GMT+1",
