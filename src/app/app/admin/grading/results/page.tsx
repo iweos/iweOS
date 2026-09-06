@@ -9,6 +9,7 @@ import Select from "@/components/admin/ui/Select";
 import StatCard from "@/components/admin/ui/StatCard";
 import ResultSheet from "@/components/results/ResultSheet";
 import ShareResultLinkButton from "@/components/results/ShareResultLinkButton";
+import ResultStatusSelect from "@/components/results/ResultStatusSelect";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
 import { setResultPublicationStatusAction } from "@/lib/server/admin-actions";
@@ -332,21 +333,15 @@ export default async function AdminGradingResultsPage({
                     <Td>{formatNumber(score?.average ?? 0)}</Td>
                     <Td>{score?.grade ?? "-"}</Td>
                     <Td>
-                      <form action={setResultPublicationStatusAction} className="d-flex flex-wrap align-items-center gap-2">
-                        <input type="hidden" name="studentIds" value={student.id} />
-                        <input type="hidden" name="termId" value={selectedTermId} />
-                        <input type="hidden" name="classId" value={selectedClassId} />
-                        <Select name="status" defaultValue={publication?.status ?? "DRAFT"}>
-                          {RESULT_STATUS_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </Select>
-                        <button className="btn btn-sm btn-secondary" type="submit">
-                          Save
-                        </button>
-                      </form>
+                      <ResultStatusSelect
+                        action={setResultPublicationStatusAction}
+                        termId={selectedTermId}
+                        classId={selectedClassId}
+                        studentId={student.id}
+                        value={publication?.status ?? "DRAFT"}
+                        options={RESULT_STATUS_OPTIONS}
+                        compact
+                      />
                     </Td>
                     <Td>
                       {publication?.status === "PUBLISHED" ? (
@@ -395,21 +390,14 @@ export default async function AdminGradingResultsPage({
                 {shareLink ? <p className="small text-muted mb-0 mt-2">{shareLink}</p> : null}
               </div>
               <div className="d-flex flex-wrap gap-2">
-                <form action={setResultPublicationStatusAction} className="d-flex flex-wrap align-items-center gap-2">
-                  <input type="hidden" name="studentIds" value={resultSheet.student.id} />
-                  <input type="hidden" name="termId" value={resultSheet.term.id} />
-                  <input type="hidden" name="classId" value={resultSheet.class.id} />
-                  <Select name="status" defaultValue={resultSheet.publication?.status ?? "DRAFT"}>
-                    {RESULT_STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                  <button className="btn btn-primary" type="submit">
-                    Save status
-                  </button>
-                </form>
+                <ResultStatusSelect
+                  action={setResultPublicationStatusAction}
+                  termId={resultSheet.term.id}
+                  classId={resultSheet.class.id}
+                  studentId={resultSheet.student.id}
+                  value={resultSheet.publication?.status ?? "DRAFT"}
+                  options={RESULT_STATUS_OPTIONS}
+                />
                 {shareLink ? (
                   <>
                     <Link href={buildResultSharePath(resultSheet.publication?.shareToken ?? "")} target="_blank" className="btn btn-secondary">

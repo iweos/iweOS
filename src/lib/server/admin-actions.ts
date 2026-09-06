@@ -87,6 +87,11 @@ function redirectSubjectsStatus(status: "success" | "error", message: string): n
   redirect(`/app/admin/subjects?${query.toString()}`);
 }
 
+function redirectTermsStatus(status: "success" | "error", message: string): never {
+  const query = new URLSearchParams({ status, message });
+  redirect(`/app/admin/terms?${query.toString()}`);
+}
+
 function redirectEnrollmentsStatus(status: "success" | "error", message: string): never {
   const query = new URLSearchParams({
     status,
@@ -459,7 +464,7 @@ async function clonePresetTemplateToTermSnapshot(
       schoolId,
       termId: term.id,
       sourceTemplateId: presetTemplate.id,
-      name: `${term.sessionLabel} ${term.termLabel} - ${presetTemplate.name}`,
+      name: `${term.sessionLabel} ${term.termLabel} - ${presetTemplate.name} [${term.id.slice(0, 8)}]`,
       isPreset: false,
       isActive: false,
     },
@@ -1642,7 +1647,7 @@ export async function createSessionBundleAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid academic session payload.");
+    redirectTermsStatus("error", parsed.error.issues[0]?.message ?? "Invalid academic session details.");
   }
 
   const sessionLabel = parsed.data.sessionLabel;
@@ -1651,80 +1656,102 @@ export async function createSessionBundleAction(formData: FormData) {
       ? parseCustomSessionLabels(parsed.data.customLabels ?? "")
       : Array.from(TERM_BUNDLE_LABELS[parsed.data.structure]);
 
-  await prisma.$transaction(async (tx) => {
-    const activePresetTemplate = await tx.assessmentTemplate.findFirst({
-      where: {
-        schoolId: profile.schoolId,
-        isPreset: true,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        types: {
-          take: 1,
-          select: { id: true },
-        },
-      },
-    });
-
-    const existingTerms = await tx.term.findMany({
-      where: {
-        schoolId: profile.schoolId,
-        sessionLabel,
-        termLabel: { in: termLabels },
-      },
-      select: {
-        id: true,
-        termLabel: true,
-      },
-    });
-
-    if (parsed.data.setFirstActive) {
-      await tx.term.updateMany({
-        where: { schoolId: profile.schoolId },
-        data: { isActive: false },
-      });
-    }
-
-    const existingByLabel = new Map(existingTerms.map((term) => [term.termLabel, term]));
-
-    for (const [index, termLabel] of termLabels.entries()) {
-      const shouldBeActive = parsed.data.setFirstActive && index === 0;
-      const existing = existingByLabel.get(termLabel);
-
-      if (existing) {
-        if (shouldBeActive) {
-          await tx.term.update({
-            where: { id: existing.id },
-            data: { isActive: true },
-          });
-        }
-        continue;
-      }
-
-      await tx.term.create({
-        data: {
-          schoolId: profile.schoolId,
-          sessionLabel,
-          termLabel,
-          isActive: shouldBeActive,
-        },
-        select: {
-          id: true,
-        },
-      }).then(async (createdTerm) => {
-        if (activePresetTemplate && activePresetTemplate.types.length > 0) {
-          await clonePresetTemplateToTermSnapshot(tx, {
+  try {
+    await prisma.$transaction(
+      async (tx) => {
+        const activePresetTemplate = await tx.assessmentTemplate.findFirst({
+          where: {
             schoolId: profile.schoolId,
-            termId: createdTerm.id,
-            presetTemplateId: activePresetTemplate.id,
+            isPreset: true,
+            isActive: true,
+          },
+          select: {
+            id: true,
+            types: {
+              take: 1,
+              select: { id: true },
+            },
+          },
+        });
+
+        const existingTerms = await tx.term.findMany({
+          where: {
+            schoolId: profile.schoolId,
+            sessionLabel,
+            termLabel: { in: termLabels },
+          },
+          select: {
+            id: true,
+            termLabel: true,
+          },
+        });
+
+        if (parsed.data.setFirstActive) {
+          await tx.term.updateMany({
+            where: { schoolId: profile.schoolId },
+            data: { isActive: false },
           });
         }
-      });
+
+        const existingByLabel = new Map(existingTerms.map((term) => [term.termLabel, term]));
+
+        for (const [index, termLabel] of termLabels.entries()) {
+          const shouldBeActive = parsed.data.setFirstActive && index === 0;
+          const existing = existingByLabel.get(termLabel);
+
+          if (existing) {
+            if (shouldBeActive) {
+              await tx.term.update({
+                where: { id: existing.id },
+                data: { isActive: true },
+              });
+            }
+            continue;
+          }
+
+          const createdTerm = await tx.term.create({
+            data: {
+              schoolId: profile.schoolId,
+              sessionLabel,
+              termLabel,
+              isActive: shouldBeActive,
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (activePresetTemplate && activePresetTemplate.types.length > 0) {
+            await clonePresetTemplateToTermSnapshot(tx, {
+              schoolId: profile.schoolId,
+              termId: createdTerm.id,
+              presetTemplateId: activePresetTemplate.id,
+            });
+          }
+        }
+      },
+      {
+        maxWait: 10_000,
+        timeout: 30_000,
+      },
+    );
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
     }
-  });
+    if (isPrismaSchemaMismatchError(error)) {
+      redirectTermsStatus("error", schemaSyncMessage("Session"));
+    }
+    const message = error instanceof Error ? error.message : "Unknown database error.";
+    console.error("[admin][sessions] Failed to create academic session", error);
+    redirectTermsStatus("error", `Could not create the session. ${message}`);
+  }
 
   revalidateAdminPages();
+  redirectTermsStatus(
+    "success",
+    `${sessionLabel} is ready with ${termLabels.length} sub-session${termLabels.length === 1 ? "" : "s"}.`,
+  );
 }
 
 export async function setActiveTermAction(formData: FormData) {

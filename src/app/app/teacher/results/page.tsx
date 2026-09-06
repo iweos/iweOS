@@ -3,6 +3,7 @@ import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import { ProfileRole } from "@prisma/client";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
+import StatCard from "@/components/admin/ui/StatCard";
 import { prisma } from "@/lib/server/prisma";
 import { isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
@@ -72,6 +73,13 @@ export default async function TeacherResultsPage({
     (row) => !isStudentSubjectExempt(exemptionKeys, row.class.id, row.studentId, row.subjectId),
   );
 
+  const studentCount = new Set(filteredRows.map((row) => row.studentId)).size;
+  const classCount = new Set(filteredRows.map((row) => row.classId)).size;
+  const averageScore =
+    filteredRows.length > 0
+      ? filteredRows.reduce((sum, row) => sum + Number(row.total), 0) / filteredRows.length
+      : 0;
+
   const dynamicColumns = Array.from(
     new Set(
       filteredRows
@@ -86,7 +94,7 @@ export default async function TeacherResultsPage({
   );
 
   return (
-    <section className="section-panel table-wrap">
+    <section className="section-panel table-wrap teacher-workflow-panel">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="section-kicker">Teacher Portal</p>
@@ -117,6 +125,13 @@ export default async function TeacherResultsPage({
             </form>
           )}
         </div>
+      </div>
+
+      <div className="workspace-stat-grid">
+        <StatCard label="Score Rows" value={filteredRows.length} icon="fas fa-clipboard-check" cardVariant="primary" />
+        <StatCard label="Students" value={studentCount} icon="fas fa-user-graduate" cardVariant="info" />
+        <StatCard label="Classes" value={classCount} icon="fas fa-school" cardVariant="secondary" />
+        <StatCard label="Average Score" value={averageScore.toFixed(1)} icon="fas fa-chart-line" cardVariant="success" />
       </div>
 
       <TableWrap>

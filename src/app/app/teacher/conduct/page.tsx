@@ -180,7 +180,7 @@ export default async function TeacherConductPage({
 
   return (
     <>
-      <section className="section-panel space-y-3">
+      <section className="section-panel space-y-3 teacher-workflow-panel">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="section-kicker">Teacher Portal</p>
@@ -249,7 +249,7 @@ export default async function TeacherConductPage({
         </form>
       </section>
 
-      <section className="section-panel space-y-3">
+      <section className="section-panel space-y-3 teacher-workflow-panel">
         <h2 className="section-heading">Student Conduct</h2>
         {!selectedClassId || !selectedTermId ? (
           <p className="section-subtle">No valid class/term in this view.</p>

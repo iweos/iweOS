@@ -106,9 +106,9 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                           }}
                         >
                           <input type="hidden" name="id" value={row.id} />
-                          <Button variant="danger" size="sm" type="submit" disabled={isPending}>
-                            Delete
-                          </Button>
+                          <button className="conduct-icon-action is-danger" type="submit" title="Delete scored item" aria-label={`Delete ${row.name}`} disabled={isPending}>
+                            <i className="fas fa-trash-alt" aria-hidden="true" />
+                          </button>
                         </form>
                       </Td>
                     </>
@@ -120,9 +120,9 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                       <Td>{row.orderIndex}</Td>
                       <Td>{row.isActive ? "Yes" : "No"}</Td>
                       <Td className="d-flex flex-wrap gap-1">
-                        <Button variant="secondary" size="sm" type="button" onClick={() => setEditingId(row.id)}>
-                          Edit
-                        </Button>
+                        <button className="conduct-icon-action" type="button" title="Edit scored item" aria-label={`Edit ${row.name}`} onClick={() => setEditingId(row.id)}>
+                          <i className="fas fa-pen" aria-hidden="true" />
+                        </button>
                         <form
                           action={(formData) => {
                             runAction(async () => {
@@ -131,9 +131,9 @@ export default function ConductCategoryTable({ sections, rows }: ConductCategory
                           }}
                         >
                           <input type="hidden" name="id" value={row.id} />
-                          <Button variant="danger" size="sm" type="submit" disabled={isPending}>
-                            Delete
-                          </Button>
+                          <button className="conduct-icon-action is-danger" type="submit" title="Delete scored item" aria-label={`Delete ${row.name}`} disabled={isPending}>
+                            <i className="fas fa-trash-alt" aria-hidden="true" />
+                          </button>
                         </form>
                       </Td>
                     </>

@@ -128,7 +128,7 @@ export default async function TeacherCommentPage({
   return (
     <>
       {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
-      <section className="section-panel space-y-3">
+      <section className="section-panel space-y-3 teacher-workflow-panel">
         <PageHeader
           title="Comment"
           subtitle={
@@ -182,7 +182,7 @@ export default async function TeacherCommentPage({
         </form>
       </section>
 
-      <section className="section-panel space-y-3">
+      <section className="section-panel space-y-3 teacher-workflow-panel">
         <div className="row g-3">
           <div className="col-12 col-md-6 col-xl-4">
             <StatCard label="Students In View" value={rows.length} icon="fas fa-user-graduate" cardVariant="primary" />

@@ -1,6 +1,9 @@
 import { bulkEnrollStudentsByClassAction, enrollStudentAction, removeEnrollmentAction } from "@/lib/server/admin-actions";
 import AssignmentsTermSelect from "@/components/assignments/AssignmentsTermSelect";
 import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
+import PageHeader from "@/components/admin/PageHeader";
+import SetupActionPanel from "@/components/admin/SetupActionPanel";
+import StatCard from "@/components/admin/ui/StatCard";
 import EnrollmentTable from "@/components/assignments/EnrollmentTable";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import { requireRole } from "@/lib/server/auth";
@@ -96,9 +99,16 @@ export default async function AssignmentEnrollmentsPage({
   return (
     <>
       {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
-      <section className="card card-body d-grid gap-3">
-        <h1 className="section-title">Assignments / Enrollments</h1>
-        <p className="section-subtle">Enroll one student manually, or bulk-enroll all active students already registered under a class.</p>
+      <PageHeader title="Enrollments" subtitle="Enroll one student or register an active class in the selected term." />
+
+      <div className="workspace-stat-grid teacher-summary-grid">
+        <StatCard label="Active Students" value={students.filter((student) => student.status === "active").length} icon="fas fa-user-graduate" cardVariant="primary" />
+        <StatCard label="Classes" value={classes.length} icon="fas fa-school" cardVariant="info" />
+        <StatCard label="Term Enrollments" value={filteredEnrollments.length} icon="fas fa-user-check" cardVariant="secondary" />
+      </div>
+
+      <section className="setup-action-grid">
+        <SetupActionPanel title="Manual enrollment" description="Open to enroll one student into a class and term." icon="fas fa-user-plus">
         <form action={enrollStudentAction} className="grid gap-2 md:grid-cols-4">
           <label className="d-grid gap-1">
             <span className="field-label">Student</span>
@@ -142,11 +152,11 @@ export default async function AssignmentEnrollmentsPage({
             </button>
           </div>
         </form>
+        </SetupActionPanel>
 
-        <div className="border-top pt-3">
-          <h2 className="section-heading mb-2">Bulk Enroll Active Students By Registered Class</h2>
+        <SetupActionPanel title="Bulk enrollment" description="Enroll every active student registered under one class." icon="fas fa-users">
           <p className="section-subtle mb-3">
-            This uses each student&apos;s saved class registration and only includes students with `active` status.
+            This uses each student&apos;s saved class registration and only includes students with active status.
           </p>
           <form action={bulkEnrollStudentsByClassAction} className="grid gap-2 md:grid-cols-4">
             <label className="d-grid gap-1">
@@ -181,10 +191,11 @@ export default async function AssignmentEnrollmentsPage({
               </button>
             </div>
           </form>
-        </div>
+        </SetupActionPanel>
       </section>
 
-      <section className="card card-body">
+      <section className="card workspace-panel">
+        <div className="card-body workspace-panel-body">
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
           <h2 className="section-heading mb-0">Eligible Active Students By Class</h2>
           {terms.length > 0 ? (
@@ -222,6 +233,7 @@ export default async function AssignmentEnrollmentsPage({
             </tbody>
           </Table>
         </TableWrap>
+        </div>
       </section>
 
       <section className="card card-body">

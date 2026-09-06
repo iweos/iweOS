@@ -306,7 +306,7 @@ export default async function TeacherGradeEntryPage({
   return (
     <>
       {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
-      <section className="section-panel space-y-3">
+      <section className="section-panel space-y-3 teacher-workflow-panel">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="section-kicker">Teacher Portal</p>
@@ -380,7 +380,7 @@ export default async function TeacherGradeEntryPage({
         </p>
       </section>
 
-      <section className="section-panel space-y-3">
+      <section className="section-panel space-y-3 teacher-workflow-panel">
         <h2 className="section-heading">Student Scores</h2>
         {!selectedClassId || !selectedTermId || !selectedSubjectId ? (
           <p className="section-subtle">No valid class/term/subject in this view.</p>

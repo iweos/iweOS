@@ -65,7 +65,7 @@
 .platform-header-actions > a, .platform-theme-toggle { display: inline-flex; min-height: 38px; padding: 0 13px; align-items: center; gap: 7px; border: 1px solid var(--platform-line); border-radius: 10px; color: var(--platform-ink); background: rgba(255,255,255,.8); font: inherit; font-size: .74rem; font-weight: 800; text-decoration: none; }
 .platform-header-actions svg { width: 15px; height: 15px; }
 .platform-theme-toggle { width: 38px; padding: 0; justify-content: center; }
-.platform-main { width: min(100%, 1500px); margin: 0 auto; padding: clamp(28px, 4vw, 54px) clamp(20px, 3.4vw, 52px) 100px; }
+.platform-main { width: min(100%, 1120px); margin: 0 auto; padding: clamp(28px, 4vw, 54px) clamp(20px, 3.4vw, 52px) 100px; }
 
 .platform-hero { position: relative; isolation: isolate; display: flex; min-height: 230px; padding: clamp(28px, 4vw, 52px); align-items: flex-end; justify-content: space-between; gap: 30px; overflow: hidden; border-radius: 28px; color: #f8fbf8; background: linear-gradient(118deg, #111827, #1e3a5f 62%, #294f78); box-shadow: 0 22px 55px rgba(20, 42, 69, .16); }
 .platform-hero::after { position: absolute; z-index: -1; right: -65px; bottom: -110px; width: 330px; height: 330px; border: 50px solid rgba(230, 243, 211, .1); border-radius: 50%; content: ""; }

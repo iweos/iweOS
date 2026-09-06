@@ -161,6 +161,14 @@ export default async function AdminGradingConductPage() {
               orderIndex: section.orderIndex,
               isActive: section.isActive,
               categoryCount: section._count.categories,
+              items: conductCategories
+                .filter((category) => category.sectionId === section.id)
+                .map((category) => ({
+                  id: category.id,
+                  name: category.name,
+                  maxScore: category.maxScore,
+                  isActive: category.isActive,
+                })),
             }))}
           />
         </Card>

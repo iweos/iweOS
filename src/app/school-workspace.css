@@ -288,3 +288,43 @@ html[data-theme="dark"] .school-account-menu > button:hover { background: #262d2
   .school-account-trigger > svg { display: none; }
   .school-shell-main { padding: 1rem .75rem 8rem; }
 }
+
+/* Normalize legacy teacher/admin workflow panels inside the fresh shell. */
+.school-shell .section-panel {
+  min-width: 0;
+  padding: 1.15rem;
+  border: 1px solid var(--workspace-line);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: var(--workspace-shadow);
+}
+.school-shell .section-panel::before { display: none; }
+.school-shell .section-panel > form {
+  min-width: 0;
+  padding: .9rem;
+  border: 1px solid var(--workspace-line);
+  border-radius: .85rem;
+  background: #fafbf9;
+}
+.school-shell .section-panel + .section-panel { margin-top: 1rem; }
+.school-shell .section-panel .table-wrap,
+.school-shell .workspace-panel .table-wrap { max-width: 100%; overflow-x: auto; }
+.school-shell .section-panel input,
+.school-shell .section-panel select,
+.school-shell .section-panel textarea { max-width: 100%; }
+.school-shell .section-title { color: var(--workspace-ink); font-size: clamp(1.6rem, 3vw, 2.45rem); font-weight: 850; letter-spacing: -.035em; }
+.school-shell .section-heading { color: var(--workspace-ink); font-size: 1rem; font-weight: 850; }
+.school-shell .section-subtle { color: var(--workspace-muted); font-size: .74rem; line-height: 1.55; }
+.school-shell .section-kicker { color: var(--workspace-brand); font-size: .63rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.school-shell .btn-primary {
+  border-color: var(--workspace-brand) !important;
+  background: var(--workspace-brand) !important;
+}
+.school-shell .btn-primary:hover { border-color: var(--workspace-brand-dark) !important; background: var(--workspace-brand-dark) !important; }
+html[data-theme="dark"] .school-shell .section-panel { background: rgba(29, 34, 30, .96); }
+html[data-theme="dark"] .school-shell .section-panel > form { background: #191e1a; }
+
+@media (max-width: 767px) {
+  .school-shell .section-panel { padding: .9rem; border-radius: .95rem; }
+  .school-shell .section-panel > form { padding: .75rem; }
+}

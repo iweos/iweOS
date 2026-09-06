@@ -51,9 +51,10 @@ export default async function AdminStudentsManagePage({
   }> = [];
 
   let classes: Array<{ id: string; name: string }> = [];
+  let classSummaryRows: Array<{ className: string | null; status: string }> = [];
 
   try {
-    [studentDirectoryRows, classes] = await Promise.all([
+    [studentDirectoryRows, classes, classSummaryRows] = await Promise.all([
       prisma.student.findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -78,6 +79,10 @@ export default async function AdminStudentsManagePage({
         orderBy: { name: "asc" },
         select: { id: true, name: true },
       }),
+      prisma.student.findMany({
+        where: { schoolId: profile.schoolId },
+        select: { className: true, status: true },
+      }),
     ]);
   } catch (error) {
     if (isPrismaSchemaMismatchError(error)) {
@@ -96,6 +101,14 @@ export default async function AdminStudentsManagePage({
   const students = studentDirectoryRows;
 
   const activeStudents = students.filter((student) => student.status.toLowerCase() === "active").length;
+  const classDistribution = classes.map((klass) => ({
+    ...klass,
+    total: classSummaryRows.filter((student) => student.className?.trim().toLowerCase() === klass.name.trim().toLowerCase()).length,
+    active: classSummaryRows.filter(
+      (student) => student.status.toLowerCase() === "active" && student.className?.trim().toLowerCase() === klass.name.trim().toLowerCase(),
+    ).length,
+  }));
+  const unassignedStudents = classSummaryRows.filter((student) => !student.className?.trim()).length;
   const hasFilters = Boolean(classFilter || statusFilter);
 
   return (
@@ -117,10 +130,30 @@ export default async function AdminStudentsManagePage({
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <StatCard label="Filtered Students" value={students.length} icon="fas fa-filter" cardVariant="info" />
+      <div className="workspace-stat-grid teacher-summary-grid">
+        <StatCard label="Filtered Students" value={students.length} icon="fas fa-filter" cardVariant="primary" />
         <StatCard label="Active (Filtered)" value={activeStudents} icon="fas fa-user-check" cardVariant="success" />
+        <StatCard label="Classes" value={classes.length} icon="fas fa-school" cardVariant="info" />
       </div>
+
+      <Card title="Students By Class" subtitle="Open a class directly in the directory or identify registration gaps.">
+        <div className="class-distribution-grid">
+          {classDistribution.map((klass) => (
+            <Link key={klass.id} href={`/app/admin/students/manage?className=${encodeURIComponent(klass.name)}`} className="class-distribution-card">
+              <span><i className="fas fa-school" aria-hidden="true" /></span>
+              <div><strong>{klass.name}</strong><small>{klass.active} active of {klass.total} students</small></div>
+              <b>{klass.total}</b>
+            </Link>
+          ))}
+          {unassignedStudents > 0 ? (
+            <div className="class-distribution-card is-warning">
+              <span><i className="fas fa-user-clock" aria-hidden="true" /></span>
+              <div><strong>Unassigned</strong><small>Students without a registered class</small></div>
+              <b>{unassignedStudents}</b>
+            </div>
+          ) : null}
+        </div>
+      </Card>
 
       <Card title="Directory Filters">
         <form method="get" className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">

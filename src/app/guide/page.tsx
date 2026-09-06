@@ -904,6 +904,21 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "workflow-progressive-disclosure-release",
+        eyebrow: "Workflow UX and reliability",
+        timestamp: "Sep 6, 2026 · 7:04 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Faster school setup and focused teacher workflows",
+        bullets: [
+          "Academic session creation now tolerates slower pooled database transactions, avoids assessment-snapshot naming collisions, and returns clear success or error feedback instead of a server exception.",
+          "Result publication status now saves immediately when selected; redundant row and preview save buttons have been removed and replaced with inline save progress.",
+          "Conduct setup now leads with compact category rows and icon actions, revealing scored items only when View is selected.",
+          "Teacher-Class, Class-Subject, and Enrollment creation forms now stay collapsed until needed; Class-Subject adds class, subject, and assignment metrics with class-by-class curriculum drill-down.",
+          "Student management now includes class-count and per-class student infographics with direct filtered-directory links.",
+          "Teacher Attendance, Comments, Conduct, Grade Entry, Students, and Results now inherit one responsive panel system with contained forms and tables, while Dataroom uses the same focused content width.",
+        ],
+      },
+      {
         id: "fresh-school-portal-shell",
         eyebrow: "Portal migration",
         timestamp: "Sep 6, 2026 · 6:08 PM GMT+1",
