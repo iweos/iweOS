@@ -92,6 +92,7 @@ export default function AdminShell({
           currentProfileId={currentProfileId}
           schoolOptions={schoolOptions}
           platformAdmin={platformAdmin}
+          teacherPortalAdmin={teacherPortalAdmin}
         />
         <div className="container">
           <main className="page-inner admin-page-wrap" data-tour="main-content">

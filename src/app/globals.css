@@ -4189,3 +4189,10 @@ html[data-theme="dark"] .shell-tour-close {
   border-radius: 50%;
   animation: iweos-pending-spin .65s linear infinite;
 }
+
+/* iweOS uses the bundled Hornbill typeface across every public and authenticated surface. */
+body.ui {
+  --font-display: var(--font-site-hornbill);
+  --font-ui: var(--font-site-hornbill);
+  font-family: var(--font-site-hornbill), Georgia, serif;
+}

@@ -1411,3 +1411,116 @@ html.kai-admin .student-rows-input {
   html.kai-admin .topbar-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; }
   html.kai-admin .topbar-dialog-actions button { min-height: 48px; }
 }
+
+/* Role-aware application command palette */
+html.kai-admin .app-command-trigger {
+  display: flex;
+  width: min(34vw, 430px);
+  min-height: 40px;
+  padding: 0 .75rem;
+  align-items: center;
+  gap: .7rem;
+  border: 1px solid #dfe4df;
+  border-radius: 12px;
+  color: #667169;
+  background: #f7f9f6;
+  font: inherit;
+  font-size: .76rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+html.kai-admin .app-command-trigger:hover { border-color: #aac4b0; background: #fff; box-shadow: 0 7px 20px rgba(30, 70, 43, .08); }
+html.kai-admin .app-command-trigger span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.kai-admin .app-command-trigger kbd, html.kai-admin .app-command-panel kbd { padding: .16rem .36rem; border: 1px solid #d8ded9; border-radius: 6px; color: #657068; background: #fff; box-shadow: 0 1px 1px rgba(24, 39, 28, .06); font: 700 .6rem var(--font-site-hornbill), serif; }
+html.kai-admin .app-command-root { position: fixed; z-index: 2200; inset: 0; }
+html.kai-admin .app-command-backdrop { position: fixed; inset: 0; background: rgba(13, 24, 17, .54); backdrop-filter: blur(5px); }
+html.kai-admin .app-command-positioner { position: fixed; inset: 0; display: grid; padding: max(8vh, 3rem) 1rem 1rem; place-items: start center; overflow-y: auto; }
+html.kai-admin .app-command-panel { width: min(100%, 660px); overflow: hidden; border: 1px solid rgba(255,255,255,.6); border-radius: 20px; background: #fff; box-shadow: 0 30px 90px rgba(10, 27, 16, .28); }
+html.kai-admin .app-command-search { display: flex; min-height: 68px; padding: 0 1.1rem; align-items: center; gap: .8rem; border-bottom: 1px solid #e8ece8; }
+html.kai-admin .app-command-search > svg { width: 20px; color: #2f6b3f; }
+html.kai-admin .app-command-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: #17231b; background: transparent; font: 500 .92rem var(--font-site-hornbill), serif; }
+html.kai-admin .app-command-search button { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 8px; color: #738078; background: #f1f4f1; }
+html.kai-admin .app-command-search button svg { width: 16px; }
+html.kai-admin .app-command-title { margin: 0; padding: .9rem 1.1rem .35rem; color: #7b877e; font-size: .62rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+html.kai-admin .app-command-results { max-height: min(58vh, 520px); padding: .4rem .65rem .75rem; overflow-y: auto; }
+html.kai-admin .app-command-results > button { display: grid; width: 100%; min-height: 62px; padding: .55rem .7rem; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: .75rem; border: 0; border-radius: 12px; color: #1b2820; background: transparent; text-align: left; }
+html.kai-admin .app-command-results > button:hover, html.kai-admin .app-command-results > button.is-active { background: #edf4eb; }
+html.kai-admin .app-command-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 11px; color: #285f3a; background: #e1eddf; }
+html.kai-admin .app-command-icon svg { width: 18px; }
+html.kai-admin .app-command-results > button > span:nth-child(2) { display: grid; min-width: 0; }
+html.kai-admin .app-command-results strong { font-size: .78rem; }
+html.kai-admin .app-command-results small { overflow: hidden; color: #758078; font-size: .65rem; text-overflow: ellipsis; white-space: nowrap; }
+html.kai-admin .app-command-results i { color: #8a958d; font-size: .56rem; font-style: normal; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+html.kai-admin .app-command-empty { display: grid; min-height: 220px; place-content: center; justify-items: center; color: #748078; text-align: center; }
+html.kai-admin .app-command-empty svg { width: 26px; margin-bottom: .7rem; color: #2f6b3f; }
+html.kai-admin .app-command-empty strong { color: #1b2820; font-size: .85rem; }
+html.kai-admin .app-command-empty span { margin-top: .3rem; font-size: .68rem; }
+html.kai-admin .app-command-panel > footer { display: flex; min-height: 45px; padding: 0 1rem; align-items: center; gap: 1rem; border-top: 1px solid #e8ece8; color: #7c877f; background: #fafbfa; font-size: .58rem; }
+html.kai-admin .app-command-panel > footer span { display: inline-flex; align-items: center; gap: .28rem; }
+html[data-theme="dark"].kai-admin .app-command-trigger { border-color: #3a443d; color: #aeb8b0; background: #202621; }
+html[data-theme="dark"].kai-admin .app-command-panel { border-color: #39423b; background: #1d221e; }
+html[data-theme="dark"].kai-admin .app-command-search, html[data-theme="dark"].kai-admin .app-command-panel > footer { border-color: #343d36; background: #1d221e; }
+html[data-theme="dark"].kai-admin .app-command-search input, html[data-theme="dark"].kai-admin .app-command-results > button, html[data-theme="dark"].kai-admin .app-command-empty strong { color: #edf4ef; }
+html[data-theme="dark"].kai-admin .app-command-results > button:hover, html[data-theme="dark"].kai-admin .app-command-results > button.is-active { background: #29332b; }
+html[data-theme="dark"].kai-admin .app-command-icon { color: #c7dfc9; background: #28422f; }
+html[data-theme="dark"].kai-admin .app-command-trigger kbd, html[data-theme="dark"].kai-admin .app-command-panel kbd, html[data-theme="dark"].kai-admin .app-command-search button { border-color: #414b43; color: #bdc7bf; background: #2a312b; }
+
+@media (max-width: 991px) {
+  html.kai-admin .topbar-mobile-actions { width: 120px; }
+}
+@media (max-width: 560px) {
+  html.kai-admin .app-command-positioner { padding: 0; place-items: end stretch; }
+  html.kai-admin .app-command-panel { width: 100%; max-height: 88svh; border-radius: 22px 22px 0 0; }
+  html.kai-admin .app-command-search { min-height: 62px; }
+  html.kai-admin .app-command-results { max-height: 62svh; }
+  html.kai-admin .app-command-results > button { grid-template-columns: 38px minmax(0, 1fr); }
+  html.kai-admin .app-command-results > button > i { display: none; }
+  html.kai-admin .app-command-panel > footer { display: none; }
+}
+
+/* First-class portal switching */
+html.kai-admin .app-portal-switcher { position: relative; }
+html.kai-admin .app-portal-trigger { display: flex; min-height: 44px; padding: .35rem .65rem; align-items: center; gap: .55rem; border: 1px solid #e0e5e1; border-radius: 12px; color: #253128; background: #fff; font: inherit; text-align: left; }
+html.kai-admin .app-portal-trigger > svg:first-child { width: 18px; color: #2f6b3f; }
+html.kai-admin .app-portal-trigger > span { display: grid; min-width: 95px; }
+html.kai-admin .app-portal-trigger small { color: #849087; font-size: .53rem; line-height: 1.1; text-transform: uppercase; letter-spacing: .05em; }
+html.kai-admin .app-portal-trigger strong { font-size: .68rem; line-height: 1.25; }
+html.kai-admin .app-portal-chevron { width: 13px; color: #7a857d; }
+html.kai-admin .app-portal-panel { z-index: 1800; width: min(92vw, 360px); margin-top: .55rem; overflow: hidden; border: 1px solid #e0e6e1; border-radius: 16px; background: #fff; box-shadow: 0 20px 55px rgba(20, 42, 27, .18); }
+html.kai-admin .app-portal-heading { display: grid; padding: 1rem 1.05rem .8rem; border-bottom: 1px solid #edf0ed; }
+html.kai-admin .app-portal-heading span { color: #2b3930; font-size: .75rem; font-weight: 900; }
+html.kai-admin .app-portal-heading small { color: #7e8981; font-size: .61rem; }
+html.kai-admin .app-portal-options { display: grid; padding: .45rem; }
+html.kai-admin .app-portal-options > a, html.kai-admin .app-portal-options > div { display: grid; min-height: 64px; padding: .55rem .6rem; grid-template-columns: 38px minmax(0, 1fr) 18px; align-items: center; gap: .65rem; border-radius: 11px; color: #26332a; text-decoration: none; }
+html.kai-admin .app-portal-options > a:hover { background: #edf4eb; }
+html.kai-admin .app-portal-options > .is-current { background: #f7f9f6; }
+html.kai-admin .app-portal-options > a > span, html.kai-admin .app-portal-options > div > span { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 10px; color: #2f6b3f; background: #e3eee1; }
+html.kai-admin .app-portal-options svg { width: 17px; }
+html.kai-admin .app-portal-options > a > div, html.kai-admin .app-portal-options > div > div { display: grid; }
+html.kai-admin .app-portal-options strong { font-size: .7rem; }
+html.kai-admin .app-portal-options small { color: #7b867e; font-size: .59rem; line-height: 1.35; }
+html.kai-admin .app-portal-options > .is-current > svg { width: 15px; color: #2f6b3f; }
+html[data-theme="dark"].kai-admin .app-portal-trigger, html[data-theme="dark"].kai-admin .app-portal-panel { border-color: #38423b; color: #edf4ef; background: #1d221e; }
+html[data-theme="dark"].kai-admin .app-portal-heading { border-color: #343d36; }
+html[data-theme="dark"].kai-admin .app-portal-heading span, html[data-theme="dark"].kai-admin .app-portal-options > a, html[data-theme="dark"].kai-admin .app-portal-options > div { color: #edf4ef; }
+html[data-theme="dark"].kai-admin .app-portal-options > a:hover, html[data-theme="dark"].kai-admin .app-portal-options > .is-current { background: #29332b; }
+@media (max-width: 1199px) { html.kai-admin .app-portal-trigger > span { display: none; } html.kai-admin .app-portal-trigger { width: 42px; padding: 0; justify-content: center; } html.kai-admin .app-portal-chevron { display: none; } }
+@media (max-width: 991px) { html.kai-admin .app-portal-nav-item { display: none; } }
+
+/* Predictable route-loading feedback */
+html.kai-admin .portal-loading-state { display: grid; gap: 1rem; }
+html.kai-admin .portal-loading-heading { display: grid; gap: .6rem; padding: .5rem 0; }
+html.kai-admin .portal-skeleton { display: block; border-radius: 12px; background: linear-gradient(90deg, #e8ede8 20%, #f5f7f4 45%, #e8ede8 70%) 0 0 / 220% 100%; animation: iweos-skeleton 1.35s ease-in-out infinite; }
+html.kai-admin .portal-skeleton-kicker { width: 90px; height: 10px; }
+html.kai-admin .portal-skeleton-title { width: min(65%, 360px); height: 34px; }
+html.kai-admin .portal-loading-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+html.kai-admin .portal-loading-stats span { min-height: 125px; }
+html.kai-admin .portal-loading-panel { display: grid; min-height: 300px; padding: 1.5rem; gap: .75rem; align-content: start; border: 1px solid #e4e9e4; border-radius: 18px; background: #fff; }
+html.kai-admin .portal-skeleton-line { width: 45%; height: 16px; }
+html.kai-admin .portal-skeleton-line.is-short { width: 28%; }
+html.kai-admin .portal-skeleton-block { width: 100%; height: 170px; margin-top: 1rem; }
+html[data-theme="dark"].kai-admin .portal-skeleton { background: linear-gradient(90deg, #2a312b 20%, #343c35 45%, #2a312b 70%) 0 0 / 220% 100%; }
+html[data-theme="dark"].kai-admin .portal-loading-panel { border-color: #343d36; background: #1d221e; }
+@keyframes iweos-skeleton { to { background-position: -220% 0; } }
+@media (max-width: 767px) { html.kai-admin .portal-loading-stats { grid-template-columns: 1fr 1fr; } html.kai-admin .portal-loading-stats span { min-height: 95px; } }

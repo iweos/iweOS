@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AppCommandPalette from "@/components/admin/AppCommandPalette";
+import PortalSwitcher from "@/components/admin/PortalSwitcher";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { SchoolAccessOption } from "@/types";
@@ -19,6 +21,7 @@ type TopbarProps = {
   currentProfileId?: string;
   schoolOptions?: SchoolAccessOption[];
   platformAdmin?: boolean;
+  teacherPortalAdmin?: boolean;
 };
 
 type TopbarNotification = {
@@ -43,8 +46,10 @@ export default function Topbar({
   currentProfileId,
   schoolOptions = [],
   platformAdmin = false,
+  teacherPortalAdmin = false,
 }: TopbarProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [switchingProfileId, setSwitchingProfileId] = useState<string | null>(null);
@@ -302,6 +307,9 @@ export default function Topbar({
             </button>
           </div>
           <div className="topbar-mobile-actions">
+            <button type="button" className="btn btn-toggle mobile-header-action mobile-command-trigger" onClick={() => setCommandOpen(true)} aria-label="Search pages and actions">
+              <i className="fas fa-search" />
+            </button>
             <ThemeToggle className="btn btn-toggle mobile-header-action mobile-theme-toggle" />
             <button
               type="button"
@@ -321,22 +329,18 @@ export default function Topbar({
 
       <nav className="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
         <div className="container-fluid">
-          <nav className="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
-            <div className="input-group">
-            <div className="input-group-prepend">
-                <button type="button" className="btn btn-search pe-1">
-                  <i className="fa fa-search search-icon" />
-                </button>
-              </div>
-              <input
-                type="text"
-                placeholder={mode === "teacher" ? "Search students, classes, scores..." : "Search students, teachers, payments..."}
-                className="form-control"
-              />
-            </div>
-          </nav>
+          <div className="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
+            <button type="button" className="app-command-trigger" onClick={() => setCommandOpen(true)}>
+              <i className="fa fa-search search-icon" />
+              <span>{mode === "teacher" ? "Find students, classes, scores..." : "Find students, teachers, payments..."}</span>
+              <kbd>⌘ K</kbd>
+            </button>
+          </div>
 
           <ul className="navbar-nav topbar-nav ms-md-auto align-items-center">
+            <li className="nav-item app-portal-nav-item">
+              <PortalSwitcher mode={mode} currentSchoolName={currentSchoolName} platformAdmin={platformAdmin} teacherPortalAdmin={teacherPortalAdmin} />
+            </li>
             <li className="nav-item topbar-icon hidden-caret">
               <ThemeToggle className="nav-link border-0 bg-transparent topbar-theme-toggle" />
             </li>
@@ -432,6 +436,7 @@ export default function Topbar({
           </section>
         </div>
       ) : null}
+      <AppCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onOpen={() => setCommandOpen(true)} mode={mode} platformAdmin={platformAdmin} teacherPortalAdmin={teacherPortalAdmin} />
     </div>
   );
 }

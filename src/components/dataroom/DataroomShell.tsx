@@ -59,6 +59,12 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
 
   async function openSchoolPortal(profileId: string) {
     if (!profileId || switchingProfileId) return;
+    const portalWindow = window.open("about:blank", "_blank");
+    if (!portalWindow) {
+      window.alert("Allow pop-ups for iweOS to open the school portal in a new tab.");
+      return;
+    }
+    portalWindow.opener = null;
     setSwitchingProfileId(profileId);
     try {
       const response = await fetch("/api/auth/switch-profile", {
@@ -68,8 +74,10 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
       });
       const payload = (await response.json()) as { destination?: string; error?: string };
       if (!response.ok || !payload.destination) throw new Error(payload.error || "Unable to open this school.");
-      window.location.assign(payload.destination);
+      portalWindow.location.replace(payload.destination);
+      setSwitchingProfileId(null);
     } catch (error) {
+      portalWindow.close();
       setSwitchingProfileId(null);
       window.alert(error instanceof Error ? error.message : "Unable to open this school.");
     }

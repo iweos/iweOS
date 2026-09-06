@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import GuideDock from "@/components/guide/GuideDock";
 import GlobalPendingIndicator from "@/components/GlobalPendingIndicator";
 import GlobalTableEnhancer from "@/components/GlobalTableEnhancer";
@@ -9,18 +8,6 @@ import PwaClient from "@/components/PwaClient";
 import ThemeSync from "@/components/ThemeSync";
 import { APP_ICON_VERSION } from "@/lib/app-icon";
 import "./globals.css";
-
-const display = Cormorant_Garamond({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const ui = Plus_Jakarta_Sans({
-  variable: "--font-ui",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
 
 const hornbill = localFont({
   src: "../../public/fonts/Hornbill-Regular.otf",
@@ -92,7 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </head>
-        <body className={`${display.variable} ${ui.variable} ${hornbill.variable} ui`}>
+        <body className={`${hornbill.variable} ui`}>
           <PwaClient />
           <ThemeSync />
           <GuideDock />

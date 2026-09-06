@@ -428,3 +428,21 @@ html[data-theme="dark"] .platform-roster-row { border-color: #303831; }
   .platform-shell.is-sidebar-collapsed .platform-nav p { display: block; }
   .platform-shell.is-sidebar-collapsed .platform-account-badge div { display: grid; }
 }
+
+.dataroom-loading { display: grid; gap: 20px; }
+.dataroom-loading > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+.dataroom-skeleton { display: block; border-radius: 18px; background: linear-gradient(90deg, #e2e8e2 20%, #f4f6f2 45%, #e2e8e2 70%) 0 0 / 220% 100%; animation: platform-skeleton 1.35s ease-in-out infinite; }
+.dataroom-skeleton.is-heading { width: min(55%, 420px); height: 46px; }
+.dataroom-skeleton.is-stat { min-height: 120px; }
+.dataroom-skeleton.is-panel { min-height: 330px; }
+.dataroom-error { display: grid; max-width: 650px; min-height: 430px; margin: 4vh auto 0; padding: 42px; place-content: center start; border: 1px solid var(--platform-line); border-radius: 26px; background: var(--platform-card); box-shadow: 0 20px 60px rgba(25, 52, 33, .1); }
+.dataroom-error > span { display: grid; width: 50px; height: 50px; margin-bottom: 24px; place-items: center; border-radius: 15px; color: #8c5420; background: #f8ead8; }
+.dataroom-error > span svg { width: 22px; }
+.dataroom-error p { margin: 0 0 8px; color: var(--platform-green); font-size: .66rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.dataroom-error h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.dataroom-error > div { max-width: 500px; margin: 14px 0 22px; color: var(--platform-muted); font-size: .78rem; line-height: 1.6; }
+.dataroom-error button { display: inline-flex; width: fit-content; min-height: 42px; padding: 0 16px; align-items: center; gap: 7px; border: 0; border-radius: 11px; color: #fff; background: var(--platform-green); font: inherit; font-size: .72rem; font-weight: 900; }
+.dataroom-error button svg { width: 16px; }
+.dataroom-error small { margin-top: 15px; color: var(--platform-muted); font-size: .62rem; }
+@keyframes platform-skeleton { to { background-position: -220% 0; } }
+@media (max-width: 700px) { .dataroom-loading > div { grid-template-columns: 1fr 1fr; } .dataroom-error { min-height: 390px; margin-top: 0; padding: 28px; } }

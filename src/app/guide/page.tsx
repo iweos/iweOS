@@ -904,6 +904,20 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "unified-portal-navigation",
+        eyebrow: "Navigation and resilience",
+        timestamp: "Sep 6, 2026 · 3:59 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Faster navigation across iweOS portals",
+        bullets: [
+          "The inactive header search has been replaced with a working command palette for pages, workflows, and authorized portals, available with Ctrl or Command + K.",
+          "A visible role-aware portal switcher now connects School Administration, Teacher Portal, and Dataroom while keeping the structure ready for future Student and Guardian portals.",
+          "School portals opened from Dataroom now launch in a separate browser tab without losing the Dataroom workspace.",
+          "Admin, Teacher, and Dataroom routes now provide deliberate loading feedback and recoverable error states on slow or interrupted connections.",
+          "All iweOS surfaces now use the bundled Hornbill typeface without relying on build-time Google Font downloads.",
+        ],
+      },
+      {
         id: "dataroom-owner-access",
         eyebrow: "Platform administration",
         timestamp: "Sep 6, 2026 · 3:25 PM GMT+1",
