@@ -1,6 +1,5 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 type PasswordFieldProps = {
@@ -8,15 +7,16 @@ type PasswordFieldProps = {
   label: string;
   name: string;
   minLength?: number;
+  placeholder?: string;
 };
 
-export default function PasswordField({ autoComplete, label, name, minLength }: PasswordFieldProps) {
+export default function PasswordField({ autoComplete, label, name, minLength, placeholder }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
   const inputId = `auth-${name}`;
 
   return (
     <label htmlFor={inputId}>
-      <span>{label}</span>
+      <span className="sr-only">{label}</span>
       <span className="auth-password-control">
         <input
           id={inputId}
@@ -24,6 +24,7 @@ export default function PasswordField({ autoComplete, label, name, minLength }: 
           type={visible ? "text" : "password"}
           autoComplete={autoComplete}
           minLength={minLength}
+          placeholder={placeholder ?? label}
           required
         />
         <button
@@ -33,7 +34,7 @@ export default function PasswordField({ autoComplete, label, name, minLength }: 
           aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
           aria-pressed={visible}
         >
-          {visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+          {visible ? "Hide" : "Show"}
         </button>
       </span>
     </label>

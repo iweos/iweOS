@@ -14,7 +14,11 @@ export default function GuideDock() {
 
   const activeFaq = useMemo(() => faqs.find((faq) => faq.question === activeQuestion) ?? faqs[0], [activeQuestion]);
 
-  if (!pathname || pathname.includes("/print") || pathname.startsWith("/app")) {
+  const isAuthRoute = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password", "/verify-email"].some(
+    (route) => pathname.startsWith(route),
+  );
+
+  if (!pathname || pathname.includes("/print") || pathname.startsWith("/app") || isAuthRoute) {
     return null;
   }
 

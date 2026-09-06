@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "focused-first-party-authentication",
+        eyebrow: "Authentication UX",
+        timestamp: "Sep 7, 2026 · 12:03 AM GMT+1",
+        timelineGroup: "September 2026",
+        title: "A calmer, more focused sign-in experience",
+        bullets: [
+          "Sign in, school sign-up, password recovery, and password reset now share one responsive authentication shell with consistent spacing, controls, and iweOS branding.",
+          "Desktop users get a focused form beside a concise product-benefit panel, while phone and tablet layouts remove the secondary panel to keep every action clear and reachable.",
+          "Password fields now provide explicit Show and Hide controls, and every authentication action exposes its existing loading state without changing account, verification, or redirect behavior.",
+        ],
+      },
+      {
         id: "geist-product-typography-migration",
         eyebrow: "Product typography",
         timestamp: "Sep 6, 2026 · 11:48 PM GMT+1",
