@@ -904,6 +904,20 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "school-settings-workspace-redesign",
+        eyebrow: "Settings UX",
+        timestamp: "Sep 6, 2026 · 7:12 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "A focused School Settings workspace",
+        bullets: [
+          "School Settings now uses a responsive navigation system with focused General, Results, Brand Assets, and Academic Policies workspaces instead of one oversized form.",
+          "School identity, address, contact details, result template, ranking preference, and default principal comment are grouped by task with clear explanations and dedicated save actions.",
+          "Logo and principal-signature controls now show the current asset, support replacement or removal, and keep optional URL fields collapsed until explicitly needed.",
+          "Academic policy setup now provides direct, clearly described routes to Promotion Rules, Grades, Assessment Types, and Conduct without duplicating those workflows inside Settings.",
+          "Desktop users receive persistent side navigation, while tablet and mobile users receive a contained horizontal navigation rail that does not wrap or break the page.",
+        ],
+      },
+      {
         id: "workflow-progressive-disclosure-release",
         eyebrow: "Workflow UX and reliability",
         timestamp: "Sep 6, 2026 · 7:04 PM GMT+1",

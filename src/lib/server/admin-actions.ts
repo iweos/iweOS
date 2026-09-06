@@ -680,7 +680,13 @@ export async function updateSchoolAction(formData: FormData) {
     ]);
 
     revalidateAdminPages();
-    redirectSettingsStatus("success", activeTab === "results" ? "Result settings saved." : "School profile saved.", {
+    const successMessage =
+      activeTab === "results"
+        ? "Result settings saved."
+        : activeTab === "branding"
+          ? "Brand assets saved."
+          : "School profile saved.";
+    redirectSettingsStatus("success", successMessage, {
       tab: activeTab,
     });
   } catch (error) {
