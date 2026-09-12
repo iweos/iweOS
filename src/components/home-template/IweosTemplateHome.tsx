@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { FileCheck, Menu, MessageCircle, Quote, X, Zap } from 'lucide-react'
 import BrandLogo from '@/components/BrandLogo'
+import PublicSignInMenu from '@/components/auth/PublicSignInMenu'
 import {
   footerGroups,
   heroContent,
@@ -74,12 +75,7 @@ export default function IweosTemplateHome() {
           </nav>
 
           <div className='hidden items-center gap-3 lg:flex'>
-            <Link
-              href='/sign-in'
-              className='text-sm font-medium text-[#6b7280] transition-colors hover:text-[#111827]'
-            >
-              Sign in
-            </Link>
+            <PublicSignInMenu buttonClassName='text-sm font-medium text-[#6b7280] transition-colors hover:text-[#111827]' />
             <Link
               href='/sign-up'
               className='rounded-md bg-[#1e3a5f] px-4 py-2 text-sm font-medium !text-white visited:!text-white hover:!text-white hover:bg-[#18314f]'
@@ -111,13 +107,7 @@ export default function IweosTemplateHome() {
                 </Link>
               ))}
               <div className='my-2 h-px bg-[#e6dfd3]' />
-              <Link
-                href='/sign-in'
-                onClick={() => setMobileOpen(false)}
-                className='px-3 py-2 text-sm font-medium text-[#6b7280] transition-colors hover:text-[#111827]'
-              >
-                Sign in
-              </Link>
+              <PublicSignInMenu buttonClassName='w-full justify-between rounded-md px-3 py-2 text-sm font-medium text-[#6b7280] transition-colors hover:bg-[#f1ede6] hover:text-[#111827]' panelClassName='[--anchor-gap:6px]' />
               <div className='px-3 pt-1'>
                 <Link
                   href='/sign-up'

@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { Menu, Search, Sparkles } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
+import PublicSignInMenu from "@/components/auth/PublicSignInMenu";
 import type { DocsTab, DocsTabId } from "./types";
 
 type HeaderProps = {
@@ -68,12 +68,7 @@ export default function Header({ tabs, activeTab, onSelectTab, onOpenSearch, onO
               <Sparkles className="h-4 w-4" />
               <span>Ask AI</span>
             </button>
-            <Link
-              href="/sign-in"
-              className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-[#161922] dark:text-slate-200"
-            >
-              Sign in
-            </Link>
+            <PublicSignInMenu buttonClassName="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-[#161922] dark:text-slate-200" />
           </div>
         </div>
 

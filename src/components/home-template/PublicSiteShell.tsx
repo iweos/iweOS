@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import BrandLogo from '@/components/BrandLogo'
+import PublicSignInMenu from '@/components/auth/PublicSignInMenu'
 import {
   footerGroups,
   navItems,
@@ -108,12 +109,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
           </nav>
 
           <div className='hidden items-center gap-2 lg:flex'>
-            <Link
-              href='/sign-in'
-              className='rounded-md border border-[#cfd8e3] px-3 py-2 text-sm font-semibold text-[#374151] hover:border-[#9aa7bb]'
-            >
-              Sign in
-            </Link>
+            <PublicSignInMenu buttonClassName='rounded-md border border-[#cfd8e3] px-3 py-2 text-sm font-semibold text-[#374151] hover:border-[#9aa7bb]' />
             <Link
               href='/sign-up'
               className='rounded-md bg-[#1e3a5f] px-3 py-2 text-sm font-medium !text-white visited:!text-white hover:!text-white hover:bg-[#18314f]'
@@ -165,9 +161,7 @@ export default function PublicSiteShell({ currentPath = '/', children }: PublicS
                 ),
               )}
               <div className='mt-2 flex gap-2'>
-                <Link href='/sign-in' className='rounded-md border border-[#cfd8e3] px-3 py-2 text-sm font-semibold text-[#374151]'>
-                  Sign in
-                </Link>
+                <PublicSignInMenu buttonClassName='rounded-md border border-[#cfd8e3] px-3 py-2 text-sm font-semibold text-[#374151]' />
                 <Link href='/sign-up' className='rounded-md bg-[#1e3a5f] px-3 py-2 text-sm font-medium !text-white visited:!text-white hover:!text-white'>
                   Sign up
                 </Link>

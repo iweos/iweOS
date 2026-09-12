@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { navItems } from "@/lib/content";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
+import PublicSignInMenu from "@/components/auth/PublicSignInMenu";
 
 export default function Header() {
   return (
@@ -55,12 +56,7 @@ export default function Header() {
 
         <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap">
           <ThemeToggle className="theme-toggle site-theme-toggle" />
-          <Link
-            href="/sign-in"
-            className="site-header-link rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
-          >
-            Sign in
-          </Link>
+          <PublicSignInMenu buttonClassName="site-header-link rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2" />
           <Link
             href="/demo"
             className="site-header-cta rounded-md bg-[#0f766e] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0d5f59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
