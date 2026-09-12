@@ -87,6 +87,11 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           </div>
         ) : null}
         {portal === "admin" && !step ? <p className="auth-switch">Setting up a new school? <Link href="/sign-up">Create a school account</Link></p> : null}
+        <nav className="auth-page-links" aria-label="Authentication navigation">
+          <Link href="/">Go to home</Link>
+          <span aria-hidden="true" />
+          <Link href="/sign-up">Sign up as School Admin</Link>
+        </nav>
     </AuthShell>
   );
 }

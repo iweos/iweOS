@@ -9,7 +9,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
   return (
     <AuthShell>
         <h1>Create a school-owner account.</h1>
-        <p className="auth-intro">Already have an account? <Link href="/sign-in">Sign in</Link></p>
+        <p className="auth-intro">School Admin registration for creating and managing a school workspace.</p>
         {error ? <div className="auth-error" role="alert">{error}</div> : null}
         {sent ? <div className="auth-success" role="status">Verification sent to {sent}. Open the email to finish setting up your account.</div> : null}
         {!sent ? <form action={signUpAction} className="auth-form">
@@ -18,6 +18,11 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
           <PasswordField label="Confirm password" name="confirmPassword" autoComplete="new-password" minLength={8} placeholder="Confirm your password" />
           <AuthSubmitButton idleLabel="Create account" pendingLabel="Creating account..." />
         </form> : null}
+        <nav className="auth-page-links" aria-label="Authentication navigation">
+          <Link href="/">Go to home</Link>
+          <span aria-hidden="true" />
+          <Link href="/sign-in">Sign in instead</Link>
+        </nav>
     </AuthShell>
   );
 }

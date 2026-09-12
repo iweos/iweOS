@@ -4193,6 +4193,10 @@ html[data-theme="dark"] .shell-tour-close {
 .auth-portal-grid small { color: #747a76; font-size: .69rem; }
 .auth-forgot { justify-self: center; margin-top: 5px; color: #111; font-size: .8rem; font-weight: 550; text-decoration: underline; text-underline-offset: 2px; }
 .auth-switch { margin: 20px 0 0; color: #666; font-size: .8rem; text-align: center; }
+.auth-page-links { display: flex; margin-top: 22px; align-items: center; justify-content: center; gap: 10px; color: #606762; font-size: .72rem; }
+.auth-page-links a { color: #3d4740; font-weight: 650; text-decoration: none; }
+.auth-page-links a:hover { color: #1e3a5f; text-decoration: underline; text-underline-offset: 3px; }
+.auth-page-links > span { width: 3px; height: 3px; border-radius: 50%; background: #aeb4b0; }
 .auth-button-spinner { display: inline-block; width: .9rem; height: .9rem; flex: 0 0 auto; border: 2px solid rgba(255,255,255,.4); border-right-color: #fff; border-radius: 50%; animation: iweos-pending-spin .65s linear infinite; }
 .auth-showcase { position: relative; display: flex; min-width: 0; min-height: 100svh; padding: 56px; align-items: center; overflow: hidden; color: #fff; background: linear-gradient(135deg, #111 0%, #171925 52%, #14253c 100%); }
 .auth-showcase-glow { position: absolute; top: -20%; right: -10%; width: 62%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(123,199,146,.14) 0%, transparent 70%); pointer-events: none; }

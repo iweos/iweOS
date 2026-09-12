@@ -912,6 +912,7 @@ export async function GET() {
         bullets: [
           "Sign-in now starts with School Admin, Teacher, and Student Portal choices, then checks the email before displaying the correct password or first-time activation step.",
           "Every public website header now opens the portal choices directly from Sign in, including touch navigation on phones, while the sign-in page remains a fallback chooser for direct visits.",
+          "Sign-in and School Admin sign-up pages now provide persistent links back to the website and to each other, with registration clearly separated from teacher and student access.",
           "Teacher access no longer creates a school or silently promotes a teacher to administrator; only a verified School Admin account can create another school workspace.",
           "First-time teacher activation links every matching school membership after email verification, allowing one account to switch safely between assigned schools and roles.",
           "Student Portal securely finds student records through the guardian email saved by the school and lists only published results, while existing public result links remain available without sign-in.",
