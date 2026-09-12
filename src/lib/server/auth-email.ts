@@ -36,6 +36,37 @@ async function resendFailure(response: Response, fallback: string) {
   return fallback;
 }
 
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  })[character] ?? character);
+}
+
+export async function sendTeacherInvitation(email: string, teacherName: string, schoolName: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.AUTH_EMAIL_FROM;
+  if (!apiKey || !from) throw new Error("Account email delivery is not configured yet.");
+
+  const signInUrl = `${await appOrigin()}/sign-in?portal=teacher`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [email],
+      subject: `${schoolName} invited you to iweOS`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px"><h1 style="color:#245332">Your teacher workspace is ready</h1><p>Hello ${escapeHtml(teacherName)},</p><p>${escapeHtml(schoolName)} has added you as a teacher on iweOS. Use the same email address this message was sent to. If this is your first login, iweOS will ask you to create and verify a password.</p><p style="margin:28px 0"><a href="${signInUrl}" style="background:#2f6b3f;color:#fff;text-decoration:none;padding:13px 20px;border-radius:9px;font-weight:700">Open teacher sign in</a></p><p>If you were not expecting this invitation, contact the school administrator.</p></div>`,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(await resendFailure(response, "We could not send the teacher invitation. Please try again."));
+  }
+}
+
 export async function sendAccountVerification(credentialId: string, email: string, portal?: "admin" | "teacher" | "student") {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.AUTH_EMAIL_FROM;

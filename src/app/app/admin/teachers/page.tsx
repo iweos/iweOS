@@ -1,7 +1,9 @@
 import {
   addTeacherAction,
+  cancelTeacherInvitationAction,
   deleteTeacherAction,
   manualLinkTeacherAccountAction,
+  sendTeacherInvitationAction,
   setProfileRoleAction,
   toggleTeacherStatusAction,
   updateTeacherAction,
@@ -48,11 +50,30 @@ export default async function AdminTeachersPage({
       include: { authCredential: { select: { id: true } } },
     }),
   ]);
+  const invitationLogs = teachers.length
+    ? await prisma.auditLog.findMany({
+        where: {
+          schoolId: profile.schoolId,
+          action: "teacher.invitation_sent",
+          entityType: "Profile",
+          entityId: { in: teachers.map((teacher) => teacher.id) },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { entityId: true, createdAt: true },
+      })
+    : [];
+  const lastInvitationByTeacher = new Map<string, Date>();
+  for (const log of invitationLogs) {
+    if (log.entityId && !lastInvitationByTeacher.has(log.entityId)) {
+      lastInvitationByTeacher.set(log.entityId, log.createdAt);
+    }
+  }
 
   const totalTeachers = teachers.length;
   const activeTeachers = teachers.filter((teacher) => teacher.isActive).length;
   const linkedAccounts = teachers.filter((teacher) => Boolean(teacher.authCredential)).length;
-  const pendingAccounts = totalTeachers - linkedAccounts;
+  const pendingAccounts = teachers.filter((teacher) => teacher.isActive && !teacher.authCredential).length;
+  const cancelledInvitations = teachers.filter((teacher) => !teacher.isActive && !teacher.authCredential).length;
   const totalAdmins = admins.length;
   const editingTeacher = params.editTeacherId ? teachers.find((teacher) => teacher.id === params.editTeacherId) ?? null : null;
 
@@ -87,6 +108,9 @@ export default async function AdminTeachersPage({
           </div>
           <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
             <StatCard label="Pending Link" value={pendingAccounts} icon="fas fa-user-clock" cardVariant="warning" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <StatCard label="Cancelled Invites" value={cancelledInvitations} icon="fas fa-ban" cardVariant="secondary" />
           </div>
           <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
             <StatCard label="Admins" value={totalAdmins} icon="fas fa-user-shield" cardVariant="primary" />
@@ -147,22 +171,46 @@ export default async function AdminTeachersPage({
             <tr>
               <Th>Name</Th>
               <Th>Email</Th>
-              <Th>Linked Account</Th>
+              <Th>Account Access</Th>
               <Th>Status</Th>
               <Th>Role</Th>
               <Th />
             </tr>
           </thead>
           <tbody>
-            {teachers.map((teacher) => (
-              <tr key={teacher.id}>
+            {teachers.map((teacher) => {
+              const lastInvitation = lastInvitationByTeacher.get(teacher.id);
+              const accessStatus = teacher.authCredential
+                ? "Linked"
+                : !teacher.isActive
+                  ? "Invitation cancelled"
+                  : lastInvitation
+                    ? `Invitation sent ${lastInvitation.toLocaleDateString("en-NG", { day: "numeric", month: "short" })}`
+                    : "Not invited";
+              return <tr key={teacher.id}>
                 <Td>{teacher.fullName}</Td>
                 <Td>{teacher.email}</Td>
-                <Td>{teacher.authCredential ? "Linked" : "Pending signup"}</Td>
+                <Td>{accessStatus}</Td>
                 <Td>{teacher.isActive ? "Active" : "Inactive"}</Td>
                 <Td>Teacher</Td>
                 <Td>
                   <div className="d-flex flex-wrap gap-1">
+                    {!teacher.authCredential && teacher.isActive ? (
+                      <>
+                        <form action={sendTeacherInvitationAction}>
+                          <input type="hidden" name="teacherId" value={teacher.id} />
+                          <button className="btn btn-primary btn-icon-square" type="submit" aria-label={lastInvitation ? "Resend teacher invitation" : "Send teacher invitation"} title={lastInvitation ? "Resend teacher invitation" : "Send teacher invitation"}>
+                            <i className="fas fa-paper-plane" aria-hidden="true" />
+                          </button>
+                        </form>
+                        <form action={cancelTeacherInvitationAction}>
+                          <input type="hidden" name="teacherId" value={teacher.id} />
+                          <button className="btn btn-secondary btn-icon-square" type="submit" aria-label="Cancel teacher invitation" title="Cancel teacher invitation">
+                            <i className="fas fa-ban" aria-hidden="true" />
+                          </button>
+                        </form>
+                      </>
+                    ) : null}
                     <form action={manualLinkTeacherAccountAction}>
                       <input type="hidden" name="teacherId" value={teacher.id} />
                       <button
@@ -218,8 +266,8 @@ export default async function AdminTeachersPage({
                     </form>
                   </div>
                 </Td>
-              </tr>
-            ))}
+              </tr>;
+            })}
             {teachers.length === 0 && (
               <tr>
                 <Td colSpan={6}>No teachers yet.</Td>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenCheck, Building2, ClipboardList, LayoutDashboard, LoaderCircle, PanelLeftClose, PanelLeftOpen, LogOut, Menu, ShieldCheck, UsersRound, WalletCards, X } from "lucide-react";
+import { BookOpenCheck, Building2, ClipboardList, LayoutDashboard, LoaderCircle, PanelLeftClose, PanelLeftOpen, LogOut, Menu, ScanSearch, ShieldCheck, UsersRound, WalletCards, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -21,6 +21,7 @@ const navItems = [
   { href: "/dataroom/users", label: "Users", icon: UsersRound },
   { href: "/dataroom/payments", label: "Payments", icon: WalletCards },
   { href: "/dataroom/results", label: "Results", icon: BookOpenCheck },
+  { href: "/dataroom/integrity", label: "Account integrity", icon: ScanSearch },
   { href: "/dataroom/audit", label: "Audit logs", icon: ClipboardList },
 ];
 
@@ -29,6 +30,7 @@ function sectionTitle(pathname: string) {
   if (pathname.startsWith("/dataroom/users")) return "Account intelligence";
   if (pathname.startsWith("/dataroom/payments")) return "Payment operations";
   if (pathname.startsWith("/dataroom/results")) return "Result operations";
+  if (pathname.startsWith("/dataroom/integrity")) return "Account integrity";
   if (pathname.startsWith("/dataroom/audit")) return "Governance and audit";
   return "Dataroom overview";
 }

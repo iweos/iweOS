@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/server/auth";
+import { sendTeacherInvitation } from "@/lib/server/auth-email";
 import { isPrismaSchemaMismatchError, schemaSyncMessage } from "@/lib/server/prisma-errors";
 import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
@@ -899,6 +900,72 @@ export async function manualLinkTeacherAccountAction(formData: FormData) {
       error instanceof Error ? error.message : "Unable to link this teacher account right now.",
       { editTeacherId: teacherId },
     );
+  }
+}
+
+export async function sendTeacherInvitationAction(formData: FormData) {
+  const actor = await requireRole("admin");
+  const teacherId = formValue(formData, "teacherId");
+
+  try {
+    const teacher = await prisma.profile.findFirst({
+      where: { id: teacherId, schoolId: actor.schoolId, role: ProfileRole.TEACHER },
+      include: { authCredential: { select: { id: true } } },
+    });
+    if (!teacher) throw new Error("Teacher not found.");
+    if (!teacher.isActive) throw new Error("Reactivate this teacher before sending an invitation.");
+    if (teacher.authCredential) throw new Error("This teacher account is already linked and does not need an invitation.");
+
+    await sendTeacherInvitation(teacher.email, teacher.fullName, actor.school.name);
+    await prisma.auditLog.create({
+      data: {
+        schoolId: actor.schoolId,
+        userId: actor.id,
+        action: "teacher.invitation_sent",
+        entityType: "Profile",
+        entityId: teacher.id,
+        metaJson: { teacherEmail: teacher.email },
+      },
+    });
+    revalidateAdminPages();
+    redirectTeachersStatus("success", `Invitation sent to ${teacher.email}.`);
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    redirectTeachersStatus("error", error instanceof Error ? error.message : "Unable to send the invitation.");
+  }
+}
+
+export async function cancelTeacherInvitationAction(formData: FormData) {
+  const actor = await requireRole("admin");
+  const teacherId = formValue(formData, "teacherId");
+
+  try {
+    const teacher = await prisma.profile.findFirst({
+      where: { id: teacherId, schoolId: actor.schoolId, role: ProfileRole.TEACHER },
+      select: { id: true, fullName: true, email: true, credentialId: true, isActive: true },
+    });
+    if (!teacher) throw new Error("Teacher not found.");
+    if (teacher.credentialId) throw new Error("This account is already linked. Deactivate the teacher instead.");
+    if (!teacher.isActive) throw new Error("This invitation is already cancelled.");
+
+    await prisma.$transaction([
+      prisma.profile.update({ where: { id: teacher.id }, data: { isActive: false } }),
+      prisma.auditLog.create({
+        data: {
+          schoolId: actor.schoolId,
+          userId: actor.id,
+          action: "teacher.invitation_cancelled",
+          entityType: "Profile",
+          entityId: teacher.id,
+          metaJson: { teacherEmail: teacher.email },
+        },
+      }),
+    ]);
+    revalidateAdminPages();
+    redirectTeachersStatus("success", `${teacher.fullName}'s invitation was cancelled.`);
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    redirectTeachersStatus("error", error instanceof Error ? error.message : "Unable to cancel the invitation.");
   }
 }
 

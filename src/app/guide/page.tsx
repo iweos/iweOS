@@ -424,6 +424,19 @@ const pages: DocPage[] = [
     ],
     sections: [
       {
+        id: "account-integrity-and-teacher-invitations",
+        eyebrow: "Account governance",
+        timestamp: "Sep 12, 2026 · 2:18 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Guarded account cleanup and teacher invitations",
+        bullets: [
+          "Dataroom now includes an Account Integrity workspace that separates safely removable empty generated schools from protected cross-role accounts and duplicate teacher records requiring manual review.",
+          "Cleanup rechecks every safety rule inside the database transaction and refuses to remove any workspace containing users, academic records, notifications, payments, audit history, or other operational data.",
+          "School administrators can now send or resend teacher invitations, see awaiting-activation and cancelled states, and cancel an unclaimed invitation through reversible deactivation rather than deleting the teacher record.",
+          "Invitation delivery and guarded workspace cleanup now create audit events, while linked teacher accounts remain protected from invitation cancellation.",
+        ],
+      },
+      {
         id: "what-you-can-do",
         eyebrow: "Overview",
         title: "What iweOS is designed to handle",
