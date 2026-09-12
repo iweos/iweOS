@@ -1,6 +1,6 @@
 "use client";
 
-import Card from "@/components/admin/Card";
+import { WorkspacePanel } from "@/components/workspace/WorkspaceUI";
 import {
   Bar,
   BarChart,
@@ -51,12 +51,10 @@ export default function TeacherDashboardAnalytics({
   gradeDistributionData,
 }: TeacherDashboardAnalyticsProps) {
   return (
-    <div className="row g-3">
-      <div className="col-12 col-xl-8">
-        <Card
-          className="teacher-dashboard-card h-100"
+    <div className="workspace-dashboard-grid">
+        <WorkspacePanel
           title="Score Completion by Class"
-          subtitle="How far each class is in the active term, plus the current average total."
+          description="How far each class is in the active term, plus the current average total."
         >
           {classCompletionData.length === 0 ? (
             <p className="section-subtle mb-0">No class analytics yet for the active term.</p>
@@ -101,14 +99,11 @@ export default function TeacherDashboardAnalytics({
               </ResponsiveContainer>
             </div>
           )}
-        </Card>
-      </div>
+        </WorkspacePanel>
 
-      <div className="col-12 col-xl-4">
-        <Card
-          className="teacher-dashboard-card h-100"
+        <WorkspacePanel
           title="Grade Distribution"
-          subtitle="Spread of submitted grades in the current teacher view."
+          description="Spread of submitted grades in the current teacher view."
         >
           {gradeDistributionData.length === 0 ? (
             <p className="section-subtle mb-0">No grade distribution yet. Start entering scores to see the spread.</p>
@@ -162,8 +157,7 @@ export default function TeacherDashboardAnalytics({
               </div>
             </>
           )}
-        </Card>
-      </div>
+        </WorkspacePanel>
     </div>
   );
 }

@@ -904,6 +904,32 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "teacher-first-account-activation",
+        eyebrow: "Authentication and data integrity",
+        timestamp: "Sep 12, 2026 · 1:04 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Role-aware login without accidental schools",
+        bullets: [
+          "Sign-in now starts with School Admin, Teacher, and Student Portal choices, then checks the email before displaying the correct password or first-time activation step.",
+          "Teacher access no longer creates a school or silently promotes a teacher to administrator; only a verified School Admin account can create another school workspace.",
+          "First-time teacher activation links every matching school membership after email verification, allowing one account to switch safely between assigned schools and roles.",
+          "Student Portal securely finds student records through the guardian email saved by the school and lists only published results, while existing public result links remain available without sign-in.",
+          "A dry-run cleanup audit now identifies empty auto-generated school workspaces separately from duplicate or operational records that require manual review before any data is removed.",
+        ],
+      },
+      {
+        id: "shared-portal-shell-migration",
+        eyebrow: "Portal experience",
+        timestamp: "Sep 12, 2026 · 12:46 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "One clearer workspace across every portal",
+        bullets: [
+          "Dataroom, School Administration, and Teacher Portal now share the same content width, neutral sidebar surfaces, navigation states, spacing, borders, and responsive design tokens.",
+          "Active navigation labels remain dark and readable in light mode, including screens still backed by legacy KaiAdmin workflows, while collapsed and mobile navigation preserve full icon access.",
+          "The Teacher dashboard now uses the same statistics, panels, chart containers, and table hierarchy as Dataroom and School Administration, with balanced layouts from desktop through phone widths.",
+        ],
+      },
+      {
         id: "focused-first-party-authentication",
         eyebrow: "Authentication UX",
         timestamp: "Sep 7, 2026 · 12:03 AM GMT+1",

@@ -2,14 +2,12 @@ import { requireTeacherPortalContext } from "@/lib/server/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 import { ProfileRole } from "@prisma/client";
+import { Award, BookOpen, ChartNoAxesCombined, ClipboardCheck, GraduationCap, LayoutGrid } from "lucide-react";
 import { prisma } from "@/lib/server/prisma";
-import Card from "@/components/admin/Card";
-import PageHeader from "@/components/admin/PageHeader";
-import StatCard from "@/components/admin/ui/StatCard";
 import { Table, TableWrap, Td, Th } from "@/components/admin/Table";
 import AdminTeacherWorkspaceActions from "@/components/teacher/AdminTeacherWorkspaceActions";
 import TeacherDashboardAnalytics from "@/components/teacher/TeacherDashboardAnalytics";
-import { WorkspacePanel, WorkspaceStatGrid } from "@/components/workspace/WorkspaceUI";
+import { WorkspacePageHeader, WorkspacePanel, WorkspaceStat, WorkspaceStatGrid } from "@/components/workspace/WorkspaceUI";
 
 type TeacherDashboardSearchParams = {
   teacherProfileId?: string;
@@ -288,10 +286,11 @@ export default async function TeacherDashboardPage({
 
     return (
       <div className="d-grid gap-3">
-      <PageHeader
-        title="Teacher Dashboard"
-        subtitle={`Active Term: ${activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "Not configured"}`}
-        rightActions={
+      <WorkspacePageHeader
+        eyebrow="Teaching workspace"
+        title="Teacher dashboard"
+        description={`${label} · ${activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "No active term configured"}`}
+        actions={
           <div className="d-flex flex-wrap align-items-end gap-2">
             <AdminTeacherWorkspaceActions mode={context.mode} />
             {context.actorProfile.role === ProfileRole.ADMIN ? (
@@ -316,44 +315,25 @@ export default async function TeacherDashboardPage({
         }
       />
 
-      <WorkspacePanel
-        eyebrow="Current workspace"
-        title={label}
-        description={context.mode === "admin_override" ? "Administrator view across every assigned class." : "Your active classes, students and score progress."}
-      >
-        <WorkspaceStatGrid className="teacher-summary-grid">
-          <StatCard label="Classes In View" value={assignments.length} icon="fas fa-th-large" cardVariant="secondary" />
-          <StatCard label="Subjects In View" value={uniqueSubjectMap.size} icon="fas fa-book-open" cardVariant="success" />
-          <StatCard label="Students In Active Term" value={uniqueStudentMap.size} icon="fas fa-user-graduate" cardVariant="primary" />
-          <StatCard label="Submitted Score Rows" value={totalScores} icon="fas fa-clipboard-check" cardVariant="info" />
-          <StatCard
-            label="Score Completion"
-            value={`${completionRate.toFixed(0)}%`}
-            icon="fas fa-chart-line"
-            cardVariant="warning"
-            delta={`${pendingScoreRows} pending of ${expectedScoreRows || 0}`}
-          />
-          <StatCard
-            label="Current Term Average"
-            value={formatMetric(averageTotal)}
-            icon="fas fa-award"
-            cardVariant="black"
-            delta={activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "No active term"}
-          />
-        </WorkspaceStatGrid>
-      </WorkspacePanel>
+      <WorkspaceStatGrid className="teacher-summary-grid">
+        <WorkspaceStat label="Classes in view" value={assignments.length} detail="Assigned class groups" icon={<LayoutGrid />} />
+        <WorkspaceStat label="Subjects in view" value={uniqueSubjectMap.size} detail="Subjects across your classes" icon={<BookOpen />} tone="gold" />
+        <WorkspaceStat label="Active-term students" value={uniqueStudentMap.size} detail="Eligible enrolled students" icon={<GraduationCap />} tone="blue" />
+        <WorkspaceStat label="Submitted score rows" value={totalScores} detail="Saved assessment records" icon={<ClipboardCheck />} />
+        <WorkspaceStat label="Score completion" value={`${completionRate.toFixed(0)}%`} detail={`${pendingScoreRows} pending of ${expectedScoreRows || 0}`} icon={<ChartNoAxesCombined />} tone="gold" />
+        <WorkspaceStat label="Current term average" value={formatMetric(averageTotal)} detail={activeTerm ? `${activeTerm.sessionLabel} ${activeTerm.termLabel}` : "No active term"} icon={<Award />} tone="ink" />
+      </WorkspaceStatGrid>
 
       <TeacherDashboardAnalytics
         classCompletionData={classCompletionData}
         gradeDistributionData={gradeDistributionData}
       />
 
-      <div className="row g-3 align-items-stretch">
-        <div className="col-12 col-xl-7">
-          <Card
-            className="teacher-dashboard-card h-100"
+      <div className="workspace-dashboard-grid">
+          <WorkspacePanel
             title="Class Coverage"
-            subtitle="Expected score rows are based on active-term enrollments multiplied by subjects assigned to each class."
+            description="Expected score rows are based on active-term enrollments multiplied by subjects assigned to each class."
+            bodyClassName="workspace-panel-body-flush"
           >
             <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
@@ -392,11 +372,9 @@ export default async function TeacherDashboardPage({
                 </tbody>
               </Table>
             </TableWrap>
-          </Card>
-        </div>
+          </WorkspacePanel>
 
-        <div className="col-12 col-xl-5">
-          <Card className="teacher-dashboard-card h-100" title="Students Needing Attention" subtitle="Lowest active-term averages in the current teacher view.">
+          <WorkspacePanel title="Students needing attention" description="Lowest active-term averages in the current teacher view." bodyClassName="workspace-panel-body-flush">
             <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
@@ -428,13 +406,11 @@ export default async function TeacherDashboardPage({
                 </tbody>
               </Table>
             </TableWrap>
-          </Card>
-        </div>
+          </WorkspacePanel>
       </div>
 
-      <div className="row g-3 align-items-stretch">
-        <div className="col-12 col-xl-6">
-          <Card className="teacher-dashboard-card h-100" title="Subject Performance" subtitle="Average total, floor, and ceiling by subject in the active term.">
+      <div className="workspace-dashboard-grid is-balanced">
+          <WorkspacePanel title="Subject performance" description="Average total, floor, and ceiling by subject in the active term." bodyClassName="workspace-panel-body-flush">
             <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
@@ -466,11 +442,9 @@ export default async function TeacherDashboardPage({
                 </tbody>
               </Table>
             </TableWrap>
-          </Card>
-        </div>
+          </WorkspacePanel>
 
-        <div className="col-12 col-xl-6">
-          <Card className="teacher-dashboard-card h-100" title="Recent Score Activity" subtitle="Latest score rows updated in the current teacher view.">
+          <WorkspacePanel title="Recent score activity" description="Latest score rows updated in the current teacher view." bodyClassName="workspace-panel-body-flush">
             <TableWrap className="teacher-dashboard-table-frame">
               <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
                 <thead>
@@ -504,11 +478,10 @@ export default async function TeacherDashboardPage({
                 </tbody>
               </Table>
             </TableWrap>
-          </Card>
-        </div>
+          </WorkspacePanel>
       </div>
 
-      <Card className="teacher-dashboard-card" title="Classes in View">
+      <WorkspacePanel title="Classes in view" description="Every class available in the current teaching workspace." bodyClassName="workspace-panel-body-flush">
         <TableWrap className="teacher-dashboard-table-frame">
           <Table className="teacher-dashboard-table" data-iwe-table-enhancer="off">
             <thead>
@@ -530,7 +503,7 @@ export default async function TeacherDashboardPage({
             </tbody>
           </Table>
         </TableWrap>
-      </Card>
+      </WorkspacePanel>
       </div>
     );
   } catch (error) {

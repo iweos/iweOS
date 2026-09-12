@@ -1,11 +1,11 @@
 .school-shell {
   --school-header-height: 72px;
-  --school-sidebar-width: 264px;
+  --school-sidebar-width: var(--portal-sidebar-width);
   min-height: 100svh;
   color: var(--workspace-ink);
   background:
     radial-gradient(circle at 92% 2%, rgba(30, 58, 95, .09), transparent 24rem),
-    #f8f6f2;
+    var(--portal-shell-bg);
   font-family: var(--font-ui), "Geist", Arial, sans-serif;
 }
 .school-shell button,
@@ -70,6 +70,10 @@
 .school-account-trigger > span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: #17231b; background: #e4ebf3; font-size: .72rem; font-weight: 900; }
 .school-account-trigger svg { width: 14px; height: 14px; }
 .school-portal-switch .app-portal-trigger { min-height: 38px; border-color: #363a37; color: #eef2ef; background: #1b1e1c; }
+.school-portal-switch .app-portal-trigger > span { display: grid; min-width: 108px; line-height: 1.1; }
+.school-portal-switch .app-portal-trigger strong,
+.school-portal-switch .app-portal-trigger small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.school-portal-switch .app-portal-trigger > svg { flex: 0 0 auto; }
 .school-portal-switch .app-portal-trigger small { color: #89918b; }
 
 .school-popover {
@@ -125,7 +129,7 @@
   padding: 1.15rem .8rem .85rem;
   flex-direction: column;
   border-right: 1px solid #e0e4e0;
-  background: rgba(248, 246, 242, .98);
+  background: var(--portal-sidebar-bg);
   box-shadow: 10px 0 34px rgba(32, 43, 35, .035);
   backdrop-filter: blur(16px);
   transition: width .2s ease, transform .2s ease;
@@ -153,7 +157,7 @@
   border-radius: .68rem;
   color: #687069;
   background: transparent;
-  font-size: .83rem;
+  font-size: .9rem;
   font-weight: 700;
   text-align: left;
   text-decoration: none;
@@ -165,30 +169,30 @@
 .school-nav-group > div > a:hover { color: #263329; background: #f0f3ef; }
 .school-navigation > a.is-active,
 .school-nav-group > div > a.is-active {
-  color: #18314f;
-  border-color: #7894b4;
-  background: #edf2f7;
+  color: var(--portal-active-ink) !important;
+  border-color: var(--portal-active-border);
+  background: var(--portal-active-bg) !important;
   box-shadow: inset 3px 0 0 #1e3a5f;
 }
 .school-navigation > a.is-active span,
-.school-nav-group > div > a.is-active span { color: #18314f; }
+.school-nav-group > div > a.is-active span { color: var(--portal-active-ink) !important; }
 .school-navigation > a.is-active svg,
 .school-nav-group > div > a.is-active svg { color: #1e3a5f; }
 .school-nav-group > button > svg:last-child { width: 13px; margin-left: auto; transition: transform .18s ease; }
 .school-nav-group > button[aria-expanded="true"] { color: #263329; background: #f0f3ef; }
 .school-nav-group > button[aria-expanded="true"] > svg:last-child { transform: rotate(180deg); }
 .school-nav-group > div { display: grid; padding: .2rem 0 .3rem 1.05rem; gap: .05rem; }
-.school-nav-group > div > a { min-height: 40px; font-size: .76rem; }
+.school-nav-group > div > a { min-height: 40px; font-size: .84rem; }
 .school-nav-group > div > a svg { width: 14px; height: 14px; }
 .school-sidebar-collapse { display: flex; min-height: 42px; padding: 0 .7rem; align-items: center; justify-content: center; gap: .55rem; border: 1px solid #dfe4df; border-radius: .68rem; color: #727a74; background: #fff; font-size: .65rem; font-weight: 750; }
 .school-sidebar-collapse svg { width: 16px; }
 .school-shell-scrim { display: none; }
 
 .school-shell-stage { min-height: 100svh; padding-top: var(--school-header-height); margin-left: var(--school-sidebar-width); transition: margin-left .2s ease; }
-.school-shell-main { width: min(100%, 1120px); min-height: calc(100svh - var(--school-header-height)); margin: 0 auto; padding: clamp(1.6rem, 3.3vw, 3.2rem) clamp(1rem, 3vw, 3.15rem) 8rem; }
+.school-shell-main { width: min(100%, var(--portal-content-max)); min-height: calc(100svh - var(--school-header-height)); margin: 0 auto; padding: clamp(1.6rem, 3vw, 3rem) clamp(1rem, 2.4vw, 2.5rem) 8rem; }
 .school-shell .guide-footer-bar { left: var(--school-sidebar-width); z-index: 1050; transition: left .2s ease; }
 
-.school-shell.is-collapsed { --school-sidebar-width: 78px; }
+.school-shell.is-collapsed { --school-sidebar-width: var(--portal-sidebar-collapsed-width); }
 .school-shell.is-collapsed .school-sidebar-school { grid-template-columns: 1fr; justify-items: center; }
 .school-shell.is-collapsed .school-sidebar-school > div,
 .school-shell.is-collapsed .school-navigation span,

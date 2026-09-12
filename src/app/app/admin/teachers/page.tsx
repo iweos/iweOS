@@ -108,7 +108,7 @@ export default async function AdminTeachersPage({
           </div>
         </form>
         <p className="section-subtle">
-          Add teachers before they sign up. When they sign up with the same email, their Clerk user is linked.
+          Add teachers before their first login. They will enter this email, create a password, verify it, and open the assigned school directly.
         </p>
       </section>
 

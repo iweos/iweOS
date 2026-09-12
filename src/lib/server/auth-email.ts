@@ -36,7 +36,7 @@ async function resendFailure(response: Response, fallback: string) {
   return fallback;
 }
 
-export async function sendAccountVerification(credentialId: string, email: string) {
+export async function sendAccountVerification(credentialId: string, email: string, portal?: "admin" | "teacher" | "student") {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.AUTH_EMAIL_FROM;
   if (!apiKey || !from) throw new Error("Account email delivery is not configured yet.");
@@ -54,7 +54,8 @@ export async function sendAccountVerification(credentialId: string, email: strin
     },
   });
 
-  const verifyUrl = `${await appOrigin()}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const portalQuery = portal ? `&portal=${portal}` : "";
+  const verifyUrl = `${await appOrigin()}/verify-email?token=${encodeURIComponent(rawToken)}${portalQuery}`;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },

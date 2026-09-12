@@ -320,7 +320,7 @@ export default function SchoolWorkspaceShell({
               <section className="school-popover school-account-menu">
                 <header><span>{initials}</span><div><strong>{profileName || roleLabel}</strong><small>{profileEmail}</small></div></header>
                 {schoolOptions.length ? <label><span>School workspace</span><select value={switchingProfileId || currentProfileId || ""} onChange={(event) => void switchSchool(event.target.value)} disabled={Boolean(switchingProfileId)}>{schoolOptions.map((option) => <option value={option.profileId} key={option.profileId}>{option.schoolName} · {option.role}</option>)}</select></label> : null}
-                <button type="button" onClick={() => { setAccountOpen(false); setAddSchoolOpen(true); }}><Plus /> Add another school</button>
+                {!isTeacher || teacherPortalAdmin ? <button type="button" onClick={() => { setAccountOpen(false); setAddSchoolOpen(true); }}><Plus /> Add another school</button> : null}
                 {platformAdmin ? <Link href="/dataroom"><ShieldCheck /> iweOS administration</Link> : null}
                 {resolvedSettings ? <Link href={resolvedSettings}><Settings /> Settings</Link> : null}
                 <button type="button" className="is-danger" onClick={signOut} disabled={signingOut}><LogOut /> {signingOut ? "Signing out..." : "Sign out"}</button>
@@ -374,7 +374,7 @@ export default function SchoolWorkspaceShell({
         <GuideFooterBar showTourButton />
       </div>
 
-      {addSchoolOpen ? (
+      {addSchoolOpen && (!isTeacher || teacherPortalAdmin) ? (
         <div className="school-dialog-layer">
           <button type="button" className="school-dialog-scrim" onClick={() => !creatingSchool && setAddSchoolOpen(false)} aria-label="Close add school" />
           <section className="school-dialog" role="dialog" aria-modal="true" aria-labelledby="school-dialog-title">

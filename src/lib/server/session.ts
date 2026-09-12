@@ -7,6 +7,12 @@ import { prisma } from "@/lib/server/prisma";
 
 export { SESSION_COOKIE_NAME };
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30;
+const PORTAL_COOKIE_NAME = "iweos_portal";
+export type AuthPortal = "admin" | "teacher" | "student";
+
+export function parseAuthPortal(value: string | null | undefined): AuthPortal | null {
+  return value === "admin" || value === "teacher" || value === "student" ? value : null;
+}
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -62,6 +68,21 @@ export async function setSessionProfile(sessionId: string, profileId: string) {
   await prisma.authSession.update({ where: { id: sessionId }, data: { profileId } });
 }
 
+export async function setAuthPortalPreference(portal: AuthPortal) {
+  const cookieStore = await cookies();
+  cookieStore.set(PORTAL_COOKIE_NAME, portal, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_DURATION_MS / 1000,
+  });
+}
+
+export async function getAuthPortalPreference() {
+  return parseAuthPortal((await cookies()).get(PORTAL_COOKIE_NAME)?.value);
+}
+
 export async function destroyAuthSession() {
   const cookieStore = await cookies();
   const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
@@ -69,4 +90,5 @@ export async function destroyAuthSession() {
     await prisma.authSession.deleteMany({ where: { sessionTokenHash: hashToken(rawToken) } });
   }
   cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.delete(PORTAL_COOKIE_NAME);
 }

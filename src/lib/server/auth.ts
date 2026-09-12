@@ -1,7 +1,7 @@
 import { PlatformRole, Prisma, ProfileRole, SchoolStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
-import { getAuthSession, setSessionProfile } from "@/lib/server/session";
+import { getAuthPortalPreference, getAuthSession, setSessionProfile } from "@/lib/server/session";
 import type { AppRole, SchoolAccessOption } from "@/types";
 
 type ProfileWithSchool = Prisma.ProfileGetPayload<{ include: { school: true } }>;
@@ -47,13 +47,6 @@ async function generateUniqueSchoolCode(seed: string) {
 
 function toAppRole(role: ProfileRole): AppRole {
   return role === ProfileRole.ADMIN ? "admin" : "teacher";
-}
-
-async function recoverAdminIfMissing(profile: ProfileWithSchool): Promise<ProfileWithSchool> {
-  if (profile.role === ProfileRole.ADMIN) return profile;
-  const adminCount = await prisma.profile.count({ where: { schoolId: profile.schoolId, role: ProfileRole.ADMIN } });
-  if (adminCount > 0) return profile;
-  return prisma.profile.update({ where: { id: profile.id }, data: { role: ProfileRole.ADMIN }, include: { school: true } });
 }
 
 export async function getCurrentProfile(): Promise<ProfileWithSchool | null> {
@@ -171,6 +164,22 @@ async function createSchoolWorkspace({
 export async function createAdditionalSchoolForAuthenticatedUser(schoolName: string) {
   const session = await getAuthSession();
   if (!session) throw new Error("Authentication required.");
+  const [profiles, linkedStudent] = await Promise.all([
+    findAvailableProfiles(session.credentialId, session.credential.email),
+    prisma.student.findFirst({
+      where: {
+        guardianEmail: { equals: session.credential.email, mode: "insensitive" },
+        school: { status: SchoolStatus.ACTIVE },
+      },
+      select: { id: true },
+    }),
+  ]);
+  if (profiles.length > 0 && !profiles.some((profile) => profile.role === ProfileRole.ADMIN)) {
+    throw new Error("Only a school administrator can create another school workspace.");
+  }
+  if (profiles.length === 0 && linkedStudent) {
+    throw new Error("Student Portal accounts cannot create school workspaces.");
+  }
   const fullName = session.profile?.fullName || session.credential.email.split("@")[0] || "School Admin";
   const profile = await createSchoolWorkspace({
     credentialId: session.credentialId,
@@ -185,7 +194,7 @@ export async function createAdditionalSchoolForAuthenticatedUser(schoolName: str
 export async function ensureProfileForAuthenticatedUser(preferredProfileId?: string): Promise<ProfileWithSchool> {
   const session = await getAuthSession();
   if (!session) redirect("/sign-in");
-  if (session.profile) return recoverAdminIfMissing(session.profile);
+  if (session.profile) return session.profile;
 
   const pendingProfiles = await findAvailableProfiles(session.credentialId, session.credential.email);
   const selected = preferredProfileId
@@ -198,25 +207,17 @@ export async function ensureProfileForAuthenticatedUser(preferredProfileId?: str
 
   if (selected) {
     await setSessionProfile(session.id, selected.id);
-    return recoverAdminIfMissing(selected);
+    return selected;
   }
 
-  const fullName = session.credential.email.split("@")[0] || "School Admin";
-  const profile = await createSchoolWorkspace({
-    credentialId: session.credentialId,
-    email: session.credential.email,
-    fullName,
-    schoolName: `${fullName}'s School`,
-  });
-  await setSessionProfile(session.id, profile.id);
-  return profile;
+  redirect("/onboarding");
 }
 
 export async function requireProfile(): Promise<ProfileWithSchool> {
   const session = await getAuthSession();
   if (!session) redirect("/sign-in");
   if (!session.profile) redirect("/onboarding");
-  const profile = await recoverAdminIfMissing(session.profile);
+  const profile = session.profile;
   if (!profile.isActive) throw new Error("Your account has been deactivated.");
   if (profile.school.status !== SchoolStatus.ACTIVE) redirect("/sign-in?error=This%20school%20workspace%20is%20not%20currently%20active.");
   return profile;
@@ -279,6 +280,18 @@ export async function getAuthenticatedDestination(): Promise<string | null> {
   const session = await getAuthSession();
   if (!session) return null;
 
+  const preferredPortal = await getAuthPortalPreference();
+  if (preferredPortal === "student") {
+    const linkedStudent = await prisma.student.findFirst({
+      where: {
+        guardianEmail: { equals: session.credential.email, mode: "insensitive" },
+        school: { status: SchoolStatus.ACTIVE },
+      },
+      select: { id: true },
+    });
+    if (linkedStudent) return "/student";
+  }
+
   if (
     session.credential.platformRole === PlatformRole.PLATFORM_ADMIN ||
     platformAdminEmailAllowed(session.credential.email)
@@ -297,4 +310,26 @@ export async function getAuthenticatedDestination(): Promise<string | null> {
   }
 
   return "/onboarding";
+}
+
+export async function requireStudentPortal() {
+  const session = await getAuthSession();
+  if (!session) redirect("/sign-in?portal=student");
+  const students = await prisma.student.findMany({
+    where: {
+      guardianEmail: { equals: session.credential.email, mode: "insensitive" },
+      school: { status: SchoolStatus.ACTIVE },
+    },
+    include: {
+      school: { select: { id: true, name: true, code: true } },
+      resultPublications: {
+        where: { status: "PUBLISHED" },
+        include: { term: { select: { sessionLabel: true, termLabel: true } }, class: { select: { name: true } } },
+        orderBy: { publishedAt: "desc" },
+      },
+    },
+    orderBy: [{ school: { name: "asc" } }, { fullName: "asc" }],
+  });
+  if (students.length === 0) redirect("/sign-in?portal=student&error=No%20student%20record%20is%20linked%20to%20this%20account.");
+  return { email: session.credential.email, students };
 }

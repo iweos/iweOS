@@ -245,9 +245,9 @@ export default function Topbar({
                       </select>
                       <small>{switchingProfileId ? "Switching workspace..." : `${schoolOptions.length} ${schoolOptions.length === 1 ? "workspace" : "workspaces"}`}</small>
                     </label>
-                    <button type="button" className="topbar-add-school" onClick={openAddSchool} aria-label="Add another school" title="Add another school">
+                    {(mode === "admin" || teacherPortalAdmin) ? <button type="button" className="topbar-add-school" onClick={openAddSchool} aria-label="Add another school" title="Add another school">
                       <i className="fas fa-plus" />
-                    </button>
+                    </button> : null}
                   </div>
                   <div className="dropdown-divider" />
                 </div>
@@ -414,7 +414,7 @@ export default function Topbar({
         </div>
       </nav>
       {profileOpen ? renderProfileMenu("mobile") : null}
-      {addSchoolOpen ? (
+      {addSchoolOpen && (mode === "admin" || teacherPortalAdmin) ? (
         <div className="topbar-add-school-layer" role="presentation">
           <button type="button" className="topbar-add-school-scrim" aria-label="Close add school" onClick={() => !creatingSchool && setAddSchoolOpen(false)} />
           <section className="topbar-add-school-dialog" role="dialog" aria-modal="true" aria-labelledby="add-school-title">

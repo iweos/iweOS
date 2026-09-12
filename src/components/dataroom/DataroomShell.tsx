@@ -108,7 +108,7 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
-            return <Link href={item.href} className={active ? "is-active" : ""} key={item.href} title={item.label}><Icon /><span>{item.label}</span></Link>;
+            return <Link href={item.href} className={active ? "is-active" : ""} aria-current={active ? "page" : undefined} key={item.href} title={item.label}><Icon /><span>{item.label}</span></Link>;
           })}
         </nav>
         <div className="platform-sidebar-footer">

@@ -121,6 +121,12 @@
   font-size: .68rem;
   text-align: center;
 }
+.setupForm { display: grid; padding: 0 30px 30px; gap: 9px; }
+.setupForm label { color: var(--ink); font-size: .72rem; font-weight: 800; }
+.setupForm input { width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; outline: 0; color: var(--ink); background: #fbfcfa; font: inherit; font-size: .78rem; }
+.setupForm input:focus { border-color: #7894b4; box-shadow: 0 0 0 3px rgba(30,58,95,.1); }
+.setupForm button { display: inline-flex; min-height: 46px; margin-top: 5px; padding: 0 16px; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; color: #fff; background: #1e3a5f; font: inherit; font-size: .74rem; font-weight: 850; }
+.setupForm button svg { width: 16px; }
 .option:disabled { cursor: wait; }
 .option:disabled:not([aria-busy="true"]) { opacity: .5; }
 .spinner {
@@ -132,3 +138,4 @@
   animation: option-spin .65s linear infinite;
 }
 @keyframes option-spin { to { transform: rotate(1turn); } }
+@media (max-width: 560px) { .setupForm { padding: 0 18px 22px; } }
