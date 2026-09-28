@@ -87,7 +87,6 @@ function getGradeBandTone(grade: string) {
 type ResultSheetProps = {
   data: ResultSheetData;
   mode?: "admin" | "public";
-  variant?: "default" | "report-card";
   chartMode?: "interactive" | "print" | "bulk-print";
 };
 
@@ -609,8 +608,8 @@ function ReportCardResultSheet({
   );
 }
 
-export default function ResultSheet({ data, mode = "admin", variant, chartMode = "interactive" }: ResultSheetProps) {
-  const resolvedVariant = variant ?? (data.resultTemplate === "classic_report" ? "report-card" : "default");
+export default function ResultSheet({ data, mode = "admin", chartMode = "interactive" }: ResultSheetProps) {
+  const resolvedVariant = data.resultTemplate === "classic_report" ? "report-card" : "default";
 
   if (resolvedVariant === "report-card") {
     return <ReportCardResultSheet data={data} mode={mode} chartMode={chartMode} />;

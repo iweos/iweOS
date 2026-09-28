@@ -415,7 +415,7 @@ export default async function AdminGradingResultsPage({
             </div>
           </Card>
 
-        <ResultSheet data={resultSheet} mode="admin" variant="default" />
+        <ResultSheet data={resultSheet} mode="admin" />
         </>
       )}
     </Section>
