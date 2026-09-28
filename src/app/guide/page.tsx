@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "responsive-settings-workspace-fix",
+        eyebrow: "School settings",
+        timestamp: "Sep 28, 2026 · 3:51 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "One-tap settings navigation and template selection",
+        bullets: [
+          "Rebuilt the settings navigation for tablet and phone layouts as a compact wrapping tab bar, removing the horizontal interaction that could consume the first tap.",
+          "Result card templates now use explicit selection state with a clear selected indicator, so one tap reliably changes between the classic report card and simple summary.",
+          "Improved mobile typography, input sizing, card spacing, touch targets, save progress, and responsive form behavior throughout school settings.",
+        ],
+      },
+      {
         id: "result-template-authority-fix",
         eyebrow: "Result exports",
         timestamp: "Sep 28, 2026 · 3:31 PM GMT+1",

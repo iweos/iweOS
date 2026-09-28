@@ -2,6 +2,9 @@ import Link from "next/link";
 import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import PageHeader from "@/components/admin/PageHeader";
 import Section from "@/components/admin/ui/Section";
+import ResultTemplatePicker from "@/components/settings/ResultTemplatePicker";
+import SettingsSaveButton from "@/components/settings/SettingsSaveButton";
+import SettingsTabNavigation from "@/components/settings/SettingsTabNavigation";
 import { requireRole } from "@/lib/server/auth";
 import { updateSchoolAction } from "@/lib/server/admin-actions";
 import { prisma } from "@/lib/server/prisma";
@@ -73,10 +76,7 @@ function SettingsSaveBar({ label, note }: { label: string; note: string }) {
   return (
     <footer className="settings-save-bar">
       <span><i className="fas fa-shield-alt" aria-hidden="true" />{note}</span>
-      <button className="btn btn-primary" type="submit">
-        <i className="fas fa-check" aria-hidden="true" />
-        {label}
-      </button>
+      <SettingsSaveButton label={label} />
     </footer>
   );
 }
@@ -151,23 +151,7 @@ export default async function AdminSettingsPage({
               <small>{school.name}</small>
             </div>
           </div>
-          <nav>
-            {settingTabs.map((tab) => (
-              <Link
-                key={tab.id}
-                href={`/app/admin/settings?tab=${tab.id}`}
-                className={activeTab === tab.id ? "is-active" : ""}
-                aria-current={activeTab === tab.id ? "page" : undefined}
-              >
-                <span><i className={tab.icon} aria-hidden="true" /></span>
-                <div>
-                  <strong>{tab.label}</strong>
-                  <small>{tab.description}</small>
-                </div>
-                <i className="fas fa-chevron-right" aria-hidden="true" />
-              </Link>
-            ))}
-          </nav>
+          <SettingsTabNavigation tabs={settingTabs} activeTab={activeTab} />
           <div className="settings-navigation-note">
             <i className="fas fa-info-circle" aria-hidden="true" />
             <p>Settings are available to school administrators only.</p>
@@ -284,18 +268,7 @@ export default async function AdminSettingsPage({
                   <span><i className="fas fa-file-invoice" aria-hidden="true" /></span>
                   <div><h3>Result format</h3><p>Choose the layout used by previews, exports, shared links, and PDFs.</p></div>
                 </div>
-                <div className="settings-choice-grid">
-                  <label className={resultTemplate === "classic_report" ? "is-selected" : ""}>
-                    <input type="radio" name="resultTemplate" value="classic_report" defaultChecked={resultTemplate === "classic_report"} />
-                    <span><i className="fas fa-table" aria-hidden="true" /></span>
-                    <div><strong>Classic report card</strong><small>Full academic report, conduct, attendance, chart, and comments.</small></div>
-                  </label>
-                  <label className={resultTemplate === "summary" ? "is-selected" : ""}>
-                    <input type="radio" name="resultTemplate" value="summary" defaultChecked={resultTemplate === "summary"} />
-                    <span><i className="fas fa-list-alt" aria-hidden="true" /></span>
-                    <div><strong>Simple summary</strong><small>A lighter result sheet focused on scores and overall performance.</small></div>
-                  </label>
-                </div>
+                <ResultTemplatePicker initialValue={resultTemplate} />
               </section>
 
               <section className="settings-section">
