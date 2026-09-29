@@ -3,7 +3,7 @@ import AdminFlashNotice from "@/components/admin/AdminFlashNotice";
 import PageHeader from "@/components/admin/PageHeader";
 import Section from "@/components/admin/ui/Section";
 import ResultTemplatePicker from "@/components/settings/ResultTemplatePicker";
-import SettingsSaveButton from "@/components/settings/SettingsSaveButton";
+import { SettingsForm, SettingsSaveBar } from "@/components/settings/SettingsForm";
 import SettingsTabNavigation from "@/components/settings/SettingsTabNavigation";
 import { requireRole } from "@/lib/server/auth";
 import { updateSchoolAction } from "@/lib/server/admin-actions";
@@ -30,13 +30,13 @@ const settingTabs = [
   },
   {
     id: "branding",
-    label: "Brand Assets",
+    label: "Branding",
     description: "School logo and principal signature",
     icon: "fas fa-palette",
   },
   {
     id: "policies",
-    label: "Academic Policies",
+    label: "Academic",
     description: "Promotion and grading controls",
     icon: "fas fa-sliders-h",
   },
@@ -69,15 +69,6 @@ function PreservedSettingsFields({
       <input type="hidden" name="currentLogoUrl" value={logoUrl} />
       <input type="hidden" name="currentPrincipalSignatureUrl" value={principalSignatureUrl} />
     </>
-  );
-}
-
-function SettingsSaveBar({ label, note }: { label: string; note: string }) {
-  return (
-    <footer className="settings-save-bar">
-      <span><i className="fas fa-shield-alt" aria-hidden="true" />{note}</span>
-      <SettingsSaveButton label={label} />
-    </footer>
   );
 }
 
@@ -140,27 +131,17 @@ export default async function AdminSettingsPage({
       <PageHeader
         title="Settings"
         subtitle="Configure the school once, then keep every portal, result, and policy consistent."
+        rightActions={<span className="settings-school-context"><i className="fas fa-school" aria-hidden="true" />{school.name}</span>}
       />
 
       <div className="settings-workspace">
-        <aside className="settings-navigation" aria-label="School settings">
-          <div className="settings-navigation-heading">
-            <span><i className="fas fa-cog" aria-hidden="true" /></span>
-            <div>
-              <strong>School Settings</strong>
-              <small>{school.name}</small>
-            </div>
-          </div>
+        <div className="settings-navigation" aria-label="School settings">
           <SettingsTabNavigation tabs={settingTabs} activeTab={activeTab} />
-          <div className="settings-navigation-note">
-            <i className="fas fa-info-circle" aria-hidden="true" />
-            <p>Settings are available to school administrators only.</p>
-          </div>
-        </aside>
+        </div>
 
         <main className="settings-content">
           {activeTab === "school" ? (
-            <form action={updateSchoolAction} className="settings-form">
+            <SettingsForm formAction={updateSchoolAction}>
               <input type="hidden" name="settingsTab" value="school" />
               <PreservedSettingsFields
                 resultTemplate={resultTemplate}
@@ -242,11 +223,11 @@ export default async function AdminSettingsPage({
               </section>
 
               <SettingsSaveBar label="Save general settings" note="Changes update the school workspace immediately." />
-            </form>
+            </SettingsForm>
           ) : null}
 
           {activeTab === "results" ? (
-            <form action={updateSchoolAction} className="settings-form">
+            <SettingsForm formAction={updateSchoolAction}>
               <input type="hidden" name="settingsTab" value="results" />
               <input type="hidden" name="currentLogoUrl" value={logoUrl} />
               <input type="hidden" name="currentPrincipalSignatureUrl" value={principalSignatureUrl} />
@@ -307,11 +288,11 @@ export default async function AdminSettingsPage({
               </section>
 
               <SettingsSaveBar label="Save result settings" note="Saved settings apply to newly generated and shared results." />
-            </form>
+            </SettingsForm>
           ) : null}
 
           {activeTab === "branding" ? (
-            <form action={updateSchoolAction} encType="multipart/form-data" className="settings-form">
+            <SettingsForm formAction={updateSchoolAction} encType="multipart/form-data">
               <input type="hidden" name="settingsTab" value="branding" />
               <PreservedSettingsFields
                 resultTemplate={resultTemplate}
@@ -399,7 +380,7 @@ export default async function AdminSettingsPage({
               </div>
 
               <SettingsSaveBar label="Save brand assets" note="Uploads are converted and optimized automatically." />
-            </form>
+            </SettingsForm>
           ) : null}
 
           {activeTab === "policies" ? (

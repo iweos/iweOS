@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "settings-experience-redesign",
+        eyebrow: "School administration",
+        timestamp: "Sep 29, 2026 · 8:45 AM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Settings rebuilt as a focused administration workspace",
+        bullets: [
+          "Removed repeated headings and nested dashboard cards in favour of one clear page header, one four-tab navigation row, and divider-based settings sections.",
+          "All four settings tabs now remain visible on phones, with larger readable labels, reliable touch targets, and no horizontal tab scrolling.",
+          "Added visual result-template previews, immediate template save feedback, clearer branding controls, and a save bar that only appears when a form contains unsaved changes.",
+          "Improved desktop and mobile hierarchy, field spacing, typography, asset previews, academic navigation rows, dark-theme support, and responsive behavior.",
+        ],
+      },
+      {
         id: "settings-tab-rail-and-template-autosave",
         eyebrow: "Settings and results",
         timestamp: "Sep 29, 2026 · 8:26 AM GMT+1",

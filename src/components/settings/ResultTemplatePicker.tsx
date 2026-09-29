@@ -55,7 +55,7 @@ export default function ResultTemplatePicker({ initialValue }: { initialValue: s
         {options.map((option) => {
           const isSelected = selected === option.value;
           return (
-            <label className={isSelected ? "is-selected" : ""} key={option.value}>
+            <label className={isSelected ? "is-selected" : ""} key={option.value} data-settings-autosave>
               <input
                 type="radio"
                 name="resultTemplate"
@@ -64,8 +64,17 @@ export default function ResultTemplatePicker({ initialValue }: { initialValue: s
                 disabled={isPending}
                 onChange={() => selectTemplate(option.value)}
               />
-              <span className="settings-choice-icon"><i className={option.icon} aria-hidden="true" /></span>
-              <div><strong>{option.title}</strong><small>{option.description}</small></div>
+              <span className={`settings-template-preview is-${option.value}`} aria-hidden="true">
+                <i className="template-preview-logo" />
+                <i className="template-preview-heading" />
+                <i className="template-preview-line" />
+                <i className="template-preview-line short" />
+                <i className="template-preview-grid" />
+              </span>
+              <div className="settings-choice-copy">
+                <span className="settings-choice-icon"><i className={option.icon} aria-hidden="true" /></span>
+                <span><strong>{option.title}</strong><small>{option.description}</small></span>
+              </div>
               <span className="settings-choice-state" aria-hidden="true">
                 <i className={isSelected ? "fas fa-check-circle" : "far fa-circle"} />
                 {isSelected ? "Selected" : "Select"}
