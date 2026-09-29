@@ -4283,3 +4283,12 @@ body.ui {
   --font-ui: var(--font-geist-sans);
   font-family: var(--font-ui), "Geist", Arial, sans-serif;
 }
+
+.result-export-toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.result-export-icon { display: inline-flex; width: 44px; height: 44px; flex: 0 0 auto; align-items: center; justify-content: center; border: 1px solid #dfe5df; border-radius: .75rem; background: #fff; color: #263a31; text-decoration: none; cursor: pointer; }
+.result-export-icon:hover { background: #eef2ef; color: #17231b; }
+.result-export-icon.is-primary { background: var(--workspace-brand, #1e3a5f); border-color: transparent; color: #fff; }
+.result-export-icon:focus-visible { outline: 3px solid #7894b4; outline-offset: 3px; }
+.result-export-icon:disabled { opacity: .65; cursor: wait; }
+.result-export-action-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.result-export-progress { max-width: 230px; overflow-wrap: anywhere; font-size: .8rem; }

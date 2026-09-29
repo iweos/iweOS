@@ -5,13 +5,14 @@ import { buildResultPdfBlob, triggerPdfDownload } from "@/lib/client/result-pdf"
 
 type SharePdfButtonProps = {
   fileName: string;
+  iconOnly?: boolean;
 };
 
 function canUseNativeShare() {
   return typeof navigator !== "undefined" && typeof navigator.share === "function";
 }
 
-export default function SharePdfButton({ fileName }: SharePdfButtonProps) {
+export default function SharePdfButton({ fileName, iconOnly = false }: SharePdfButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
 
@@ -54,8 +55,8 @@ export default function SharePdfButton({ fileName }: SharePdfButtonProps) {
   }
 
   return (
-    <button type="button" className="btn btn-primary" onClick={handleShare} disabled={isSharing}>
-      {isSharing ? "Preparing share..." : "Share PDF"}
+    <button type="button" className={iconOnly ? "result-export-icon" : "btn btn-primary"} aria-label={isSharing ? "Preparing share" : "Share PDF"} title="Share PDF" aria-busy={isSharing} onClick={handleShare} disabled={isSharing}>
+      {iconOnly ? <i className={isSharing ? "fas fa-circle-notch fa-spin" : "fas fa-share-alt"} aria-hidden="true" /> : isSharing ? "Preparing share..." : "Share PDF"}
     </button>
   );
 }

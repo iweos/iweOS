@@ -4,12 +4,13 @@ import { useState } from "react";
 import { buildResultPdfBlob, buildResultPdfZip, triggerPdfDownload, type ResultPdfProgress } from "@/lib/client/result-pdf";
 
 type DownloadPdfButtonProps = {
+  iconOnly?: boolean;
   fileName?: string;
   fileNames?: string[];
   bundleName?: string;
 };
 
-export default function DownloadPdfButton({ fileName, fileNames, bundleName }: DownloadPdfButtonProps) {
+export default function DownloadPdfButton({ fileName, fileNames, bundleName, iconOnly = false }: DownloadPdfButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState<ResultPdfProgress | null>(null);
   const isBulkDownload = Array.isArray(fileNames) && fileNames.length > 1 && bundleName;
@@ -65,6 +66,15 @@ export default function DownloadPdfButton({ fileName, fileNames, bundleName }: D
 
     return "Generating your PDF document";
   })();
+
+  if (iconOnly) return (
+    <div className="result-export-action-wrap">
+      <button type="button" className="result-export-icon is-primary" onClick={handleDownload} disabled={isExporting} aria-busy={isExporting} aria-label={progressTitle} title={progressTitle}>
+        <i className={isExporting ? "fas fa-circle-notch fa-spin" : "fas fa-download"} aria-hidden="true" />
+      </button>
+      {isExporting ? <span className="result-export-progress" role="status">{progressTitle} {progressMeta}</span> : null}
+    </div>
+  );
 
   return (
     <button

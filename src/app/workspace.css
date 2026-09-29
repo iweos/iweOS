@@ -399,3 +399,14 @@ html[data-theme="dark"] .result-readiness.is-incomplete { color: #ead4a3; backgr
   .result-bulk-toolbar label { min-width: 0; flex: 1 1 160px; }
   .result-bulk-toolbar .btn { flex: 1 1 auto; }
 }
+
+.result-directory-disclosure { border: 1px solid var(--workspace-line); border-radius: 1rem; background: var(--workspace-card); overflow: hidden; }
+.result-directory-disclosure > summary { display: flex; padding: 1rem 1.25rem; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; list-style: none; }
+.result-directory-disclosure > summary::-webkit-details-marker { display: none; }
+.result-directory-disclosure > summary strong { display: block; color: var(--workspace-ink); font-size: 1rem; }
+.result-directory-disclosure > summary small { display: block; margin-top: .25rem; color: var(--workspace-muted); font-size: .8rem; }
+.result-directory-toggle { display: flex; gap: .6rem; align-items: center; font-size: .8rem; }
+.result-directory-disclosure[open] .result-directory-toggle i { transform: rotate(180deg); }
+.result-directory-content { padding: 1rem; border-top: 1px solid var(--workspace-line); }
+.result-directory-content td a { display: grid; gap: .25rem; color: var(--workspace-ink); text-decoration: none; }
+.result-directory-content td a small { color: var(--workspace-muted); font-weight: 500; }

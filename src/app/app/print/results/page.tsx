@@ -103,30 +103,31 @@ export default async function AdminResultExportPage({
     <main className="container py-4 py-md-5 d-grid gap-4">
       <section className="shared-result-shell admin-page-wrap">
         <div className="card border-0 shadow-sm shared-result-hero print-hidden">
-          <div className="card-body p-4 p-md-5">
+          <div className="card-body p-3 p-md-4">
             <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
               <div>
                 <p className="section-kicker">Result export</p>
                 <h1 className="section-title mb-2">{resultSheets[0]?.school.name}</h1>
                 <p className="section-subtle mb-0">
-                  {exportTitle}. Download a real PDF file or print this clean document view.
+                  {isBulkExport ? `${resultSheets.length} student results` : resultSheets[0].student.fullName} · {resultSheets[0].class.name} · {resultSheets[0].term.sessionLabel} {resultSheets[0].term.termLabel}
                 </p>
                 {skippedCount > 0 ? <p className="result-export-warning mb-0">{skippedCount} incomplete result{skippedCount === 1 ? " was" : "s were"} excluded.</p> : null}
               </div>
-              <div className="d-flex flex-wrap gap-2">
+              <div className="result-export-toolbar" role="group" aria-label="Result document actions">
                 <Link
                   href={`/app/admin/grading/results?termId=${params.termId}&classId=${params.classId}${params.studentId ? `&studentId=${params.studentId}` : ""}`}
-                  className="btn btn-secondary"
+                  className="result-export-icon" aria-label="Back to results" title="Back to results"
                 >
-                  Back to results
+                  <i className="fas fa-arrow-left" aria-hidden="true" />
                 </Link>
-                {!isBulkExport ? <SharePdfButton fileName={exportTitle} /> : null}
+                {!isBulkExport ? <SharePdfButton fileName={exportTitle} iconOnly /> : null}
                 <DownloadPdfButton
+                  iconOnly
                   fileName={isBulkExport ? undefined : exportTitle}
                   fileNames={isBulkExport ? studentFileNames : undefined}
                   bundleName={isBulkExport ? exportTitle : undefined}
                 />
-                <PrintButton />
+                <PrintButton iconOnly />
               </div>
             </div>
           </div>

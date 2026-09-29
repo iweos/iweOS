@@ -14,11 +14,9 @@ import ResultStatusSelect from "@/components/results/ResultStatusSelect";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
 import { setResultPublicationStatusAction } from "@/lib/server/admin-actions";
-import { getGradeForTotal } from "@/lib/server/grading";
 import { buildResultSharePath, getStudentResultSheet } from "@/lib/server/results";
 import { getResultReadinessMap } from "@/lib/server/result-readiness";
 import { prisma } from "@/lib/server/prisma";
-import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
 type AdminResultsSearchParams = {
   termId?: string;
@@ -27,10 +25,6 @@ type AdminResultsSearchParams = {
   status?: string;
   message?: string;
 };
-
-function formatNumber(value: number) {
-  return Number.isFinite(value) ? value.toFixed(1) : "-";
-}
 
 function formatStatusLabel(status?: string | null) {
   if (!status) {
@@ -56,7 +50,7 @@ export default async function AdminGradingResultsPage({
   const status = params.status === "success" || params.status === "error" ? params.status : null;
   const message = (params.message ?? "").trim();
 
-  const [terms, classes, gradeScale] = await Promise.all([
+  const [terms, classes] = await Promise.all([
     prisma.term.findMany({
       where: { schoolId: profile.schoolId },
       orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
@@ -66,10 +60,6 @@ export default async function AdminGradingResultsPage({
       where: { schoolId: profile.schoolId },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
-    }),
-    prisma.gradeScale.findMany({
-      where: { schoolId: profile.schoolId },
-      orderBy: { minScore: "desc" },
     }),
   ]);
 
@@ -105,23 +95,9 @@ export default async function AdminGradingResultsPage({
   const selectedStudentId =
     params.studentId && students.some((student) => student.id === params.studentId) ? params.studentId : students[0]?.id ?? "";
 
-  const [scores, publicationRows, resultSheet, exemptionKeys] =
+  const [publicationRows, resultSheet] =
     selectedTermId && selectedClassId
       ? await Promise.all([
-          prisma.score.findMany({
-            where: {
-              schoolId: profile.schoolId,
-              termId: selectedTermId,
-              classId: selectedClassId,
-              studentId: { in: students.map((student) => student.id) },
-            },
-            select: {
-              studentId: true,
-              subjectId: true,
-              total: true,
-              grade: true,
-            },
-          }),
           prisma.resultPublication.findMany({
             where: {
               schoolId: profile.schoolId,
@@ -143,13 +119,8 @@ export default async function AdminGradingResultsPage({
                 studentId: selectedStudentId,
               })
             : Promise.resolve(null),
-          getStudentSubjectExemptionKeySet({
-            schoolId: profile.schoolId,
-            classId: selectedClassId,
-            studentIds: students.map((student) => student.id),
-          }),
         ])
-      : [[], [], null, new Set<string>()];
+      : [[], null];
 
   const readinessMap =
     selectedTermId && selectedClassId
@@ -160,20 +131,6 @@ export default async function AdminGradingResultsPage({
           studentIds: students.map((student) => student.id),
         })
       : new Map();
-
-  const filteredScores = scores.filter(
-    (score) => !isStudentSubjectExempt(exemptionKeys, selectedClassId, score.studentId, score.subjectId),
-  );
-
-  const scoreMap = new Map<string, { average: number; grade: string }>();
-  for (const student of students) {
-    const rows = filteredScores.filter((row) => row.studentId === student.id);
-    const average = rows.length > 0 ? rows.reduce((sum, row) => sum + Number(row.total), 0) / rows.length : 0;
-    scoreMap.set(student.id, {
-      average,
-      grade: rows.length > 0 && gradeScale.length > 0 ? getGradeForTotal(average, gradeScale) : "-",
-    });
-  }
 
   const publicationMap = new Map(publicationRows.map((row) => [row.studentId, row]));
   const publishedCount = students.filter((student) => publicationMap.get(student.id)?.status === "PUBLISHED").length;
@@ -287,11 +244,9 @@ export default async function AdminGradingResultsPage({
         ) : null}
       </Card>
 
-      <Card
-        className="result-directory-panel"
-        title="Class Result Directory"
-        subtitle="Review readiness, select individual students or the whole class, then update publication status."
-      >
+<details className="result-directory-panel result-directory-disclosure">
+        <summary><span><strong>Class Result Directory</strong><small>{students.length} students · select a name to view their result</small></span><span className="result-directory-toggle">View <i className="fas fa-chevron-down" aria-hidden="true" /></span></summary>
+        <div className="result-directory-content">
         <form
           id="results-bulk-status-form"
           action={setResultPublicationStatusAction}
@@ -327,18 +282,10 @@ export default async function AdminGradingResultsPage({
               <tr>
                 <Th><ResultSelectionControl formId="results-bulk-status-form" /></Th>
                 <Th>Student</Th>
-                <Th>Average</Th>
-                <Th>Grade</Th>
-                <Th>Readiness</Th>
-                <Th>Status</Th>
-                <Th>Share</Th>
               </tr>
             </thead>
             <tbody>
               {students.map((student) => {
-                const publication = publicationMap.get(student.id);
-                const score = scoreMap.get(student.id);
-                const readiness = readinessMap.get(student.id);
                 return (
                   <tr key={student.id}>
                     <Td>
@@ -347,6 +294,7 @@ export default async function AdminGradingResultsPage({
                         type="checkbox"
                         name="studentIds"
                         value={student.id}
+                        aria-label={`Select ${student.fullName}`}
                         data-result-select
                         defaultChecked={student.id === selectedStudentId}
                       />
@@ -356,61 +304,22 @@ export default async function AdminGradingResultsPage({
                         href={`/app/admin/grading/results?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${student.id}`}
                         className="fw-semibold"
                       >
-                        {student.studentCode} - {student.fullName}
+                        <span>{student.fullName}</span><small>{student.studentCode}</small>
                       </Link>
-                    </Td>
-                    <Td>{formatNumber(score?.average ?? 0)}</Td>
-                    <Td>{score?.grade ?? "-"}</Td>
-                    <Td>
-                      <span className={`result-readiness ${readiness?.ready ? "is-ready" : "is-incomplete"}`}>
-                        <i className={readiness?.ready ? "fas fa-check-circle" : "fas fa-exclamation-circle"} aria-hidden="true" />
-                        {readiness?.ready ? "Ready" : `${readiness?.scoredSubjects ?? 0}/${readiness?.expectedSubjects ?? 0} subjects`}
-                      </span>
-                    </Td>
-                    <Td>
-                      <ResultStatusSelect
-                        action={setResultPublicationStatusAction}
-                        termId={selectedTermId}
-                        classId={selectedClassId}
-                        studentId={student.id}
-                        value={publication?.status ?? "DRAFT"}
-                        options={
-                          readiness?.ready || publication?.status === "PUBLISHED"
-                            ? RESULT_STATUS_OPTIONS
-                            : RESULT_STATUS_OPTIONS.filter((option) => option.value !== "PUBLISHED")
-                        }
-                        compact
-                      />
-                    </Td>
-                    <Td>
-                      {publication?.status === "PUBLISHED" ? (
-                        <div className="d-flex flex-wrap gap-2">
-                          <Link href={buildResultSharePath(publication.shareToken)} target="_blank" className="btn btn-sm btn-secondary">
-                            Open link
-                          </Link>
-                          <ShareResultLinkButton
-                            href={`${baseUrl}${buildResultSharePath(publication.shareToken)}`}
-                            title={`${student.fullName} result`}
-                            text={`${student.fullName}'s published result`}
-                            className="btn btn-sm btn-primary"
-                          />
-                        </div>
-                      ) : (
-                        <span className="small text-muted">{formatStatusLabel(publication?.status)} only</span>
-                      )}
                     </Td>
                   </tr>
                 );
               })}
               {students.length === 0 ? (
                 <tr>
-                  <Td colSpan={7}>No enrolled students found for the selected term and class.</Td>
+                  <Td colSpan={2}>No enrolled students found for the selected term and class.</Td>
                 </tr>
               ) : null}
             </tbody>
           </Table>
         </TableWrap>
-      </Card>
+        </div>
+      </details>
 
       {!selectedTerm || !selectedClass || !resultSheet ? (
         <Card className="result-preview-empty" title="Result Preview">

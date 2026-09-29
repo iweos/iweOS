@@ -904,6 +904,17 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "compact-result-directory-export-controls",
+        eyebrow: "Results",
+        timestamp: "Sep 29, 2026, 11:41 AM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Expandable student directory and compact export actions",
+        bullets: [
+          "Class Result Directory now stays collapsed until View is selected; its rows show the student name and code with selection controls for bulk publication.",
+          "Student export now uses labelled icons for returning to results, sharing, downloading and printing, with visible preparation progress and a readable student heading.",
+        ],
+      },
+      {
         id: "result-workspace-readiness-and-pdf-export",
         eyebrow: "Results and mobile UX",
         timestamp: "Sep 29, 2026 · 11:30 AM GMT+1",
