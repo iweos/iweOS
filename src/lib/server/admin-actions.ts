@@ -11,6 +11,7 @@ import { prisma } from "@/lib/server/prisma";
 import { evaluatePromotionCandidates, mapStoredPromotionPolicy, resolvePromotionPolicy } from "@/lib/server/promotion";
 import { createNotifications, notifyProfile, notifyTeachersForClass, notifyTeachersForClassId } from "@/lib/server/notifications";
 import { buildResultPublicationPayload } from "@/lib/server/results";
+import { getResultReadinessMap } from "@/lib/server/result-readiness";
 import { normalizeAttendanceInput } from "@/lib/server/attendance";
 import { storeUploadedImage } from "@/lib/server/uploads";
 import {
@@ -2315,34 +2316,31 @@ export async function setResultPublicationStatusAction(formData: FormData) {
       throw new Error("One or more selected students, the class, or the term could not be found for this result.");
     }
 
-    const scoredStudents = await prisma.score.groupBy({
-      where: {
-        schoolId: profile.schoolId,
-        studentId: { in: parsed.data.studentIds },
-        termId: parsed.data.termId,
-        classId: parsed.data.classId,
-      },
-      by: ["studentId"],
-    });
-
-    if (scoredStudents.length === 0) {
-      throw new Error("The selected students have no score rows yet for the selected term and class.");
-    }
-
-    const scoredStudentIds = new Set(scoredStudents.map((item) => item.studentId));
-    const targetStudents = students.filter((student) => scoredStudentIds.has(student.id));
-
-    if (targetStudents.length === 0) {
-      throw new Error("None of the selected students have score rows yet for the selected term and class.");
-    }
-
-    const existingPublicationMap = new Map(existingPublications.map((item) => [item.studentId, item]));
     const nextStatus =
       parsed.data.status === "PUBLISHED"
         ? ResultPublicationStatus.PUBLISHED
         : parsed.data.status === "UNPUBLISHED"
           ? ResultPublicationStatus.UNPUBLISHED
           : ResultPublicationStatus.DRAFT;
+    const readinessMap =
+      nextStatus === ResultPublicationStatus.PUBLISHED
+        ? await getResultReadinessMap({
+            schoolId: profile.schoolId,
+            classId: parsed.data.classId,
+            termId: parsed.data.termId,
+            studentIds: parsed.data.studentIds,
+          })
+        : null;
+    const targetStudents =
+      nextStatus === ResultPublicationStatus.PUBLISHED
+        ? students.filter((student) => readinessMap?.get(student.id)?.ready)
+        : students;
+
+    if (targetStudents.length === 0) {
+      throw new Error("None of the selected students has a complete score row for every assigned subject.");
+    }
+
+    const existingPublicationMap = new Map(existingPublications.map((item) => [item.studentId, item]));
     const statusLabel =
       nextStatus === ResultPublicationStatus.PUBLISHED
         ? "published"
@@ -2401,7 +2399,9 @@ export async function setResultPublicationStatusAction(formData: FormData) {
         : `${targetStudents.length} student results ${statusLabel} for ${term.sessionLabel} ${term.termLabel}.`;
     redirectResultsStatus(
       "success",
-      skippedCount > 0 ? `${baseMessage} ${skippedCount} selected student(s) were skipped because they do not have saved scores yet.` : baseMessage,
+      skippedCount > 0
+        ? `${baseMessage} ${skippedCount} selected student(s) were skipped because one or more assigned subject scores are incomplete.`
+        : baseMessage,
       {
         termId: parsed.data.termId,
         classId: parsed.data.classId,

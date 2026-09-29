@@ -6,6 +6,7 @@ import SharePdfButton from "@/components/results/SharePdfButton";
 import { requireRole } from "@/lib/server/auth";
 import { buildClassResultFileName, buildStudentResultFileName } from "@/lib/result-export-name";
 import { getStudentResultSheet } from "@/lib/server/results";
+import { getResultReadinessMap } from "@/lib/server/result-readiness";
 import { prisma } from "@/lib/server/prisma";
 
 type PrintResultsSearchParams = {
@@ -44,7 +45,7 @@ export default async function AdminResultExportPage({
         })
       ).map((item) => item.studentId);
 
-  const resultSheets = (
+  const generatedSheets = (
     await Promise.all(
       studentIds.map((studentId) =>
         getStudentResultSheet({
@@ -56,11 +57,21 @@ export default async function AdminResultExportPage({
       ),
     )
   ).filter((sheet): sheet is NonNullable<typeof sheet> => Boolean(sheet));
+  const readinessMap = params.studentId
+    ? null
+    : await getResultReadinessMap({
+        schoolId: profile.schoolId,
+        classId: params.classId,
+        termId: params.termId,
+        studentIds,
+      });
+  const resultSheets = generatedSheets.filter((sheet) => params.studentId || readinessMap?.get(sheet.student.id)?.ready);
+  const skippedCount = generatedSheets.length - resultSheets.length;
 
   if (resultSheets.length === 0) {
     return (
       <main className="container py-4">
-        <p className="section-subtle mb-0">The selected result could not be generated.</p>
+        <p className="section-subtle mb-0">No complete results are available for the selected class and term.</p>
       </main>
     );
   }
@@ -100,6 +111,7 @@ export default async function AdminResultExportPage({
                 <p className="section-subtle mb-0">
                   {exportTitle}. Download a real PDF file or print this clean document view.
                 </p>
+                {skippedCount > 0 ? <p className="result-export-warning mb-0">{skippedCount} incomplete result{skippedCount === 1 ? " was" : "s were"} excluded.</p> : null}
               </div>
               <div className="d-flex flex-wrap gap-2">
                 <Link

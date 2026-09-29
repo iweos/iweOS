@@ -26,13 +26,49 @@ export function sanitizePdfFileName(value: string) {
   return value.replace(/[^a-z0-9-_]+/gi, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "result";
 }
 
-function chunkCanvas(sourceCanvas: HTMLCanvasElement, sliceHeight: number) {
+const PDF_BREAK_BOUNDARY_SELECTOR = [
+  ".result-report-header",
+  ".result-report-student-meta",
+  ".result-report-box",
+  ".result-report-overall-remark",
+  ".result-report-performance",
+  ".result-report-grade-key",
+  ".result-report-comment-box",
+  ".result-performance-card",
+  ".result-sheet-admin > section",
+  ".result-sheet-public > section",
+  ".result-report-table tr",
+].join(",");
+
+function getCanvasBreakBoundaries(node: HTMLElement, canvas: HTMLCanvasElement) {
+  const rootRect = node.getBoundingClientRect();
+  const scaleY = canvas.height / Math.max(node.scrollHeight, 1);
+  const boundaries = new Set<number>([0, canvas.height]);
+
+  node.querySelectorAll<HTMLElement>(PDF_BREAK_BOUNDARY_SELECTOR).forEach((element) => {
+    const rect = element.getBoundingClientRect();
+    const top = Math.round((rect.top - rootRect.top + node.scrollTop) * scaleY);
+    const bottom = Math.round((rect.bottom - rootRect.top + node.scrollTop) * scaleY);
+    if (top > 0 && top < canvas.height) boundaries.add(top);
+    if (bottom > 0 && bottom < canvas.height) boundaries.add(bottom);
+  });
+
+  return Array.from(boundaries).sort((a, b) => a - b);
+}
+
+function chunkCanvas(sourceCanvas: HTMLCanvasElement, sliceHeight: number, breakBoundaries: number[]) {
   const chunks: HTMLCanvasElement[] = [];
   let offset = 0;
 
   while (offset < sourceCanvas.height) {
     const chunk = document.createElement("canvas");
-    const height = Math.min(sliceHeight, sourceCanvas.height - offset);
+    const idealEnd = Math.min(offset + sliceHeight, sourceCanvas.height);
+    const minimumUsefulEnd = offset + Math.floor(sliceHeight * 0.58);
+    const safeEnd = breakBoundaries
+      .filter((boundary) => boundary > minimumUsefulEnd && boundary <= idealEnd)
+      .at(-1);
+    const end = idealEnd === sourceCanvas.height ? sourceCanvas.height : safeEnd ?? idealEnd;
+    const height = Math.max(1, end - offset);
     chunk.width = sourceCanvas.width;
     chunk.height = height;
     const context = chunk.getContext("2d");
@@ -41,7 +77,7 @@ function chunkCanvas(sourceCanvas: HTMLCanvasElement, sliceHeight: number) {
     }
     context.drawImage(sourceCanvas, 0, offset, sourceCanvas.width, height, 0, 0, sourceCanvas.width, height);
     chunks.push(chunk);
-    offset += sliceHeight;
+    offset = end;
   }
 
   return chunks;
@@ -74,7 +110,7 @@ async function buildPdfDocumentFromNodeWithScale(node: HTMLElement, scale: numbe
   });
 
   const sliceHeightPx = Math.floor((canvas.width * pdfHeight) / pdfWidth);
-  const chunks = chunkCanvas(canvas, sliceHeightPx);
+  const chunks = chunkCanvas(canvas, sliceHeightPx, getCanvasBreakBoundaries(node, canvas));
 
   let isFirstPage = true;
   for (const chunk of chunks) {

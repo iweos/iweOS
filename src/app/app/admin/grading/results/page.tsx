@@ -8,12 +8,15 @@ import Section from "@/components/admin/ui/Section";
 import Select from "@/components/admin/ui/Select";
 import StatCard from "@/components/admin/ui/StatCard";
 import ResultSheet from "@/components/results/ResultSheet";
+import ResultSelectionControl from "@/components/results/ResultSelectionControl";
 import ShareResultLinkButton from "@/components/results/ShareResultLinkButton";
 import ResultStatusSelect from "@/components/results/ResultStatusSelect";
 import AutoSubmitFilters from "@/components/teacher/AutoSubmitFilters";
 import { requireRole } from "@/lib/server/auth";
 import { setResultPublicationStatusAction } from "@/lib/server/admin-actions";
+import { getGradeForTotal } from "@/lib/server/grading";
 import { buildResultSharePath, getStudentResultSheet } from "@/lib/server/results";
+import { getResultReadinessMap } from "@/lib/server/result-readiness";
 import { prisma } from "@/lib/server/prisma";
 import { getStudentSubjectExemptionKeySet, isStudentSubjectExempt } from "@/lib/server/student-subject-exemptions";
 
@@ -53,7 +56,7 @@ export default async function AdminGradingResultsPage({
   const status = params.status === "success" || params.status === "error" ? params.status : null;
   const message = (params.message ?? "").trim();
 
-  const [terms, classes] = await Promise.all([
+  const [terms, classes, gradeScale] = await Promise.all([
     prisma.term.findMany({
       where: { schoolId: profile.schoolId },
       orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
@@ -63,6 +66,10 @@ export default async function AdminGradingResultsPage({
       where: { schoolId: profile.schoolId },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
+    }),
+    prisma.gradeScale.findMany({
+      where: { schoolId: profile.schoolId },
+      orderBy: { minScore: "desc" },
     }),
   ]);
 
@@ -144,6 +151,16 @@ export default async function AdminGradingResultsPage({
         ])
       : [[], [], null, new Set<string>()];
 
+  const readinessMap =
+    selectedTermId && selectedClassId
+      ? await getResultReadinessMap({
+          schoolId: profile.schoolId,
+          termId: selectedTermId,
+          classId: selectedClassId,
+          studentIds: students.map((student) => student.id),
+        })
+      : new Map();
+
   const filteredScores = scores.filter(
     (score) => !isStudentSubjectExempt(exemptionKeys, selectedClassId, score.studentId, score.subjectId),
   );
@@ -154,11 +171,14 @@ export default async function AdminGradingResultsPage({
     const average = rows.length > 0 ? rows.reduce((sum, row) => sum + Number(row.total), 0) / rows.length : 0;
     scoreMap.set(student.id, {
       average,
-      grade: rows[0]?.grade ?? "-",
+      grade: rows.length > 0 && gradeScale.length > 0 ? getGradeForTotal(average, gradeScale) : "-",
     });
   }
 
   const publicationMap = new Map(publicationRows.map((row) => [row.studentId, row]));
+  const publishedCount = students.filter((student) => publicationMap.get(student.id)?.status === "PUBLISHED").length;
+  const readyCount = students.filter((student) => readinessMap.get(student.id)?.ready).length;
+  const draftCount = Math.max(0, students.length - publishedCount);
   const selectedTerm = terms.find((term) => term.id === selectedTermId) ?? null;
   const selectedClass = classes.find((klass) => klass.id === selectedClassId) ?? null;
   const requestHeaders = await headers();
@@ -169,38 +189,37 @@ export default async function AdminGradingResultsPage({
     resultSheet?.publication?.shareToken && resultSheet.publication.status === "PUBLISHED"
       ? `${baseUrl}${buildResultSharePath(resultSheet.publication.shareToken)}`
       : null;
+  const selectedReadiness = selectedStudentId ? readinessMap.get(selectedStudentId) : null;
+  const selectedStatusOptions = selectedReadiness?.ready || resultSheet?.publication?.status === "PUBLISHED"
+    ? RESULT_STATUS_OPTIONS
+    : RESULT_STATUS_OPTIONS.filter((option) => option.value !== "PUBLISHED");
 
   return (
-    <Section>
+    <Section className="result-workspace">
       {status && message ? <AdminFlashNotice status={status} message={message} /> : null}
       <PageHeader
         title="Results"
         subtitle="Generate result sheets, publish them, and share secure links when they are ready."
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="result-metrics-row" aria-label="Result summary">
         <StatCard label="Students In View" value={students.length} icon="fas fa-user-graduate" cardVariant="primary" />
+        <StatCard label="Ready Results" value={readyCount} icon="fas fa-check-circle" cardVariant="success" />
         <StatCard
           label="Published Results"
-          value={publicationRows.filter((item) => item.status === "PUBLISHED").length}
+          value={publishedCount}
           icon="fas fa-share-square"
           cardVariant="success"
         />
         <StatCard
           label="Draft / Hidden"
-          value={publicationRows.filter((item) => item.status !== "PUBLISHED").length}
+          value={draftCount}
           icon="fas fa-lock"
           cardVariant="warning"
         />
-        <StatCard
-          label="Selected Result"
-          value={resultSheet ? resultSheet.student.fullName : "None"}
-          icon="fas fa-file-alt"
-          cardVariant="info"
-        />
       </div>
 
-      <Card title="Result Filters" subtitle="Choose a term, class, and student to generate the result sheet.">
+      <Card className="result-filter-panel" title="Result Filters" subtitle="Choose a term, class, and student to generate the result sheet.">
         <form method="get" className="grid gap-3 md:grid-cols-4">
           <label className="d-grid gap-1">
             <span className="field-label">Term</span>
@@ -239,15 +258,21 @@ export default async function AdminGradingResultsPage({
         </form>
 
         {selectedTermId && selectedClassId ? (
-          <div className="mt-4 d-flex flex-wrap gap-2 border-top pt-3">
-            <Link
-              href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}`}
-              className="btn btn-secondary"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Export class result
-            </Link>
+          <div className="result-export-actions">
+            {readyCount > 0 ? (
+              <Link
+                href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}`}
+                className="btn btn-secondary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Export ready class results ({readyCount})
+              </Link>
+            ) : (
+              <span className="btn btn-secondary disabled" aria-disabled="true">
+                No complete class results
+              </span>
+            )}
             {selectedStudentId ? (
               <Link
                 href={`/app/print/results?termId=${selectedTermId}&classId=${selectedClassId}&studentId=${selectedStudentId}`}
@@ -263,13 +288,14 @@ export default async function AdminGradingResultsPage({
       </Card>
 
       <Card
+        className="result-directory-panel"
         title="Class Result Directory"
-        subtitle="Tick a few students or the whole set, then move results between draft, published, and unpublished."
+        subtitle="Review readiness, select individual students or the whole class, then update publication status."
       >
         <form
           id="results-bulk-status-form"
           action={setResultPublicationStatusAction}
-          className="d-flex flex-wrap align-items-end justify-content-between gap-3"
+          className="result-bulk-toolbar"
         >
           <input type="hidden" name="termId" value={selectedTermId} />
           <input type="hidden" name="classId" value={selectedClassId} />
@@ -292,17 +318,18 @@ export default async function AdminGradingResultsPage({
         </form>
 
         <p className="small text-muted mt-3 mb-3">
-          Checked students with saved scores will be updated together. Students without score rows are skipped and called out in the popup.
+          Select any students below. Publishing only includes students with saved scores for every assigned, non-exempt subject.
         </p>
 
         <TableWrap>
           <Table>
             <thead>
               <tr>
-                <Th>Select</Th>
+                <Th><ResultSelectionControl formId="results-bulk-status-form" /></Th>
                 <Th>Student</Th>
                 <Th>Average</Th>
                 <Th>Grade</Th>
+                <Th>Readiness</Th>
                 <Th>Status</Th>
                 <Th>Share</Th>
               </tr>
@@ -311,6 +338,7 @@ export default async function AdminGradingResultsPage({
               {students.map((student) => {
                 const publication = publicationMap.get(student.id);
                 const score = scoreMap.get(student.id);
+                const readiness = readinessMap.get(student.id);
                 return (
                   <tr key={student.id}>
                     <Td>
@@ -319,6 +347,7 @@ export default async function AdminGradingResultsPage({
                         type="checkbox"
                         name="studentIds"
                         value={student.id}
+                        data-result-select
                         defaultChecked={student.id === selectedStudentId}
                       />
                     </Td>
@@ -333,13 +362,23 @@ export default async function AdminGradingResultsPage({
                     <Td>{formatNumber(score?.average ?? 0)}</Td>
                     <Td>{score?.grade ?? "-"}</Td>
                     <Td>
+                      <span className={`result-readiness ${readiness?.ready ? "is-ready" : "is-incomplete"}`}>
+                        <i className={readiness?.ready ? "fas fa-check-circle" : "fas fa-exclamation-circle"} aria-hidden="true" />
+                        {readiness?.ready ? "Ready" : `${readiness?.scoredSubjects ?? 0}/${readiness?.expectedSubjects ?? 0} subjects`}
+                      </span>
+                    </Td>
+                    <Td>
                       <ResultStatusSelect
                         action={setResultPublicationStatusAction}
                         termId={selectedTermId}
                         classId={selectedClassId}
                         studentId={student.id}
                         value={publication?.status ?? "DRAFT"}
-                        options={RESULT_STATUS_OPTIONS}
+                        options={
+                          readiness?.ready || publication?.status === "PUBLISHED"
+                            ? RESULT_STATUS_OPTIONS
+                            : RESULT_STATUS_OPTIONS.filter((option) => option.value !== "PUBLISHED")
+                        }
                         compact
                       />
                     </Td>
@@ -365,7 +404,7 @@ export default async function AdminGradingResultsPage({
               })}
               {students.length === 0 ? (
                 <tr>
-                  <Td colSpan={6}>No enrolled students found for the selected term and class.</Td>
+                  <Td colSpan={7}>No enrolled students found for the selected term and class.</Td>
                 </tr>
               ) : null}
             </tbody>
@@ -374,12 +413,13 @@ export default async function AdminGradingResultsPage({
       </Card>
 
       {!selectedTerm || !selectedClass || !resultSheet ? (
-        <Card title="Result Preview">
+        <Card className="result-preview-empty" title="Result Preview">
           <p className="section-subtle mb-0">Choose a valid term, class, and student with saved scores to preview a result sheet.</p>
         </Card>
       ) : (
         <>
           <Card
+            className="result-share-panel"
             title="Share Controls"
             subtitle="Use the status dropdown to move this result between draft, published, and unpublished."
           >
@@ -387,6 +427,11 @@ export default async function AdminGradingResultsPage({
               <div>
                 <p className="small text-muted mb-1">Current state</p>
                 <p className="mb-0 fw-semibold">{formatStatusLabel(resultSheet.publication?.status)}</p>
+                {!selectedReadiness?.ready ? (
+                  <p className="result-readiness-note mb-0 mt-2">
+                    Complete all assigned subject scores before publishing this result.
+                  </p>
+                ) : null}
                 {shareLink ? <p className="small text-muted mb-0 mt-2">{shareLink}</p> : null}
               </div>
               <div className="d-flex flex-wrap gap-2">
@@ -396,7 +441,7 @@ export default async function AdminGradingResultsPage({
                   classId={resultSheet.class.id}
                   studentId={resultSheet.student.id}
                   value={resultSheet.publication?.status ?? "DRAFT"}
-                  options={RESULT_STATUS_OPTIONS}
+                  options={selectedStatusOptions}
                 />
                 {shareLink ? (
                   <>

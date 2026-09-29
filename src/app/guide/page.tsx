@@ -904,6 +904,19 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "result-workspace-readiness-and-pdf-export",
+        eyebrow: "Results and mobile UX",
+        timestamp: "Sep 29, 2026 · 11:30 AM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Clear result readiness and safer document exports",
+        bullets: [
+          "Result analytics now stay in one compact, swipeable row on phones, keeping Students In View, Ready Results, Published Results, and Draft / Hidden visible as a coherent summary.",
+          "The class directory now shows each student's subject-completion readiness, supports select all, calculates the displayed grade from the student's overall average, and reports unpublished students accurately.",
+          "Publishing and class export now use the same completeness rule: every assigned, non-exempt subject must have a saved score before that student's result can be included.",
+          "PDF generation now prefers section and table-row boundaries when creating pages, reducing split comments, clipped scores, and unreadable content across page breaks.",
+        ],
+      },
+      {
         id: "settings-experience-redesign",
         eyebrow: "School administration",
         timestamp: "Sep 29, 2026 · 8:45 AM GMT+1",
