@@ -911,6 +911,7 @@ export async function GET() {
         title: "Expandable student directory and compact export actions",
         bullets: [
           "Class Result Directory now stays collapsed until View is selected; its rows show the student name and code with selection controls for bulk publication.",
+          "Removed inherited footer spacing between export controls and the report preview in school and shared-result print pages.",
           "Student export now uses labelled icons for returning to results, sharing, downloading and printing, with visible preparation progress and a readable student heading.",
         ],
       },

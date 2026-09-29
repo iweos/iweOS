@@ -4292,3 +4292,11 @@ body.ui {
 .result-export-icon:disabled { opacity: .65; cursor: wait; }
 .result-export-action-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
 .result-export-progress { max-width: 230px; overflow-wrap: anywhere; font-size: .8rem; }
+
+/* Export controls do not need the portal footer clearance. */
+.result-export-page { display: grid; align-content: start; gap: 12px; padding-block: 1rem; }
+.result-export-header { width: 100%; padding: 0; }
+.result-export-header > .card { margin-bottom: 0; }
+@media print {
+  .result-export-page { display: block; padding-block: 0; }
+}

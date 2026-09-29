@@ -100,8 +100,8 @@ export default async function AdminResultExportPage({
   const isBulkExport = resultSheets.length > 1;
 
   return (
-    <main className="container py-4 py-md-5 d-grid gap-4">
-      <section className="shared-result-shell admin-page-wrap">
+    <main className="container result-export-page">
+      <section className="shared-result-shell result-export-header print-hidden">
         <div className="card border-0 shadow-sm shared-result-hero print-hidden">
           <div className="card-body p-3 p-md-4">
             <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
