@@ -700,6 +700,45 @@ export async function updateSchoolAction(formData: FormData) {
   }
 }
 
+export async function updateResultTemplateAction(resultTemplate: string) {
+  const profile = await requireRole("admin");
+
+  if (resultTemplate !== "classic_report" && resultTemplate !== "summary") {
+    return { success: false as const, message: "Select a valid result template." };
+  }
+
+  try {
+    await prisma.gradingSetting.upsert({
+      where: { schoolId: profile.schoolId },
+      create: {
+        schoolId: profile.schoolId,
+        resultTemplate,
+      },
+      update: {
+        resultTemplate,
+      },
+    });
+
+    revalidatePath("/app/admin/settings");
+    revalidatePath("/app/admin/grading/results");
+    revalidatePath("/app/admin/grading/results/print");
+    revalidatePath("/app/print/results");
+    revalidatePath("/app/teacher/results");
+    revalidatePath("/results/[token]", "page");
+    revalidatePath("/results/[token]/print", "page");
+
+    return {
+      success: true as const,
+      message: resultTemplate === "classic_report" ? "Classic report card saved." : "Simple summary saved.",
+    };
+  } catch (error) {
+    return {
+      success: false as const,
+      message: error instanceof Error ? error.message : "Could not save the result template.",
+    };
+  }
+}
+
 export async function addTeacherAction(formData: FormData) {
   const profile = await requireRole("admin");
 

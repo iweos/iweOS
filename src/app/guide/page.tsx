@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "settings-tab-rail-and-template-autosave",
+        eyebrow: "Settings and results",
+        timestamp: "Sep 29, 2026 · 8:26 AM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Inline settings navigation and authoritative template autosave",
+        bullets: [
+          "Replaced the stacked settings tabs with one full-width inline navigation rail; phones retain a single swipeable row with automatic active-tab visibility.",
+          "Selecting a result-card template now saves it immediately to the school grading settings and displays clear saving, saved, or error feedback.",
+          "Result preview, print, student PDF, class export, teacher result, and published-link paths are revalidated as soon as the template changes.",
+        ],
+      },
+      {
         id: "responsive-settings-workspace-fix",
         eyebrow: "School settings",
         timestamp: "Sep 28, 2026 · 3:51 PM GMT+1",
