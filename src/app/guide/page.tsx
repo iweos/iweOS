@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "dataroom-team-and-permissions",
+        eyebrow: "Platform administration",
+        timestamp: "Sep 30, 2026, 1:51 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "Dataroom team members, custom roles and module permissions",
+        bullets: [
+          "Platform administrators can add Dataroom users, assign roles, send password setup emails, and revoke or restore access without changing school memberships.",
+          "Administrator, Operations, Finance and Viewer roles are included; additional roles can be created with individual module and management permissions.",
+          "Page access and management actions enforce permissions on the server. Navigation and sign-in destinations follow the assigned role, and access changes are recorded in a dedicated history.",
+        ],
+      },
+      {
         id: "compact-result-directory-export-controls",
         eyebrow: "Results",
         timestamp: "Sep 29, 2026, 11:41 AM GMT+1",

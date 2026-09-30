@@ -1,5 +1,6 @@
 "use client";
 
+import { permits, dataroomDestination, type DataroomPermission } from "@/lib/dataroom-permissions";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpenCheck, Building2, ClipboardList, LayoutDashboard, LoaderCircle, PanelLeftClose, PanelLeftOpen, LogOut, Menu, ScanSearch, ShieldCheck, UsersRound, WalletCards, X } from "lucide-react";
@@ -10,6 +11,8 @@ import type { SchoolAccessOption } from "@/types";
 
 type DataroomShellProps = {
   children: React.ReactNode;
+  permissions: string[];
+  roleName: string;
   email: string;
   currentProfileId?: string;
   schoolOptions: SchoolAccessOption[];
@@ -22,10 +25,12 @@ const navItems = [
   { href: "/dataroom/payments", label: "Payments", icon: WalletCards },
   { href: "/dataroom/results", label: "Results", icon: BookOpenCheck },
   { href: "/dataroom/integrity", label: "Account integrity", icon: ScanSearch },
+  { href: "/dataroom/access", label: "Dataroom access", icon: ShieldCheck },
   { href: "/dataroom/audit", label: "Audit logs", icon: ClipboardList },
 ];
 
 function sectionTitle(pathname: string) {
+  if (pathname.startsWith("/dataroom/access")) return "Users and permissions";
   if (pathname.startsWith("/dataroom/schools")) return "School intelligence";
   if (pathname.startsWith("/dataroom/users")) return "Account intelligence";
   if (pathname.startsWith("/dataroom/payments")) return "Payment operations";
@@ -35,7 +40,7 @@ function sectionTitle(pathname: string) {
   return "Dataroom overview";
 }
 
-export default function DataroomShell({ children, email, currentProfileId, schoolOptions }: DataroomShellProps) {
+export default function DataroomShell({ children, email, currentProfileId, schoolOptions, permissions, roleName }: DataroomShellProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -98,7 +103,7 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
       <button className={`platform-scrim ${menuOpen ? "is-visible" : ""}`} aria-label="Close navigation" onClick={() => setMenuOpen(false)} />
       <aside className={`platform-sidebar ${menuOpen ? "is-open" : ""}`}>
         <div className="platform-brand-row">
-          <BrandLogo href="/dataroom" variant="dark" className="platform-brand" textClassName="platform-brand-name" />
+          <BrandLogo href={dataroomDestination(permissions)} variant="dark" className="platform-brand" textClassName="platform-brand-name" />
           <button className="platform-collapse-button" type="button" onClick={toggleSidebar} aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}>
             {sidebarCollapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
           </button>
@@ -107,7 +112,7 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
         <div className="platform-control-label"><ShieldCheck /><span>Dataroom control</span></div>
         <nav className="platform-nav" aria-label="Dataroom administration">
           <p>Workspace</p>
-          {navItems.map((item) => {
+          {navItems.filter((item) => permits(permissions, (item.href === "/dataroom/access" ? "manageAccess" : item.href.split("/")[2] ?? "overview") as DataroomPermission)).map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return <Link href={item.href} className={active ? "is-active" : ""} aria-current={active ? "page" : undefined} key={item.href} title={item.label}><Icon /><span>{item.label}</span></Link>;
@@ -116,7 +121,7 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
         <div className="platform-sidebar-footer">
           <div className="platform-account-badge">
             <span>{email.slice(0, 1).toUpperCase()}</span>
-            <div><strong>Dataroom admin</strong><small>{email}</small></div>
+            <div><strong>{roleName}</strong><small>{email}</small></div>
           </div>
           <button type="button" onClick={signOut} disabled={signingOut} title="Sign out"><LogOut /><span>{signingOut ? "Signing out..." : "Sign out"}</span></button>
         </div>

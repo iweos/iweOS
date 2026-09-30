@@ -167,6 +167,7 @@ model AuthCredential {
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
+  dataroomMembership DataroomMembership?
   profiles Profile[]
   sessions AuthSession[]
   tokens   AuthVerificationToken[]
@@ -893,4 +894,33 @@ model Notification {
   @@index([recipientProfileId, isRead, createdAt])
   @@index([actorProfileId])
   @@map("notifications")
+}
+
+model DataroomRole {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String @unique
+  permissions String[]
+  memberships DataroomMembership[]
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  @@map("dataroom_roles")
+}
+model DataroomMembership {
+  credentialId String @id @map("credential_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+  fullName String @map("full_name")
+  isActive Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  credential AuthCredential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  role DataroomRole @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  @@index([roleId])
+  @@map("dataroom_memberships")
+}
+model DataroomAccessLog {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorEmail String @map("actor_email")
+  target String
+  action String
+  details Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  @@map("dataroom_access_logs")
 }

@@ -2,14 +2,14 @@ import { AlertTriangle, Building2, CircleCheckBig, CopyCheck, ShieldAlert, Users
 import IntegrityCleanupButton from "@/components/dataroom/IntegrityCleanupButton";
 import { removeEmptyGeneratedSchoolAction } from "@/lib/server/dataroom-actions";
 import { scanAccountIntegrity } from "@/lib/server/account-integrity";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 
 type IntegrityPageProps = {
   searchParams: Promise<{ status?: string; message?: string }>;
 };
 
 export default async function AccountIntegrityPage({ searchParams }: IntegrityPageProps) {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("integrity");
   const [report, params] = await Promise.all([scanAccountIntegrity(), searchParams]);
   const noticeStatus = params.status === "success" || params.status === "error" ? params.status : null;
 

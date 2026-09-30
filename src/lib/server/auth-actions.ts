@@ -1,12 +1,15 @@
 "use server";
 
+import { getDataroomAccess } from "@/lib/server/dataroom-access";
+import { dataroomDestination } from "@/lib/dataroom-permissions";
+
 import argon2 from "argon2";
-import { PlatformRole, Prisma, ProfileRole, SchoolStatus } from "@prisma/client";
+import { Prisma, ProfileRole, SchoolStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
 import { createAuthSession, destroyAuthSession, getAuthSession, parseAuthPortal, setAuthPortalPreference, setSessionProfile, type AuthPortal } from "@/lib/server/session";
 import { consumePasswordReset, sendAccountVerification, sendPasswordReset } from "@/lib/server/auth-email";
-import { claimProfilesForCredential, createAdditionalSchoolForAuthenticatedUser, platformAdminEmailAllowed } from "@/lib/server/auth";
+import { claimProfilesForCredential, createAdditionalSchoolForAuthenticatedUser } from "@/lib/server/auth";
 
 function value(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -63,8 +66,8 @@ export async function signInAction(formData: FormData) {
     select: { id: true },
   });
   const profileId = profiles.length === 1 ? profiles[0].id : null;
-  const platformAdmin =
-    credential.platformRole === PlatformRole.PLATFORM_ADMIN || platformAdminEmailAllowed(credential.email);
+  const dataroomAccess = await getDataroomAccess(credential);
+  const platformAdmin = Boolean(dataroomAccess);
 
   if (portal === "teacher" && profiles.length === 0) {
     authRedirect("/sign-in?portal=teacher", "No active teacher assignment was found for this email.");
@@ -88,7 +91,7 @@ export async function signInAction(formData: FormData) {
   await prisma.authCredential.update({ where: { id: credential.id }, data: { lastLoginAt: new Date() } });
   await createAuthSession(credential.id, profileId);
   await setAuthPortalPreference(portal);
-  redirect(platformAdmin ? "/dataroom" : profileId ? "/app" : "/onboarding");
+  redirect(dataroomAccess ? dataroomDestination(dataroomAccess.permissions) : profileId ? "/app" : "/onboarding");
 }
 
 export async function beginSignInAction(formData: FormData) {

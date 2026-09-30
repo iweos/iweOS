@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PaymentStatus, ProfileRole, ResultPublicationStatus, SchoolStatus } from "@prisma/client";
 import { ArrowUpRight, BookOpenCheck, Building2, GraduationCap, School, UsersRound, WalletCards } from "lucide-react";
 import { WorkspaceContentGrid, WorkspaceHero, WorkspacePanel, WorkspaceStat, WorkspaceStatGrid } from "@/components/workspace/WorkspaceUI";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 
 function formatMoney(value: number) {
@@ -10,7 +10,7 @@ function formatMoney(value: number) {
 }
 
 export default async function PlatformDashboardPage() {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("overview");
   const monthStart = new Date();
   monthStart.setDate(monthStart.getDate() - 30);
 

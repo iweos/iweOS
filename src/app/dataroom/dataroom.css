@@ -556,3 +556,21 @@ html[data-theme="dark"] .platform-sidebar-footer > button { color: #9faea2; }
 .platform-brand-name { color: var(--platform-ink) !important; }
 html[data-theme="dark"] .platform-brand i,
 html[data-theme="dark"] .platform-brand-name { color: #eef4ef !important; }
+
+.dataroom-access { display: grid; gap: 1rem; }
+.dataroom-access summary { min-height: 44px; cursor: pointer; font-weight: 700; padding-block: .75rem; }
+.dataroom-access h2 { font-size: 1.15rem; }
+.dataroom-access p, .dataroom-access small { color: var(--platform-muted); line-height: 1.5; }
+.access-form { display: grid; gap: 1rem; padding-block: 1rem; }
+.access-form > label { display: grid; gap: .4rem; }
+.dataroom-access input:not([type="checkbox"]), .dataroom-access select { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--platform-line); border-radius: .6rem; padding: .6rem; background: var(--platform-card); color: inherit; font: inherit; }
+.dataroom-access button { min-height: 44px; border-radius: .6rem; padding: .6rem 1rem; border: 1px solid var(--platform-line); cursor: pointer; }
+.dataroom-access button:disabled { opacity: .5; cursor: default; }
+.access-form fieldset { border: 1px solid var(--platform-line); border-radius: .75rem; padding: .8rem; }
+.access-permission { display: flex; align-items: flex-start; gap: .75rem; padding-block: .7rem; border-bottom: 1px solid var(--platform-line); }
+.access-permission input { width: 20px; height: 20px; flex: 0 0 auto; }
+.access-permission small, .access-member small { display: block; }
+.access-member { display: grid; gap: .75rem; padding-block: 1rem; border-bottom: 1px solid var(--platform-line); overflow-wrap: anywhere; }
+.access-member form { display: flex; flex-wrap: wrap; gap: .5rem; }
+.access-error { padding: 1rem; border: 1px solid #b34848; border-radius: .7rem; }
+@media (max-width: 600px) { .dataroom-access input, .dataroom-access select { font-size: 16px; } .access-member form > label { width: 100%; } }

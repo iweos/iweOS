@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ProfileRole } from "@prisma/client";
 import { Search, UserRound, UsersRound } from "lucide-react";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 
 type PageProps = { searchParams: Promise<{ q?: string; role?: string; state?: string }> };
 
 export default async function PlatformUsersPage({ searchParams }: PageProps) {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("users");
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const role = Object.values(ProfileRole).includes(params.role as ProfileRole) ? params.role as ProfileRole : undefined;

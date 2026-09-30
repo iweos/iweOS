@@ -11,7 +11,9 @@
     "audit:teacher-cleanup": "node scripts/cleanup-teacher-profiles.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "test:dataroom": "node scripts/test-dataroom-access.cjs",
+    "build:vercel": "prisma migrate deploy && npm run build"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",

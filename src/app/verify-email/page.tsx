@@ -1,3 +1,4 @@
+import { getAuthenticatedDestination } from "@/lib/server/auth";
 import { redirect } from "next/navigation";
 import { consumeAccountVerification } from "@/lib/server/auth-email";
 import { createAuthSession, parseAuthPortal, setAuthPortalPreference } from "@/lib/server/session";
@@ -21,5 +22,5 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
     console.error("[auth] Account verified but session creation failed", error);
     redirect("/sign-in?verified=1");
   }
-  redirect(portal === "student" ? "/student" : verified.profileId ? "/app" : "/onboarding");
+  redirect(await getAuthenticatedDestination() ?? "/onboarding");
 }

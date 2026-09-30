@@ -3,12 +3,12 @@
 import { SchoolStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { schoolCountSelect, verifyRemovableGeneratedSchool } from "@/lib/server/account-integrity";
 import { prisma } from "@/lib/server/prisma";
 
 export async function updateSchoolStatusAction(formData: FormData) {
-  const context = await requirePlatformAdmin();
+  const context = await requireDataroomAccess("manageSchools");
   const schoolId = String(formData.get("schoolId") ?? "");
   const requestedStatus = String(formData.get("status") ?? "");
   if (!schoolId || !Object.values(SchoolStatus).includes(requestedStatus as SchoolStatus)) redirect("/dataroom/schools?error=Invalid%20school%20status.");
@@ -36,7 +36,7 @@ export async function updateSchoolStatusAction(formData: FormData) {
 }
 
 export async function removeEmptyGeneratedSchoolAction(formData: FormData) {
-  const context = await requirePlatformAdmin();
+  const context = await requireDataroomAccess("integrity");
   const schoolId = String(formData.get("schoolId") ?? "");
   const profileId = String(formData.get("profileId") ?? "");
   if (!schoolId || !profileId) redirect("/dataroom/integrity?status=error&message=Invalid%20cleanup%20request.");

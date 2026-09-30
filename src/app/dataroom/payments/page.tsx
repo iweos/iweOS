@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
 import { CircleDollarSign, Search, WalletCards } from "lucide-react";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 
 type PageProps = { searchParams: Promise<{ q?: string; status?: string }> };
 const money = (value: number, currency = "NGN") => new Intl.NumberFormat("en-NG", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
 
 export default async function PlatformPaymentsPage({ searchParams }: PageProps) {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("payments");
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const status = Object.values(PaymentStatus).includes(params.status as PaymentStatus) ? params.status as PaymentStatus : undefined;

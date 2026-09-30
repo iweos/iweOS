@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { SchoolStatus } from "@prisma/client";
 import { ArrowUpRight, Search, School } from "lucide-react";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 
 type PageProps = { searchParams: Promise<{ q?: string; status?: string }> };
 
 export default async function PlatformSchoolsPage({ searchParams }: PageProps) {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("schools");
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const status = Object.values(SchoolStatus).includes(params.status as SchoolStatus) ? params.status as SchoolStatus : undefined;

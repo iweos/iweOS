@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ClipboardList, Search, ShieldCheck } from "lucide-react";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 
 type PageProps = { searchParams: Promise<{ q?: string; school?: string }> };
@@ -12,7 +12,7 @@ function metadataPreview(value: unknown) {
 }
 
 export default async function PlatformAuditPage({ searchParams }: PageProps) {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("audit");
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const schoolId = params.school?.trim() ?? "";

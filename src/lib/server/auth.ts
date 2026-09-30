@@ -1,3 +1,7 @@
+import { getDataroomAccess } from "@/lib/server/dataroom-access";
+import { dataroomDestination } from "@/lib/dataroom-permissions";
+import { platformAdminEmailAllowed } from "@/lib/server/platform-owner";
+export { platformAdminEmailAllowed } from "@/lib/server/platform-owner";
 import { PlatformRole, Prisma, ProfileRole, SchoolStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/server/prisma";
@@ -26,7 +30,6 @@ const DEFAULT_GRADE_SCALE = [
   { gradeLetter: "F", minScore: 0, maxScore: 39, orderIndex: 6 },
 ] as const;
 
-const PLATFORM_OWNER_EMAILS = ["iyanflex@gmail.com"] as const;
 
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
@@ -55,15 +58,7 @@ export async function getCurrentProfile(): Promise<ProfileWithSchool | null> {
   return session.profile;
 }
 
-export function platformAdminEmailAllowed(email: string) {
-  const allowedEmails = [
-    ...PLATFORM_OWNER_EMAILS,
-    ...(process.env.PLATFORM_ADMIN_EMAILS ?? "").split(","),
-  ]
-    .map(normalizeEmail)
-    .filter(Boolean);
-  return allowedEmails.includes(normalizeEmail(email));
-}
+
 
 export async function claimProfilesForCredential(credentialId: string, email: string) {
   const normalizedEmail = normalizeEmail(email);
@@ -104,7 +99,7 @@ export async function getAccountWorkspaceOptions(): Promise<{
       role: profile.role === ProfileRole.ADMIN ? "Admin" : "Teacher",
     })),
     platformAdmin:
-      session.credential.platformRole === PlatformRole.PLATFORM_ADMIN || platformAdminEmailAllowed(session.credential.email),
+      Boolean(await getDataroomAccess(session.credential)),
   };
 }
 
@@ -292,12 +287,8 @@ export async function getAuthenticatedDestination(): Promise<string | null> {
     if (linkedStudent) return "/student";
   }
 
-  if (
-    session.credential.platformRole === PlatformRole.PLATFORM_ADMIN ||
-    platformAdminEmailAllowed(session.credential.email)
-  ) {
-    return "/dataroom";
-  }
+  const dataroomAccess = await getDataroomAccess(session.credential);
+  if (dataroomAccess) return dataroomDestination(dataroomAccess.permissions);
 
   if (session.profile?.isActive && session.profile.school.status === SchoolStatus.ACTIVE) {
     return session.profile.role === ProfileRole.ADMIN ? "/app/admin/dashboard" : "/app/teacher/dashboard";

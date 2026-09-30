@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ResultPublicationStatus } from "@prisma/client";
 import { BookOpenCheck, FileCheck2, Search } from "lucide-react";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 
 type PageProps = { searchParams: Promise<{ q?: string; status?: string }> };
 
 export default async function PlatformResultsPage({ searchParams }: PageProps) {
-  await requirePlatformAdmin();
+  await requireDataroomAccess("results");
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const status = Object.values(ResultPublicationStatus).includes(params.status as ResultPublicationStatus) ? params.status as ResultPublicationStatus : undefined;

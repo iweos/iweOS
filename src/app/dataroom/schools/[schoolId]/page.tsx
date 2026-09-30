@@ -1,16 +1,17 @@
+import { permits } from "@/lib/dataroom-permissions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PaymentStatus, ProfileRole, ResultPublicationStatus, SchoolStatus } from "@prisma/client";
 import { ArrowLeft, BookOpenCheck, Building, CalendarDays, GraduationCap, Mail, MapPin, UsersRound, WalletCards } from "lucide-react";
 import OpenSchoolPortalButton from "@/components/dataroom/OpenSchoolPortalButton";
-import { requirePlatformAdmin } from "@/lib/server/auth";
+import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
 import { updateSchoolStatusAction } from "@/lib/server/dataroom-actions";
 
 type PageProps = { params: Promise<{ schoolId: string }>; searchParams: Promise<{ updated?: string }> };
 
 export default async function DataroomSchoolDetailPage({ params, searchParams }: PageProps) {
-  const context = await requirePlatformAdmin();
+  const context = await requireDataroomAccess("schools");
   const { schoolId } = await params;
   const { updated } = await searchParams;
   const [school, admins, teachers, students, teacherCount, publishedResults, paymentSummary, activeTerm, auditLogs, ownAdminProfile] = await Promise.all([
@@ -67,11 +68,11 @@ export default async function DataroomSchoolDetailPage({ params, searchParams }:
         <div className="platform-school-actions">
           <span className={`platform-status ${school.status.toLowerCase()}`}>{school.status.toLowerCase()}</span>
           {ownAdminProfile ? <OpenSchoolPortalButton profileId={ownAdminProfile.id} /> : <a className="platform-inspect-link" href="#teachers">Inspect school records</a>}
-          <form action={updateSchoolStatusAction}>
+          {permits(context.permissions, "manageSchools") ? <form action={updateSchoolStatusAction}>
             <input type="hidden" name="schoolId" value={school.id} />
             <select name="status" defaultValue={school.status}>{Object.values(SchoolStatus).map((value) => <option value={value} key={value}>{value[0] + value.slice(1).toLowerCase()}</option>)}</select>
             <button type="submit">Update status</button>
-          </form>
+          </form> : null}
         </div>
       </section>
 
