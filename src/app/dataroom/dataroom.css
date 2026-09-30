@@ -574,3 +574,4 @@ html[data-theme="dark"] .platform-brand-name { color: #eef4ef !important; }
 .access-member form { display: flex; flex-wrap: wrap; gap: .5rem; }
 .access-error { padding: 1rem; border: 1px solid #b34848; border-radius: .7rem; }
 @media (max-width: 600px) { .dataroom-access input, .dataroom-access select { font-size: 16px; } .access-member form > label { width: 100%; } }
+.platform-nav-entry { display: contents; }

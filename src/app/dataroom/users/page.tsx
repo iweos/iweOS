@@ -49,7 +49,7 @@ export default async function PlatformUsersPage({ searchParams }: PageProps) {
     <section className="platform-panel platform-data-panel">
       <div className="platform-data-head platform-users-grid"><span>User</span><span>School</span><span>Role</span><span>Account</span><span>Joined</span></div>
       <div className="platform-data-list">
-        {profiles.map((profile) => <Link className="platform-data-row platform-users-grid" href={`/dataroom/schools/${profile.school.id}`} key={profile.id}>
+        {profiles.map((profile) => <Link className="platform-data-row platform-users-grid" href={`/dataroom/schools/${profile.school.id}?tab=users`} key={profile.id}>
           <span className="platform-person"><i>{profile.fullName.slice(0, 1).toUpperCase()}</i><span><strong>{profile.fullName}</strong><small>{profile.email}</small></span></span>
           <span className="platform-cell"><strong>{profile.school.name}</strong><small>{profile.school.code}</small></span>
           <span><i className="platform-role">{profile.role.toLowerCase()}</i></span>

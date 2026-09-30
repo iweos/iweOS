@@ -43,7 +43,7 @@ export default async function PlatformPaymentsPage({ searchParams }: PageProps) 
     <section className="platform-panel platform-data-panel">
       <div className="platform-data-head platform-payments-grid"><span>Transaction</span><span>School</span><span>Amount</span><span>Method</span><span>Status</span><span>Date</span></div>
       <div className="platform-data-list">
-        {payments.map((payment) => <Link className="platform-data-row platform-payments-grid" href={`/dataroom/schools/${payment.school.id}`} key={payment.id}>
+        {payments.map((payment) => <Link className="platform-data-row platform-payments-grid" href={`/dataroom/schools/${payment.school.id}?tab=payments`} key={payment.id}>
           <span className="platform-cell"><strong>{payment.providerRef}</strong><small>{payment.invoice.invoiceNo} · {payment.provider}</small></span>
           <span className="platform-cell"><strong>{payment.school.name}</strong><small>{payment.invoice.payerEmail || payment.school.code}</small></span>
           <strong>{money(Number(payment.amount), payment.school.currency)}</strong>

@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "school-first-dataroom",
+        eyebrow: "Platform administration",
+        timestamp: "Sep 30, 2026, 3:00 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "School workspaces and enrollment-based result tracking",
+        bullets: [
+          "Open a school to browse its users, students, classes, sessions, results, payments, settings and activity in permission-aware tabs with paginated directories.",
+          "Full Dataroom administrators can update school memberships, student status and basic school details. Changes are scoped and audited, with protected-owner and last-administrator safeguards.",
+          "Result tracking includes active enrolled students without publication records, distinguishing not started, in progress, ready, published and withdrawn using existing readiness checks.",
+        ],
+      },
+      {
         id: "dataroom-access-workspace-redesign",
         eyebrow: "Platform administration",
         timestamp: "Sep 30, 2026, 2:22 PM GMT+1",

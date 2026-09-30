@@ -35,14 +35,14 @@ export default async function PlatformDashboardPage() {
       <WorkspaceHero
         eyebrow="Control centre"
         title="Every school, one clear operating view."
-        description="Monitor adoption, activity and service health without entering a school workspace."
+        description="Choose a school to manage its people, students, payments and result readiness."
         action={<Link href="/dataroom/schools">Explore schools <ArrowUpRight /></Link>}
       />
 
       <WorkspaceStatGrid>
         <WorkspaceStat label="Schools" value={schoolCount.toLocaleString()} detail={`${newSchools} added in 30 days`} icon={<Building2 />} />
         <WorkspaceStat label="Students" value={studentCount.toLocaleString()} detail="Across every workspace" icon={<GraduationCap />} tone="blue" />
-        <WorkspaceStat label="Active teachers" value={teacherCount.toLocaleString()} detail="Authorised teaching profiles" icon={<UsersRound />} tone="gold" />
+        <WorkspaceStat label="Enabled teaching profiles" value={teacherCount.toLocaleString()} detail="School memberships, not unique people" icon={<UsersRound />} tone="gold" />
         <WorkspaceStat label="Published results" value={publishedResults.toLocaleString()} detail="Parent-ready records" icon={<BookOpenCheck />} tone="ink" />
       </WorkspaceStatGrid>
 
@@ -67,7 +67,7 @@ export default async function PlatformDashboardPage() {
         </WorkspacePanel>
 
         <aside className="platform-side-stack">
-          <WorkspacePanel eyebrow="Live status" title="Workspace health">
+          <WorkspacePanel eyebrow="School status" title="Workspace availability">
             <div className="platform-health-row"><span>Active schools</span><strong>{activeSchools}</strong></div>
             <div className="platform-progress"><i style={{ width: `${schoolCount ? (activeSchools / schoolCount) * 100 : 0}%` }} /></div>
             <div className="platform-health-row"><span>Suspended</span><strong>{suspendedSchools}</strong></div>

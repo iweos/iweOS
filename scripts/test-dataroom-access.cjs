@@ -69,8 +69,9 @@ async function denied(permission, destination) {
   await denied('manageAccess', '/sign-in?portal=admin');
   for (const values of [[], ['invalid'], ['manageSchools']]) assert.throws(() => policy.validatePermissions(values));
   assert.deepEqual(policy.validatePermissions(['schools', 'schools', 'manageSchools']), ['schools', 'manageSchools']);
-  const routes = { 'page.tsx': 'overview', 'schools/page.tsx': 'schools', 'schools/[schoolId]/page.tsx': 'schools', 'users/page.tsx': 'users', 'payments/page.tsx': 'payments', 'results/page.tsx': 'results', 'audit/page.tsx': 'audit', 'integrity/page.tsx': 'integrity', 'access/page.tsx': 'manageAccess' };
+  const routes = { 'page.tsx': 'overview', 'schools/page.tsx': 'schools', 'users/page.tsx': 'users', 'payments/page.tsx': 'payments', 'results/page.tsx': 'results', 'audit/page.tsx': 'audit', 'integrity/page.tsx': 'integrity', 'access/page.tsx': 'manageAccess' };
   for (const [file, permission] of Object.entries(routes)) assert.ok(fs.readFileSync(`src/app/dataroom/${file}`, 'utf8').includes(`requireDataroomAccess("${permission}")`), `Missing guard: ${file}`);
+  assert.ok(fs.readFileSync('src/app/dataroom/schools/[schoolId]/page.tsx', 'utf8').includes('requireDataroomAccess(tab.permission)'));
   // Exercise mutations with an isolated in-memory database, never production accounts.
   const actor = { credentialId: '00000000-0000-4000-8000-000000000001', email: 'admin@example.test', protected: false };
   const targetId = '00000000-0000-4000-8000-000000000002';

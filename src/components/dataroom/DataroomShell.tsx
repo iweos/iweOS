@@ -21,9 +21,9 @@ type DataroomShellProps = {
 const navItems = [
   { href: "/dataroom", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dataroom/schools", label: "Schools", icon: Building2 },
-  { href: "/dataroom/users", label: "Users", icon: UsersRound },
+  { href: "/dataroom/users", label: "User search", icon: UsersRound },
   { href: "/dataroom/payments", label: "Payments", icon: WalletCards },
-  { href: "/dataroom/results", label: "Results", icon: BookOpenCheck },
+  { href: "/dataroom/results", label: "Result readiness", icon: BookOpenCheck },
   { href: "/dataroom/integrity", label: "Account integrity", icon: ScanSearch },
   { href: "/dataroom/access", label: "Dataroom access", icon: ShieldCheck },
   { href: "/dataroom/audit", label: "Audit logs", icon: ClipboardList },
@@ -115,7 +115,7 @@ export default function DataroomShell({ children, email, currentProfileId, schoo
           {navItems.filter((item) => permits(permissions, (item.href === "/dataroom/access" ? "manageAccess" : item.href.split("/")[2] ?? "overview") as DataroomPermission)).map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
-            return <Link href={item.href} className={active ? "is-active" : ""} aria-current={active ? "page" : undefined} key={item.href} title={item.label}><Icon /><span>{item.label}</span></Link>;
+            return <span className="platform-nav-entry" key={item.href}>{item.href === "/dataroom/users" && <p>Cross-school reports</p>}<Link href={item.href} className={active ? "is-active" : ""} aria-current={active ? "page" : undefined} key={item.href} title={item.label}><Icon /><span>{item.label}</span></Link></span>;
           })}
         </nav>
         <div className="platform-sidebar-footer">

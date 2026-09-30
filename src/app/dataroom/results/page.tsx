@@ -1,61 +1,24 @@
 import Link from "next/link";
-import { ResultPublicationStatus } from "@prisma/client";
-import { BookOpenCheck, FileCheck2, Search } from "lucide-react";
 import { requireDataroomAccess } from "@/lib/server/dataroom-access";
 import { prisma } from "@/lib/server/prisma";
-
-type PageProps = { searchParams: Promise<{ q?: string; status?: string }> };
-
-export default async function PlatformResultsPage({ searchParams }: PageProps) {
+import { schoolResultTracking } from "@/lib/server/school-result-tracking";
+import "@/components/dataroom/school/school-workspace.css";
+type Props = { searchParams: Promise<{ q?: string; page?: string }> };
+export default async function PlatformResultsPage({ searchParams }: Props) {
   await requireDataroomAccess("results");
   const params = await searchParams;
-  const query = params.q?.trim() ?? "";
-  const status = Object.values(ResultPublicationStatus).includes(params.status as ResultPublicationStatus) ? params.status as ResultPublicationStatus : undefined;
-  const [results, total, published, schoolsPublishing] = await Promise.all([
-    prisma.resultPublication.findMany({
-      where: {
-        status,
-        ...(query ? { OR: [
-          { student: { fullName: { contains: query, mode: "insensitive" } } },
-          { school: { name: { contains: query, mode: "insensitive" } } },
-          { class: { name: { contains: query, mode: "insensitive" } } },
-        ] } : {}),
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 100,
-      select: { id: true, status: true, publishedAt: true, updatedAt: true, school: { select: { id: true, name: true, code: true } }, student: { select: { fullName: true, studentCode: true } }, class: { select: { name: true } }, term: { select: { sessionLabel: true, termLabel: true } }, publishedBy: { select: { fullName: true } } },
-    }),
-    prisma.resultPublication.count(),
-    prisma.resultPublication.count({ where: { status: ResultPublicationStatus.PUBLISHED } }),
-    prisma.resultPublication.groupBy({ by: ["schoolId"], where: { status: ResultPublicationStatus.PUBLISHED } }).then((rows) => rows.length),
-  ]);
-
-  return <>
-    <section className="platform-page-heading"><div><p>Academic operations</p><h1>Result publications</h1><span>Track prepared, published and withdrawn student results across iweOS.</span></div><strong>{total.toLocaleString()} records</strong></section>
-    <section className="platform-mini-stats">
-      <article><FileCheck2 /><span>Published results<strong>{published.toLocaleString()}</strong></span></article>
-      <article><BookOpenCheck /><span>Publishing schools<strong>{schoolsPublishing.toLocaleString()}</strong></span></article>
-      <article><span className="platform-rate-mark">%</span><span>Publication rate<strong>{total ? Math.round((published / total) * 100) : 0}%</strong></span></article>
-    </section>
-    <form className="platform-filter-bar" method="get">
-      <label><Search /><input type="search" name="q" defaultValue={query} placeholder="Search student, class or school" /></label>
-      <select name="status" defaultValue={status ?? ""}><option value="">All statuses</option>{Object.values(ResultPublicationStatus).map((value) => <option value={value} key={value}>{value[0] + value.slice(1).toLowerCase()}</option>)}</select>
-      <button type="submit">Apply filters</button>
-      {(query || status) ? <Link href="/dataroom/results">Clear</Link> : null}
-    </form>
-    <section className="platform-panel platform-data-panel">
-      <div className="platform-data-head platform-results-grid"><span>Student</span><span>School</span><span>Class / session</span><span>Status</span><span>Published by</span><span>Updated</span></div>
-      <div className="platform-data-list">
-        {results.map((result) => <Link className="platform-data-row platform-results-grid" href={`/dataroom/schools/${result.school.id}`} key={result.id}>
-          <span className="platform-cell"><strong>{result.student.fullName}</strong><small>{result.student.studentCode}</small></span>
-          <span className="platform-cell"><strong>{result.school.name}</strong><small>{result.school.code}</small></span>
-          <span className="platform-cell"><strong>{result.class.name}</strong><small>{result.term.sessionLabel} · {result.term.termLabel}</small></span>
-          <span><i className={`platform-status ${result.status.toLowerCase()}`}>{result.status.toLowerCase()}</i></span>
-          <span className="platform-cell"><strong>{result.publishedBy?.fullName || "Not published"}</strong><small>{result.publishedAt ? result.publishedAt.toLocaleDateString("en-NG") : "Draft record"}</small></span>
-          <span className="platform-date">{result.updatedAt.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</span>
-        </Link>)}
-        {!results.length ? <div className="platform-empty"><BookOpenCheck /><h2>No results found</h2><p>Adjust your filters and try again.</p></div> : null}
-      </div>
-    </section>
-  </>;
+  const q = params.q?.trim() ?? "";
+  const where = q ? { OR: [{ name: { contains: q, mode: "insensitive" as const } }, { code: { contains: q, mode: "insensitive" as const } }] } : {};
+  const total = await prisma.school.count({ where });
+  const pages = Math.max(1, Math.ceil(total / 10));
+  const page = Math.min(pages, Math.max(1, Math.floor(Number(params.page) || 1)));
+  const schools = await prisma.school.findMany({ where, orderBy: [{ name: "asc" }, { id: "asc" }], take: 10, skip: (page - 1) * 10, select: { id: true, name: true, code: true, terms: { where: { isActive: true }, take: 1, orderBy: { createdAt: "desc" }, select: { id: true, sessionLabel: true, termLabel: true } } } });
+  const rows = [];
+  for (const school of schools) {
+    const term = school.terms[0];
+    const tracking = term ? await schoolResultTracking(school.id, term.id) : null;
+    rows.push({ school, term, tracking });
+  }
+  const href = (next: number) => `/dataroom/results?${new URLSearchParams({ q, page: String(next) })}`;
+  return <div className="school-workspace"><header className="sw-header"><div><span>Cross-school reporting</span><h1>School result readiness</h1><p>Start with a school, then inspect its session, classes and students. Each row uses that school’s active term.</p></div></header><section className="sw-panel"><form className="sw-filters"><label>Find a school<input name="q" defaultValue={q} placeholder="School name or code"/></label><button>Search</button></form><p>Missing publication records are included through active student enrollment. “Ready” follows the school’s existing score-readiness checks, not the presence of student details.</p><div className="sw-list">{rows.map(({school, term, tracking}) => <article key={school.id} className="sw-row"><div><Link href={`/dataroom/schools/${school.id}?tab=results${term ? `&termId=${term.id}` : ""}`}><strong>{school.name}</strong></Link><small>{school.code} · {term ? `${term.sessionLabel} · ${term.termLabel}` : "No active term"}</small><small>{tracking ? `${tracking.total} eligible · ${tracking.counts["Not started"]} not started · ${tracking.counts["In progress"]} in progress · ${tracking.counts["Withdrawn"]} withdrawn` : "Choose a term inside the school workspace."}</small></div><span className="sw-badge">{tracking?.counts["Ready to publish"] ?? 0} ready</span><span className="sw-badge">{tracking?.counts.Published ?? 0} published</span></article>)}{!rows.length && <p className="sw-empty">No matching schools.</p>}</div><nav className="sw-pagination" aria-label="School result pages"><span>{total} schools · Page {page} of {pages}</span>{page > 1 && <Link href={href(page - 1)}>Previous</Link>}{page < pages && <Link href={href(page + 1)}>Next</Link>}</nav></section></div>;
 }
