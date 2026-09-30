@@ -904,6 +904,18 @@ export async function GET() {
     badge: "Changelog",
     sections: [
       {
+        id: "dataroom-access-workspace-redesign",
+        eyebrow: "Platform administration",
+        timestamp: "Sep 30, 2026, 2:22 PM GMT+1",
+        timelineGroup: "September 2026",
+        title: "A clearer workspace for team access",
+        bullets: [
+          "Team members and Roles & permissions now have separate tabs, searchable members, compact action menus, and focused editing panels that fill the screen on mobile.",
+          "Permission changes and revocations show affected members before confirmation. Owners, unverified accounts and revoked access have distinct labels.",
+          "Role descriptions reflect assigned modules, access history is available on demand, and inline feedback retains entries when a request fails. Existing server-side permission protections remain enforced.",
+        ],
+      },
+      {
         id: "dataroom-team-and-permissions",
         eyebrow: "Platform administration",
         timestamp: "Sep 30, 2026, 1:51 PM GMT+1",

@@ -12,8 +12,9 @@ import { sendPasswordReset } from "@/lib/server/auth-email";
 import { validatePermissions } from "@/lib/dataroom-permissions";
 
 const userSchema = z.object({ email: z.string().email().max(254), fullName: z.string().min(2).max(120), roleId: z.string().uuid() });
-function finish(message: string, error = false): never {
+function finish(form: FormData, message: string, error = false) {
   revalidatePath("/dataroom/access");
+  if (form.get("feedback") === "inline") return { message, error };
   redirect(`/dataroom/access?${error ? "error" : "message"}=${encodeURIComponent(message)}`);
 }
 
@@ -33,13 +34,13 @@ export async function saveDataroomRole(form: FormData) {
       await tx.dataroomAccessLog.create({ data: { actorEmail: actor.email, target: role.name, action: id ? "role.updated" : "role.created", details: { permissions } } });
     });
   } catch (error) { failure = error instanceof Error && !error.message.includes("prisma") ? error.message : "Could not save this role. Check for a duplicate name."; }
-  finish(failure || "Role saved.", Boolean(failure));
+  return finish(form, failure || "Role saved.", Boolean(failure));
 }
 
 export async function addDataroomUser(form: FormData) {
   const actor = await requireDataroomAccess("manageAccess");
   const parsed = userSchema.safeParse({ email: String(form.get("email") ?? "").trim().toLowerCase(), fullName: String(form.get("fullName") ?? "").trim(), roleId: String(form.get("roleId") ?? "") });
-  if (!parsed.success) finish("Enter a name, valid email and role.", true);
+  if (!parsed.success) return finish(form, "Enter a name, valid email and role.", true);
   const { email, fullName, roleId } = parsed.data;
   let failure = "";
   let created = false;
@@ -55,7 +56,7 @@ export async function addDataroomUser(form: FormData) {
       await tx.dataroomAccessLog.create({ data: { actorEmail: actor.email, target: email, action: "user.added", details: { roleId, fullName } } });
     });
   } catch { failure = "Could not add this user. They may already be listed; use their role controls instead."; }
-  finish(failure || (created ? "User added. Send a setup email to let them choose their password." : "Existing account added with its password unchanged."), Boolean(failure));
+  return finish(form, failure || (created ? "User added. Send a setup email to let them choose their password." : "Existing account added with its password unchanged."), Boolean(failure));
 }
 
 export async function updateDataroomUser(form: FormData) {
@@ -63,7 +64,7 @@ export async function updateDataroomUser(form: FormData) {
   const credentialId = String(form.get("credentialId") ?? "");
   const roleId = String(form.get("roleId") ?? "");
   const revoke = form.get("operation") === "revoke";
-  if (!z.string().uuid().safeParse(credentialId).success || (!revoke && !z.string().uuid().safeParse(roleId).success)) finish("Invalid user or role.", true);
+  if (!z.string().uuid().safeParse(credentialId).success || (!revoke && !z.string().uuid().safeParse(roleId).success)) return finish(form, "Invalid user or role.", true);
   let failure = "";
   try {
     const target = await prisma.authCredential.findUniqueOrThrow({ where: { id: credentialId } });
@@ -73,13 +74,13 @@ export async function updateDataroomUser(form: FormData) {
       await tx.dataroomAccessLog.create({ data: { actorEmail: actor.email, target: target.email, action: revoke ? "user.revoked" : "user.role_changed", details: { roleId } } });
     });
   } catch { failure = "Could not change access. Your own access and protected administrators cannot be changed here."; }
-  finish(failure || (revoke ? "Dataroom access revoked." : "Role assigned and access enabled."), Boolean(failure));
+  return finish(form, failure || (revoke ? "Dataroom access revoked." : "Role assigned and access enabled."), Boolean(failure));
 }
 
 export async function sendDataroomSetupEmail(form: FormData) {
   const actor = await requireDataroomAccess("manageAccess");
   const credentialId = String(form.get("credentialId") ?? "");
-  if (!z.string().uuid().safeParse(credentialId).success) finish("Invalid user.", true);
+  if (!z.string().uuid().safeParse(credentialId).success) return finish(form, "Invalid user.", true);
   let failure = "";
   try {
     const membership = await prisma.dataroomMembership.findUniqueOrThrow({ where: { credentialId }, include: { credential: true } });
@@ -87,5 +88,5 @@ export async function sendDataroomSetupEmail(form: FormData) {
     await sendPasswordReset(credentialId, membership.credential.email);
     await prisma.dataroomAccessLog.create({ data: { actorEmail: actor.email, target: membership.credential.email, action: "user.setup_email_sent", details: {} } });
   } catch { failure = "Could not send the setup email. Check email configuration and retry; the user record has been retained."; }
-  finish(failure || "Password setup email sent. The user must also verify their email when signing in.", Boolean(failure));
+  return finish(form, failure || "Password setup email sent. The user must also verify their email when signing in.", Boolean(failure));
 }

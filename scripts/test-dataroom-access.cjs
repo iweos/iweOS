@@ -71,5 +71,51 @@ async function denied(permission, destination) {
   assert.deepEqual(policy.validatePermissions(['schools', 'schools', 'manageSchools']), ['schools', 'manageSchools']);
   const routes = { 'page.tsx': 'overview', 'schools/page.tsx': 'schools', 'schools/[schoolId]/page.tsx': 'schools', 'users/page.tsx': 'users', 'payments/page.tsx': 'payments', 'results/page.tsx': 'results', 'audit/page.tsx': 'audit', 'integrity/page.tsx': 'integrity', 'access/page.tsx': 'manageAccess' };
   for (const [file, permission] of Object.entries(routes)) assert.ok(fs.readFileSync(`src/app/dataroom/${file}`, 'utf8').includes(`requireDataroomAccess("${permission}")`), `Missing guard: ${file}`);
+  // Exercise mutations with an isolated in-memory database, never production accounts.
+  const actor = { credentialId: '00000000-0000-4000-8000-000000000001', email: 'admin@example.test', protected: false };
+  const targetId = '00000000-0000-4000-8000-000000000002';
+  const roleId = '00000000-0000-4000-8000-000000000003';
+  let target = { id: targetId, email: 'member@example.test', platformRole: null };
+  let savedMembership = { credentialId: targetId, roleId, isActive: true, credential: target };
+  const audit = [];
+  let emails = 0;
+  const db = {
+    authCredential: { findUnique: async () => target, findUniqueOrThrow: async () => target, create: async data => ({ id: targetId, ...data.data }) },
+    dataroomMembership: { findUnique: async () => ({ roleId }), findUniqueOrThrow: async () => savedMembership, create: async ({ data }) => { savedMembership = { ...data, isActive: true, credential: target }; }, update: async ({ data }) => { savedMembership = { ...savedMembership, ...data }; } },
+    dataroomRole: { create: async ({ data }) => ({ id: roleId, ...data }), update: async ({ data }) => ({ id: roleId, ...data }) },
+    dataroomAccessLog: { create: async ({ data }) => { audit.push(data); } },
+  };
+  db.$transaction = async callback => callback(db);
+  const mutations = load('src/lib/server/dataroom-user-actions.ts', {
+    argon2: { default: { hash: async () => 'test-hash' } }, 'node:crypto': require('node:crypto'),
+    'next/cache': { revalidatePath: () => {} }, 'next/navigation': { redirect }, zod: require('zod'),
+    '@/lib/server/platform-owner': { platformAdminEmailAllowed: email => email === 'owner@example.test' },
+    '@/lib/server/dataroom-access': { requireDataroomAccess: async () => actor }, '@/lib/server/prisma': { prisma: db },
+    '@/lib/server/auth-email': { sendPasswordReset: async () => { emails++; } }, '@/lib/dataroom-permissions': policy,
+  });
+  function form(fields) { const value = new FormData(); value.set('feedback', 'inline'); for (const [key, items] of Object.entries(fields)) for (const item of Array.isArray(items) ? items : [items]) value.append(key, item); return value; }
+  let response = await mutations.saveDataroomRole(form({ id: roleId, name: 'Operations', permissions: ['schools'] }));
+  assert.equal(response.error, true, 'Cannot remove own manageAccess permission');
+  assert.equal(audit.length, 0);
+  response = await mutations.saveDataroomRole(form({ name: 'Custom viewer', permissions: ['schools'] }));
+  assert.equal(response.error, false);
+  assert.equal(audit.at(-1).action, 'role.created');
+  response = await mutations.addDataroomUser(form({ fullName: 'Test Member', email: 'member@example.test', roleId }));
+  assert.equal(response.error, false);
+  assert.match(response.message, /password unchanged/);
+  response = await mutations.updateDataroomUser(form({ credentialId: targetId, operation: 'revoke' }));
+  assert.equal(response.error, false); assert.equal(savedMembership.isActive, false);
+  assert.equal((await mutations.sendDataroomSetupEmail(form({ credentialId: targetId }))).error, true);
+  assert.equal(emails, 0);
+  response = await mutations.updateDataroomUser(form({ credentialId: targetId, roleId }));
+  assert.equal(response.error, false); assert.equal(savedMembership.isActive, true);
+  assert.equal((await mutations.sendDataroomSetupEmail(form({ credentialId: targetId }))).error, false);
+  assert.equal(emails, 1);
+  target = { ...target, email: 'owner@example.test' };
+  assert.equal((await mutations.updateDataroomUser(form({ credentialId: targetId, operation: 'revoke' }))).error, true);
+  target = { ...target, email: 'member@example.test', id: actor.credentialId };
+  assert.equal((await mutations.updateDataroomUser(form({ credentialId: actor.credentialId, operation: 'revoke' }))).error, true);
+  assert.equal((await mutations.addDataroomUser(form({ email: 'invalid' }))).error, true);
+  console.log('PASS: inline action feedback, role creation, member assignment, revoke/restore, setup email, audit trail and owner/self protections.');
   console.log('PASS: all role/module combinations, direct-route guards, revocation, verification, protected owner and custom role validation.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
